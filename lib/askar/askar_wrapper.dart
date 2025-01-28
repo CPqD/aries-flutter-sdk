@@ -13,6 +13,13 @@ import 'package:import_so_libaskar/askar/enums/askar_signature_algorithm.dart';
 import 'askar_native_functions.dart';
 import 'askar_utils.dart';
 
+final class AskarResult {
+  final ErrorCode errorCode;
+  final dynamic value;
+
+  AskarResult(this.errorCode, this.value);
+}
+
 final class AskarStringResult {
   final ErrorCode errorCode;
   final String value;
@@ -32,6 +39,24 @@ final class AskarIntResult {
   final int value;
 
   AskarIntResult(this.errorCode, this.value);
+}
+
+final class AskarBoolResult {
+  final ErrorCode errorCode;
+  final bool value;
+
+  AskarBoolResult(this.errorCode, this.value);
+
+  static AskarBoolResult fromInt(ErrorCode errorCode, int num) {
+    switch (num) {
+      case 0:
+        return AskarBoolResult(errorCode, false);
+      case 1:
+        return AskarBoolResult(errorCode, true);
+      default:
+        throw ArgumentError('Invalid bool value: $num');
+    }
+  }
 }
 
 String askarVersion() {
@@ -157,8 +182,9 @@ AskarStringResult askarEntryListGetValue(int entryListHandle, int index) {
 
   final errorCode = ErrorCode.fromInt(funcResult);
 
-  final String value =
-      (errorCode == ErrorCode.success) ? secretBufferToString(secretBufferPointer) : "";
+  final String value = (errorCode == ErrorCode.success)
+      ? secretBufferToString(secretBufferPointer.ref)
+      : "";
 
   calloc.free(secretBufferPointer.ref.data);
   calloc.free(secretBufferPointer);
@@ -669,7 +695,7 @@ ErrorCode askarKeyGetSecretBytes(
   return ErrorCode.fromInt(result);
 }
 
-AskarStringResult askarKeySignMessage(
+AskarResult askarKeySignMessage(
   int localKeyHandle,
   String message,
   SignatureAlgorithm sigType,
@@ -679,7 +705,6 @@ AskarStringResult askarKeySignMessage(
   final sigTypePointer = sigType.value.toNativeUtf8();
   final byteBufferPointer = stringToByteBuffer(message);
 
-  // Uso da variável byteBuffer
   ByteBuffer byteBuffer = byteBufferPointer.ref;
 
   final funcResult = nativeAskarKeySignMessage(
@@ -691,8 +716,7 @@ AskarStringResult askarKeySignMessage(
 
   final errorCode = ErrorCode.fromInt(funcResult);
 
-  final String value =
-      (errorCode == ErrorCode.success) ? secretBufferToString(secretBufferPointer) : "";
+  final value = secretBufferToBytesList(secretBufferPointer.ref);
 
   calloc.free(sigTypePointer);
   calloc.free(byteBufferPointer.ref.data);
@@ -700,7 +724,7 @@ AskarStringResult askarKeySignMessage(
   calloc.free(secretBufferPointer.ref.data);
   calloc.free(secretBufferPointer);
 
-  return AskarStringResult(errorCode, value);
+  return AskarResult(errorCode, value);
 }
 
 ErrorCode askarKeyUnwrapKey(
@@ -727,26 +751,43 @@ ErrorCode askarKeyUnwrapKey(
   return ErrorCode.fromInt(result);
 }
 
-ErrorCode askarKeyVerifySignature(
-  LocalKeyHandle handle,
-  Pointer<ByteBuffer> message,
-  Pointer<ByteBuffer> signature,
-  String sigType,
-  Pointer<Int8> out,
+AskarBoolResult askarKeyVerifySignature(
+  int localKeyHandle,
+  String message,
+  Uint8List signature,
+  SignatureAlgorithm sigType,
 ) {
-  final sigTypePointer = sigType.toNativeUtf8();
+  Pointer<Int8> intPointer = calloc<Int8>();
 
-  final result = nativeAskarKeyVerifySignature(
-    handle,
-    message,
-    signature,
+  final sigTypePointer = sigType.value.toNativeUtf8();
+
+  final messageAsByteBufferPt = stringToByteBuffer(message);
+
+  final signatureAsByteBufferPt = bytesListToByteBuffer(signature);
+
+  final funcResult = nativeAskarKeyVerifySignature(
+    localKeyHandle,
+    messageAsByteBufferPt.ref,
+    signatureAsByteBufferPt.ref,
     sigTypePointer,
-    out,
+    intPointer,
   );
 
-  calloc.free(sigTypePointer);
+  final errorCode = ErrorCode.fromInt(funcResult);
 
-  return ErrorCode.fromInt(result);
+  final int output = (errorCode == ErrorCode.success) ? intPointer.value.toInt() : -1;
+
+  print("intPointer address == ${intPointer.address}");
+  print("intPointer value == ${intPointer.value}");
+
+  calloc.free(intPointer);
+  calloc.free(sigTypePointer);
+  calloc.free(messageAsByteBufferPt.ref.data);
+  calloc.free(messageAsByteBufferPt);
+  calloc.free(signatureAsByteBufferPt.ref.data);
+  calloc.free(signatureAsByteBufferPt);
+
+  return AskarBoolResult.fromInt(errorCode, output);
 }
 
 ErrorCode askarKeyWrapKey(

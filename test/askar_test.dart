@@ -101,22 +101,27 @@ void main() {
         await sessionCloseTest(sessionHandle);
       });
     });
-    testWidgets('Sign Message and Verify Signature ', (WidgetTester tester) async {
+    testWidgets('Sign Message and Verify Signature', (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
 
       await tester.runAsync(() async {
         final storeOpenResult = await storeOpenTest();
+
         final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
+        final sessionHandle = sessionStartResult.handle;
 
         final keyGenerateResult =
             keyGenerateTest(KeyAlgorithm.ecSecp384r1, KeyBackend.software);
-
-        final sessionHandle = sessionStartResult.handle;
         final localKeyHandle = keyGenerateResult.value;
 
         String message = "message";
+        final signAlgorithm = SignatureAlgorithm.eS384;
 
-        keySignMessageTest(localKeyHandle, message, SignatureAlgorithm.eS384);
+        final keySignMsgResult =
+            keySignMessageTest(localKeyHandle, message, signAlgorithm);
+
+        keyVerifySignatureTest(
+            localKeyHandle, message, keySignMsgResult.value, signAlgorithm);
 
         await sessionCloseTest(sessionHandle);
       });
@@ -173,7 +178,9 @@ Future<CallbackResult> sessionStartTest(int handle) async {
 }
 
 AskarIntResult keyGenerateTest(KeyAlgorithm algorithm, KeyBackend keyBackend) {
-  final result = askarKeyGenerate(algorithm, keyBackend, true);
+  bool ephemeral = false;
+
+  final result = askarKeyGenerate(algorithm, keyBackend, ephemeral);
 
   printAskarIntResult('KeyGenerate', result);
 
@@ -309,14 +316,26 @@ AskarStringResult entryListGetCategoryTest(
   return result;
 }
 
-AskarStringResult keySignMessageTest(
+AskarResult keySignMessageTest(
     int localKeyHandle, String message, SignatureAlgorithm sigType) {
   final result = askarKeySignMessage(localKeyHandle, message, sigType);
 
-  printAskarStringResult('KeySignMessage', result);
+  printAskarResult('KeySignMessage', result);
 
   expect(result.errorCode, equals(ErrorCode.success));
   expect(result.value, isNot(message));
+
+  return result;
+}
+
+AskarBoolResult keyVerifySignatureTest(
+    int localKeyHandle, String message, dynamic signature, SignatureAlgorithm sigType) {
+  final result = askarKeyVerifySignature(localKeyHandle, message, signature, sigType);
+
+  printAskarBoolResult('KeyVerifySignatureTest', result);
+
+  expect(result.errorCode, equals(ErrorCode.success));
+  expect(result.value, equals(true));
 
   return result;
 }
@@ -352,6 +371,10 @@ void printResult(String test, CallbackResult result) {
   }
 }
 
+void printAskarResult(String test, AskarResult result) {
+  print('$test Result: (${result.errorCode}, Value: ${result.value})\n');
+}
+
 void printAskarStringResult(String test, AskarStringResult result) {
   print('$test Result: (${result.errorCode}, Value: "${result.value}")\n');
 }
@@ -361,5 +384,9 @@ void printAskarMapResult(String test, AskarMapResult result) {
 }
 
 void printAskarIntResult(String test, AskarIntResult result) {
+  print('$test Result: (${result.errorCode}, Value: ${result.value})\n');
+}
+
+void printAskarBoolResult(String test, AskarBoolResult result) {
   print('$test Result: (${result.errorCode}, Value: ${result.value})\n');
 }
