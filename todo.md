@@ -1,6 +1,6 @@
 - [x] askar_version: () => string;
 
-- [ ] askar_get_current_error: (args_0: Buffer) => number;
+- [x] askar_get_current_error: (args_0: Buffer) => number;
 
 - [ ] askar_buffer_free: (args_0: Buffer) => unknown;
 

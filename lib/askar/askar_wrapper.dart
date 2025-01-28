@@ -713,8 +713,6 @@ AskarResult<Uint8List> askarKeySignMessage(
 ) {
   Pointer<SecretBuffer> secretBufferPointer = calloc<SecretBuffer>();
 
-  print("askarKeySignMessage in message == ${message}");
-
   final sigTypePointer = sigType.value.toNativeUtf8();
   final byteBufferPointer = bytesListToByteBuffer(message);
 
@@ -729,18 +727,13 @@ AskarResult<Uint8List> askarKeySignMessage(
 
   final errorCode = ErrorCode.fromInt(funcResult);
 
-  final Uint8List value = secretBufferToBytesList(secretBufferPointer.ref);
-
-  print("askarKeySignMessage out value == ${value}");
+  final value = Uint8List.fromList(secretBufferToBytesList(secretBufferPointer.ref));
 
   calloc.free(sigTypePointer);
   calloc.free(byteBufferPointer.ref.data);
   calloc.free(byteBufferPointer);
-  // calloc.free(secretBufferPointer.ref.data);
-  // calloc.free(secretBufferPointer);
-
-  print("askarKeySignMessage out value(2) == ${value}");
-  print("askarKeySignMessage out value(3) == ${value}");
+  calloc.free(secretBufferPointer.ref.data);
+  calloc.free(secretBufferPointer);
 
   return AskarResult<Uint8List>(errorCode, value);
 }
@@ -780,12 +773,7 @@ AskarBoolResult askarKeyVerifySignature(
   final sigTypePointer = sigType.value.toNativeUtf8();
 
   final messageAsByteBufferPt = bytesListToByteBuffer(message);
-
   final signatureAsByteBufferPt = bytesListToByteBuffer(signature);
-
-  print("askarKeyVerifySignature in message == ${message}");
-  print("askarKeyVerifySignature in signature == ${signature}");
-  print("askarKeyVerifySignature in sigType == ${sigType.value}");
 
   final funcResult = nativeAskarKeyVerifySignature(
     localKeyHandle,
@@ -798,9 +786,6 @@ AskarBoolResult askarKeyVerifySignature(
   final errorCode = ErrorCode.fromInt(funcResult);
 
   final int output = (errorCode == ErrorCode.success) ? intPointer.value.toInt() : -1;
-
-  print("askarKeyVerifySignature intPointer address == ${intPointer.address}");
-  print("askarKeyVerifySignature intPointer value == ${intPointer.value}");
 
   calloc.free(intPointer);
   calloc.free(sigTypePointer);
