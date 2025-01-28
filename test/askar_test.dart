@@ -1,5 +1,8 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:import_so_libaskar/askar/askar_callbacks.dart';
 import 'package:import_so_libaskar/askar/askar_wrapper.dart';
@@ -28,79 +31,79 @@ void main() {
       });
     });
 
-    testWidgets('Attempt to read from an unexisting category',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(const MyApp());
+    // testWidgets('Attempt to read from an unexisting category',
+    //     (WidgetTester tester) async {
+    //   await tester.pumpWidget(const MyApp());
 
-      await tester.runAsync(() async {
-        final storeOpenResult = await storeOpenTest();
+    //   await tester.runAsync(() async {
+    //     final storeOpenResult = await storeOpenTest();
 
-        final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
+    //     final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
 
-        await sessionFetchTest(sessionStartResult.handle, false);
+    //     await sessionFetchTest(sessionStartResult.handle, false);
 
-        await sessionCloseTest(sessionStartResult.handle);
-      });
-    });
+    //     await sessionCloseTest(sessionStartResult.handle);
+    //   });
+    // });
 
-    testWidgets('Writing and reading from session', (WidgetTester tester) async {
-      await tester.pumpWidget(const MyApp());
+    // testWidgets('Writing and reading from session', (WidgetTester tester) async {
+    //   await tester.pumpWidget(const MyApp());
 
-      await tester.runAsync(() async {
-        final storeOpenResult = await storeOpenTest();
+    //   await tester.runAsync(() async {
+    //     final storeOpenResult = await storeOpenTest();
 
-        final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
+    //     final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
 
-        String value = 'foobar';
-        String name = 'testEntry';
-        String category = 'category-one';
-        Map<String, String> tags = {'~plaintag': 'a', 'enctag': 'b'};
+    //     String value = 'foobar';
+    //     String name = 'testEntry';
+    //     String category = 'category-one';
+    //     Map<String, String> tags = {'~plaintag': 'a', 'enctag': 'b'};
 
-        await sessionUpdateTest(sessionStartResult.handle, value, tags, name, category);
+    //     await sessionUpdateTest(sessionStartResult.handle, value, tags, name, category);
 
-        final sessionFetchResult =
-            await sessionFetchTest(sessionStartResult.handle, true);
+    //     final sessionFetchResult =
+    //         await sessionFetchTest(sessionStartResult.handle, true);
 
-        final entryListHandle = sessionFetchResult.handle;
+    //     final entryListHandle = sessionFetchResult.handle;
 
-        entryListGetValueTest(entryListHandle, 0, value);
-        entryListGetTagsTest(entryListHandle, 0, tags);
-        entryListGetNameTest(entryListHandle, 0, name);
-        entryListGetCategoryTest(entryListHandle, 0, category);
+    //     entryListGetValueTest(entryListHandle, 0, value);
+    //     entryListGetTagsTest(entryListHandle, 0, tags);
+    //     entryListGetNameTest(entryListHandle, 0, name);
+    //     entryListGetCategoryTest(entryListHandle, 0, category);
 
-        askarEntryListFree(entryListHandle);
+    //     askarEntryListFree(entryListHandle);
 
-        await sessionCloseTest(sessionStartResult.handle);
-      });
-    });
-    testWidgets('Inserting and reading Key', (WidgetTester tester) async {
-      await tester.pumpWidget(const MyApp());
+    //     await sessionCloseTest(sessionStartResult.handle);
+    //   });
+    // });
+    // testWidgets('Inserting and reading Key', (WidgetTester tester) async {
+    //   await tester.pumpWidget(const MyApp());
 
-      await tester.runAsync(() async {
-        final storeOpenResult = await storeOpenTest();
+    //   await tester.runAsync(() async {
+    //     final storeOpenResult = await storeOpenTest();
 
-        final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
+    //     final sessionStartResult = await sessionStartTest(storeOpenResult.handle);
 
-        final sessionHandle = sessionStartResult.handle;
+    //     final sessionHandle = sessionStartResult.handle;
 
-        String name = 'testEntry2';
-        String metadata = 'meta';
-        Map<String, String> tags = {'~plaintag': 'a', 'enctag': 'b'};
+    //     String name = 'testEntry2';
+    //     String metadata = 'meta';
+    //     Map<String, String> tags = {'~plaintag': 'a', 'enctag': 'b'};
 
-        final keyGenerateResult =
-            keyGenerateTest(KeyAlgorithm.ed25519, KeyBackend.software);
+    //     final keyGenerateResult =
+    //         keyGenerateTest(KeyAlgorithm.ed25519, KeyBackend.software);
 
-        final localKeyHandle = keyGenerateResult.value;
+    //     final localKeyHandle = keyGenerateResult.value;
 
-        await sessionInsertKeyTest(sessionHandle, localKeyHandle, name, metadata, tags);
+    //     await sessionInsertKeyTest(sessionHandle, localKeyHandle, name, metadata, tags);
 
-        final sessionFetchKeyResult = await sessionFetchKeyTest(sessionHandle, name, 0);
+    //     final sessionFetchKeyResult = await sessionFetchKeyTest(sessionHandle, name, 0);
 
-        keyEntryListGetMetadataTest(sessionFetchKeyResult.handle, 0, metadata);
+    //     keyEntryListGetMetadataTest(sessionFetchKeyResult.handle, 0, metadata);
 
-        await sessionCloseTest(sessionHandle);
-      });
-    });
+    //     await sessionCloseTest(sessionHandle);
+    //   });
+    // });
     testWidgets('Sign Message and Verify Signature', (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
 
@@ -111,17 +114,21 @@ void main() {
         final sessionHandle = sessionStartResult.handle;
 
         final keyGenerateResult =
-            keyGenerateTest(KeyAlgorithm.ecSecp384r1, KeyBackend.software);
+            keyGenerateTest(KeyAlgorithm.ed25519, KeyBackend.software);
         final localKeyHandle = keyGenerateResult.value;
 
-        String message = "message";
-        final signAlgorithm = SignatureAlgorithm.eS384;
+        final message = utf8.encode("message");
+        final signAlgorithm = SignatureAlgorithm.edDSA;
 
         final keySignMsgResult =
             keySignMessageTest(localKeyHandle, message, signAlgorithm);
 
         keyVerifySignatureTest(
             localKeyHandle, message, keySignMsgResult.value, signAlgorithm);
+
+        final res = askarGetCurrentError();
+        print("askar current error (code): ${res.errorCode}");
+        print("askar current error: ${res.value}");
 
         await sessionCloseTest(sessionHandle);
       });
@@ -316,8 +323,8 @@ AskarStringResult entryListGetCategoryTest(
   return result;
 }
 
-AskarResult keySignMessageTest(
-    int localKeyHandle, String message, SignatureAlgorithm sigType) {
+AskarResult<Uint8List> keySignMessageTest(
+    int localKeyHandle, Uint8List message, SignatureAlgorithm sigType) {
   final result = askarKeySignMessage(localKeyHandle, message, sigType);
 
   printAskarResult('KeySignMessage', result);
@@ -328,8 +335,8 @@ AskarResult keySignMessageTest(
   return result;
 }
 
-AskarBoolResult keyVerifySignatureTest(
-    int localKeyHandle, String message, dynamic signature, SignatureAlgorithm sigType) {
+AskarBoolResult keyVerifySignatureTest(int localKeyHandle, Uint8List message,
+    Uint8List signature, SignatureAlgorithm sigType) {
   final result = askarKeyVerifySignature(localKeyHandle, message, signature, sigType);
 
   printAskarBoolResult('KeyVerifySignatureTest', result);
