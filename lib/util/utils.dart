@@ -4,6 +4,7 @@ final channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
 final methodOpenWallet = "openwallet";
 
 Future<Map<String, dynamic>?> openWallet() async {
+  print("openWallet");
   try {
     final result = await channelWallet.invokeMethod(methodOpenWallet);
     return Map<String, dynamic>.from(result);
