@@ -11,12 +11,16 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = '11'
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 
     sourceSets {
@@ -28,7 +32,7 @@ android {
         applicationId = "br.org.serpro.did_agent"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -36,8 +40,9 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig = signingConfigs.debug
         }
     }
@@ -48,6 +53,8 @@ flutter {
 }
 
 dependencies {
+    implementation project(path: ':ariesframework')
+    implementation("org.hyperledger:anoncreds_uniffi:0.1.1-wrapper.1")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20"
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 }
