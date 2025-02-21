@@ -1,0 +1,253 @@
+{
+	"info": {
+		"_postman_id": "e1978a3a-3b0e-4b65-afe0-960cbc690e1b",
+		"name": "Integrações com iD",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14420630"
+	},
+	"item": [
+		{
+			"name": "1. Obter o token do emissor",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let responseData = pm.response.json();",
+							"pm.environment.set(\"token\", responseData.token);",
+							"",
+							"pm.test(\"Response status code is 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Response has the required fields\", function() {",
+							"    pm.expect(responseData.token).to.exist;",
+							"    pm.expect(responseData.expires_in).to.exist; ",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"wallet_name\":\"{{WALLET_NAME}}\",\n    \"password\":\"{{SECRET}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/auth-manager/v1/token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"auth-manager",
+						"v1",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Criar um convite de conexão",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let responseData = pm.response.json();",
+							"pm.environment.set(\"invitation_url\", responseData.invitation_url);",
+							"pm.environment.set(\"invi_msg_id\", responseData.invi_msg_id);",
+							"",
+							"pm.test(\"Response status code is 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Response has the required fields\", function() {",
+							"    pm.expect(responseData.invitation_url).to.exist;",
+							"    pm.expect(responseData.invi_msg_id).to.exist;",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"alias\": \"alias for the connection\",\n    \"my_label\": \"label for the connection invitation\",\n    \"metadata\": {},\n    \"handshake_protocols\": [\n        \"https://didcomm.org/connections/1.0\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/hub-issuer/agent/v2/out-of-band/create-invitation",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"hub-issuer",
+						"agent",
+						"v2",
+						"out-of-band",
+						"create-invitation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Conseguir connection id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let responseData = pm.response.json();",
+							"pm.environment.set(\"connection_id\", responseData.results[0].connection_id);",
+							"",
+							"pm.test(\"Response status code is 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Response has the required fields\", function() {",
+							"    pm.expect(responseData.results[0].state).to.exist;",
+							"    pm.expect(responseData.results[0].state).to.equals(\"active\");",
+							"    pm.expect(responseData.results[0].connection_id).to.exist;",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/hub-issuer/agent/v2/connections?invitation_msg_id={{invi_msg_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"hub-issuer",
+						"agent",
+						"v2",
+						"connections"
+					],
+					"query": [
+						{
+							"key": "invitation_msg_id",
+							"value": "{{invi_msg_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Troca de mensagens (basic message)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let responseData = pm.response.json();",
+							"",
+							"pm.test(\"Response status code is 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"content\": \"mensagem a ser enviada - 13\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/hub-issuer/agent/v2/connections/{{connection_id}}/send-message",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"hub-issuer",
+						"agent",
+						"v2",
+						"connections",
+						"{{connection_id}}",
+						"send-message"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
