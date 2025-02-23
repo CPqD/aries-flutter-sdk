@@ -1,0 +1,657 @@
+{
+	"info": {
+		"_postman_id": "507338a1-d34b-4704-b795-073ab545c35c",
+		"name": "SGD Serpro CPQD - versão 2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14420630"
+	},
+	"item": [
+		{
+			"name": "Obter token",
+			"item": [
+				{
+					"name": "Obter token - Besu",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.token).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"issuer_token\", responseJson.token);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet_name\": \"{{wallet_name}}\",\n    \"password\": \"{{secret}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth-manager/v1/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth-manager",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter token - Indy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.token).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"issuer_token\", responseJson.token);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet_name\": \"{{wallet_name}}\",\n    \"password\": \"{{secret}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/service-authenticator/v1/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"service-authenticator",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enviar mensagem básica",
+			"item": [
+				{
+					"name": "Gerar convite de conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json();",
+									"pm.test(\"invi_msg_id: \" + responseJson.invi_msg_id, () => {",
+									"    pm.environment.set(\"basic_message_invi_msg_id\", responseJson.invi_msg_id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"alias\": \"basic-message\",\n    \"my_label\": \"label for the connection invitation\",\n    \"metadata\": {},\n    \"handshake_protocols\": [\n        \"https://didcomm.org/connections/1.0\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/out-of-band/create-invitation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"out-of-band",
+								"create-invitation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var inviMsgID = pm.environment.get(\"basic_message_invi_msg_id\");",
+									"",
+									"if (!inviMsgID) {",
+									"    pm.test(\"Variável de ambiente 'basic_message_invi_msg_id' não definida\", function () {",
+									"        pm.expect(inviMsgID).to.not.be.undefined;",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"var jsonData = pm.response.json();",
+									"var connId = null;",
+									"",
+									"jsonData.results.forEach(function(item) {",
+									"    if (item.invitation_msg_id === inviMsgID) {",
+									"        connId = item.connection_id;",
+									"        return;",
+									"    }",
+									"});",
+									"",
+									"if (connId) {",
+									"    pm.test(\"connection_id: \" + connId, () => {",
+									"        pm.environment.set(\"basic_message_connection_id\", connId);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/connections?invitation_msg_id={{basic_message_invi_msg_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"connections"
+							],
+							"query": [
+								{
+									"key": "invitation_msg_id",
+									"value": "{{basic_message_invi_msg_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar mensagem básica",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Mensagem enviada do servidor do CPQD para o celular do cliente\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/connections/:connection_id/send-message",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"connections",
+								":connection_id",
+								"send-message"
+							],
+							"variable": [
+								{
+									"key": "connection_id",
+									"value": "{{basic_message_connection_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Emitir credencial",
+			"item": [
+				{
+					"name": "Gerar convite de conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json();",
+									"pm.test(\"invi_msg_id: \" + responseJson.invi_msg_id, () => {",
+									"    pm.environment.set(\"credential_offer_invi_msg_id\", responseJson.invi_msg_id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"alias\": \"issue-credential\",\n    \"metadata\": {},\n    \"handshake_protocols\": [\n        \"https://didcomm.org/connections/1.0\"\n    ],\n    \"use_public_did\": true,\n    \"protocol_version\": \"1.1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/out-of-band/create-invitation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"out-of-band",
+								"create-invitation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var inviMsgID = pm.environment.get(\"credential_offer_invi_msg_id\");",
+									"",
+									"if (!inviMsgID) {",
+									"    pm.test(\"Variável de ambiente 'credential_offer_invi_msg_id' não definida\", function () {",
+									"        pm.expect(inviMsgID).to.not.be.undefined;",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"var jsonData = pm.response.json();",
+									"var connId = null;",
+									"",
+									"jsonData.results.forEach(function(item) {",
+									"    if (item.invitation_msg_id === inviMsgID) {",
+									"        connId = item.connection_id;",
+									"        return;",
+									"    }",
+									"});",
+									"",
+									"if (connId) {",
+									"    pm.test(\"connection_id: \" + connId, () => {",
+									"        pm.environment.set(\"credential_offer_connection_id\", connId);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/connections?invi_msg_id={{credential_offer_invi_msg_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"connections"
+							],
+							"query": [
+								{
+									"key": "invi_msg_id",
+									"value": "{{credential_offer_invi_msg_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar oferta de credencial",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"thread_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"offer_thread_id\", responseJson.thread_id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auto_remove\": false,\n    \"comment\": \"Oferta de credencial\",\n    \"connection_id\": \"a133f583-d455-4fe2-901d-d4e48177989f\", // connection_id recuperado no passo anterior\n    \"credential_preview\": {\n        \"@type\": \"issue-credential/2.0/credential-preview\", //2.0\n        \"attributes\": [\n            {\n                \"name\": \"nome\", // Incluir o nome do atributo igual está no schema (verificar no portal iD Empresas)\n                \"value\": \"Teste2\"\n            },\n            {\n                \"name\": \"email\",\n                \"value\": \"teste@gmail.com\"\n            }\n        ]\n    },\n    \"filter\": {\n        \"indy\": {\n            \"cred_def_id\": \"MoKavRm3zoZBFHMvndmt51:3:CL:5275:default\" // Incluir o cred_def_id recuperado no portal iD Empresas\n        }\n    },\n    \"trace\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential-2.0/send-offer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential-2.0",
+								"send-offer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar oferta de credencial 1.0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"thread_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"offer_thread_id\", responseJson.thread_id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"connection_id\": \"a133f583-d455-4fe2-901d-d4e48177989f\",\n  \"cred_def_id\": \"MoKavRm3zoZBFHMvndmt51:3:CL:5275:default\",\n  \"credential_preview\": {\n    \"attributes\": [\n      {\n        \"name\": \"nome\", // Incluir o nome do atributo igual está no schema (verificar no portal iD Empresas)\n        \"value\": \"Teste\"\n    },\n    {\n        \"name\": \"email\",\n        \"value\": \"teste@gmail.com\"\n    }\n    ],\n    \"@type\": \"issue-credential/1.0/credential-preview\"\n  },\n  \"auto_issue\": true,\n  \"auto_remove\": true,\n  \"comment\": \"eu\",\n  \"trace\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential/send-offer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential",
+								"send-offer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar status da oferta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/issue-credential-2.0/records?thread_id={{offer_thread_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"issue-credential-2.0",
+								"records"
+							],
+							"query": [
+								{
+									"key": "thread_id",
+									"value": "{{offer_thread_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
