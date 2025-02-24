@@ -1,7 +1,7 @@
 package org.hyperledger.ariesframework.agent
 
 import android.content.Context
-import askar_uniffi.AskarStoreManager
+import br.org.serpro.did_agent.askar.AskarStoreManager
 import org.hyperledger.ariesframework.EncryptedMessage
 import org.hyperledger.ariesframework.anoncreds.AnoncredsService
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialDefinitionRepository

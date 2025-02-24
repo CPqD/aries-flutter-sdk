@@ -11,6 +11,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import br.org.serpro.did_agent.askar.AskarStoreManager
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
@@ -28,8 +29,12 @@ class MainActivity: FlutterFragmentActivity() {
     private var result: MethodChannel.Result? = null
     private lateinit var resultCallback: MethodChannel.Result
 
+    private lateinit var askarStoreManager: AskarStoreManager
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
+
+        AskarStoreManager.initialize(flutterEngine)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, INTEGRITYCHANNEL).setMethodCallHandler {
                 call, result ->

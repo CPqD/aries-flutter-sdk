@@ -1,7 +1,7 @@
 package org.hyperledger.ariesframework.agent.decorators
 
-import askar_uniffi.AskarKeyAlg
-import askar_uniffi.LocalKeyFactory
+import br.org.serpro.did_agent.askar.AskarKeyAlg
+import br.org.serpro.did_agent.askar.LocalKeyFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

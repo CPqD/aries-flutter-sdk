@@ -1,7 +1,7 @@
 package org.hyperledger.ariesframework.storage
 
 import androidx.test.platform.app.InstrumentationRegistry
-import askar_uniffi.ErrorCode
+import br.org.serpro.did_agent.askar.ErrorCode
 import kotlinx.coroutines.test.runTest
 import org.hyperledger.ariesframework.Tags
 import org.hyperledger.ariesframework.TestHelper

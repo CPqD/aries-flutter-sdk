@@ -1,11 +1,11 @@
 package org.hyperledger.ariesframework.wallet
 
-import askar_uniffi.AskarCrypto
-import askar_uniffi.AskarKeyAlg
-import askar_uniffi.AskarSession
-import askar_uniffi.AskarStore
-import askar_uniffi.AskarStoreManager
-import askar_uniffi.LocalKeyFactory
+import br.org.serpro.did_agent.askar.AskarCrypto
+import br.org.serpro.did_agent.askar.AskarKeyAlg
+import br.org.serpro.did_agent.askar.AskarSession
+import br.org.serpro.did_agent.askar.AskarStore
+import br.org.serpro.did_agent.askar.AskarStoreManager
+import br.org.serpro.did_agent.askar.LocalKeyFactory
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.DecryptedMessageContext
@@ -153,7 +153,7 @@ class Wallet(private val agent: Agent) {
         recipientKeys: List<String>,
         senderVerkey: String?,
     ): EncryptedMessage {
-        val cek = keyFactory.generate(AskarKeyAlg.C20P, true)
+        val cek = keyFactory.generate(AskarKeyAlg.CHACHA20_C20P, true)
         val senderKey = if (senderVerkey != null) {
             session!!.fetchKey(senderVerkey, false)
         } else {
@@ -274,7 +274,7 @@ class Wallet(private val agent: Agent) {
             throw RuntimeException("No corresponding recipient key found")
         }
 
-        val cek = keyFactory.fromSecretBytes(AskarKeyAlg.C20P, payloadKey)
+        val cek = keyFactory.fromSecretBytes(AskarKeyAlg.CHACHA20_C20P, payloadKey)
         val message = cek.aeadDecrypt(
             encryptedMessage.ciphertext.decodeBase64url(),
             encryptedMessage.tag.decodeBase64url(),

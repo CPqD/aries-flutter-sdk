@@ -1,8 +1,8 @@
 package org.hyperledger.ariesframework.storage
 
-import askar_uniffi.AskarEntry
-import askar_uniffi.AskarEntryOperation
-import askar_uniffi.ErrorCode
+import br.org.serpro.did_agent.askar.AskarEntry
+import br.org.serpro.did_agent.askar.AskarEntryOperation
+import br.org.serpro.did_agent.askar.ErrorCode
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

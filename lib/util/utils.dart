@@ -21,7 +21,9 @@ Future<dynamic> recebeFromSwift(MethodCall call) async {
       final Map arguments = call.arguments;
       print(arguments);
       return "$arguments";
-    // break;
+    case 'AskarStoreManager_generateRawStoreKey':
+        // Handle the method call and return a value
+        return 'GeneratedKeyFromDart';
     default:
       throw PlatformException(
         code: 'Unimplemented',

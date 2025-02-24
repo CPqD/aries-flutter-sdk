@@ -1,6 +1,6 @@
 package org.hyperledger.ariesframework.anoncreds
 
-import askar_uniffi.AskarEntryOperation
+import br.org.serpro.did_agent.askar.AskarEntryOperation
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.proofs.models.AttributeFilter
 import org.hyperledger.ariesframework.proofs.models.IndyCredentialInfo
