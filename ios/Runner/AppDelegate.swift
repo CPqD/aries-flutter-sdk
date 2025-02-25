@@ -17,7 +17,7 @@ var agent: Agent!
         
         let rootViewController : FlutterViewController = window?.rootViewController as! FlutterViewController
         
-        channelOpenWallet(controller: rootViewController as! FlutterBinaryMessenger)
+        channelWallet(controller: rootViewController as! FlutterBinaryMessenger)
         
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -68,27 +68,29 @@ var agent: Agent!
             
             flutterResult(dict)
             callDartTest()
-
+            
         }
     }
     
-    func channelOpenWallet(controller : FlutterBinaryMessenger) {
-        let channel = FlutterMethodChannel(name: channelName,
-                                           binaryMessenger: controller)
-        channel.setMethodCallHandler({
-            [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-            
-            switch (call.method) {
-            case "openwallet":
-                self!.openWallet(flutterResult: result)
-            default:
-                var dict : [String : Any] = [:]
-                dict["error"] = ""
-                dict["result"] = false
-                result(dict)
-            }
-        })
-    }
+    func channelWallet(controller : FlutterBinaryMessenger) {
+            let channel = FlutterMethodChannel(name: channelName,
+                                               binaryMessenger: controller)
+            channel.setMethodCallHandler({
+                [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+                
+                switch (call.method) {
+                case "openwallet":
+                    self!.openWallet(flutterResult: result)
+                case "receiveInvitation":
+                    self!.receiveInvitation(url: (call.arguments as! [String])[0], flutterResult: result)
+                default:
+                    var dict : [String : Any] = [:]
+                    dict["error"] = ""
+                    dict["result"] = false
+                    result(dict)
+                }
+            })
+        }
     
     func callDartTest() {
         let rootViewController : FlutterViewController = window?.rootViewController as! FlutterViewController
@@ -97,6 +99,24 @@ var agent: Agent!
         channel.invokeMethod("calldart", arguments:data) { (result) in
             if let resultString = result as? String {
                 print(resultString)
+            }
+        }
+    }
+    
+    func receiveInvitation(url: String, flutterResult : @escaping FlutterResult) {
+        Task {
+            do {
+                let (_, connection) = try await agent!.oob.receiveInvitationFromUrl(url)
+                var dict : [String : Any] = [:]
+                dict["error"] = ""
+                dict["result"] = true
+                flutterResult(dict)
+            } catch {
+                print(error)
+                var dict : [String : Any] = [:]
+                dict["error"] = "\(error)"
+                dict["result"] = false
+                flutterResult(dict)
             }
         }
     }
