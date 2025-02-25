@@ -19,6 +19,8 @@ import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import java.io.File
 import java.lang.Exception
 
+const val genesisPath = "bcovrin-genesis.txn"
+
 class MainActivity: FlutterFragmentActivity() {
     companion object {
         private const val INTEGRITYCHANNEL = "br.gov.serprocpqd/wallet"
