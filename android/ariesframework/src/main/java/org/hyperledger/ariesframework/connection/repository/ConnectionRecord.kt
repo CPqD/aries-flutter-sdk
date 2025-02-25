@@ -17,7 +17,7 @@ import java.lang.Exception
 data class ConnectionRecord(
     @EncodeDefault
     override var id: String = generateId(),
-    override var _tags: Tags? = null,
+    public override var _tags: Tags? = null,
     @EncodeDefault
     override val createdAt: Instant = Clock.System.now(),
     override var updatedAt: Instant? = null,

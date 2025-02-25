@@ -1,5 +1,6 @@
 package br.org.serpro.did_agent
 
+import androidx.lifecycle.lifecycleScope
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -104,24 +105,10 @@ class MainActivity: FlutterFragmentActivity() {
                 return
             }
         }
-    }
 
-    private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
-        Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
+         val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
 
-        if (invitationUrl == null) {
-            result.error("1", "Invitation URL is null", null)
-            return
-        }
-
-        if (walletKey == null) {
-            result.error("1", "Wallet Key is null", null)
-            return
-        }
-
-        val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
-
-        val config = AgentConfig(
+         val config = AgentConfig(
             walletKey = walletKey!!,
             genesisPath = File(applicationContext.filesDir.absolutePath, genesisPath).absolutePath,
             mediatorConnectionsInvite = invitationUrl,
@@ -131,7 +118,7 @@ class MainActivity: FlutterFragmentActivity() {
             autoAcceptProof = AutoAcceptProof.Never
         )
 
-        Log.d("MainActivity", "Agent Config")
+         Log.d("MainActivity", "Agent Config")
 
         CoroutineScope(Dispatchers.Main).launch {
             try {
@@ -147,6 +134,29 @@ class MainActivity: FlutterFragmentActivity() {
                 Log.e("MainActivity", "Cannot initialize agent: ${e.message}")
                 val response = mapOf("error" to e.message, "result" to false)
                 result.success(response)
+            }
+        }
+    }
+
+    private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
+
+        if (invitationUrl == null) {
+            result.error("1", "Invitation URL is null", null)
+            return
+        }
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                val (_, connection) = agent!!.oob.receiveInvitationFromUrl(invitationUrl)
+                Log.d("MainActivity", "Connected to ${connection ?: "unknown agent"}")
+            } catch (e: Exception) {
+                Log.e("MainActivity","Unable to connect: ${e.localizedMessage}")
             }
         }
     }
