@@ -17,7 +17,7 @@ Future<Map<String, dynamic>?> init() => _invokeMethod(AriesMethod.init);
 Future<Map<String, dynamic>?> openWallet() => _invokeMethod(AriesMethod.openWallet);
 
 Future<Map<String, dynamic>?> receiveInvitation(String url) =>
-    _invokeMethod(AriesMethod.invitation, [url]);
+    _invokeMethod(AriesMethod.invitation, {'invitationUrl': url});
 
 Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method,
     [dynamic arguments]) async {

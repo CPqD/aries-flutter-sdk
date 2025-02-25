@@ -1,5 +1,6 @@
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
+import 'credentials_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -35,6 +36,15 @@ class _HomePageState extends State<HomePage> {
                 print(openResult);
               },
               child: Text('Open Wallet'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CredentialsPage()),
+                );
+              },
+              child: Text('Credentials'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

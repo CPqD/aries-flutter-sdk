@@ -26,6 +26,7 @@ class MainActivity: FlutterFragmentActivity() {
         private const val INTEGRITYCHANNEL = "br.gov.serprocpqd/wallet"
     }
     private var agent: Agent? = null
+    private var walletKey: String? = null
 
     private var result: MethodChannel.Result? = null
     private lateinit var resultCallback: MethodChannel.Result
@@ -48,6 +49,14 @@ class MainActivity: FlutterFragmentActivity() {
                         openWallet(result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel openwallet: "+e.toString(),null)
+                    }
+                }
+                "receiveInvitation" -> {
+                    try {
+                        val invitationUrl = call.argument<String>("invitationUrl")
+                        receiveInvitation(invitationUrl, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel receiveInvitation: "+e.toString(),null)
                     }
                 }
                 else -> result.notImplemented()
@@ -81,12 +90,12 @@ class MainActivity: FlutterFragmentActivity() {
         Log.d("MainActivity", "openWallet called from Kotlin...")
 
          val sharedPreferences: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
-         var key: String? = sharedPreferences.getString("flutter.walletKey", null)
+         walletKey = sharedPreferences.getString("flutter.walletKey", null)
 
-         if (key == null) {
+         if (walletKey == null) {
             try {
-                key = Agent.generateWalletKey()
-                sharedPreferences.edit().putString("flutter.walletKey", key).apply()
+                walletKey = Agent.generateWalletKey()
+                sharedPreferences.edit().putString("flutter.walletKey", walletKey).apply()
 
                 Log.d("MainActivity", "Key was generated successfully")
             } catch (e: Exception) {
@@ -95,11 +104,25 @@ class MainActivity: FlutterFragmentActivity() {
                 return
             }
         }
+    }
 
-         val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
+    private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
 
-         val config = AgentConfig(
-            walletKey = key,
+        if (invitationUrl == null) {
+            result.error("1", "Invitation URL is null", null)
+            return
+        }
+
+        if (walletKey == null) {
+            result.error("1", "Wallet Key is null", null)
+            return
+        }
+
+        val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
+
+        val config = AgentConfig(
+            walletKey = walletKey!!,
             genesisPath = File(applicationContext.filesDir.absolutePath, genesisPath).absolutePath,
             mediatorConnectionsInvite = invitationUrl,
             mediatorPickupStrategy = MediatorPickupStrategy.Implicit,
@@ -108,7 +131,7 @@ class MainActivity: FlutterFragmentActivity() {
             autoAcceptProof = AutoAcceptProof.Never
         )
 
-         Log.d("MainActivity", "Agent Config")
+        Log.d("MainActivity", "Agent Config")
 
         CoroutineScope(Dispatchers.Main).launch {
             try {
