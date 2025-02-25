@@ -5,7 +5,8 @@ final channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
 enum AriesMethod {
   init('init'),
   openWallet('openwallet'),
-  invitation('receiveInvitation');
+  invitation('receiveInvitation'),
+  shutdown('shutdown');
 
   final String value;
 
@@ -18,6 +19,8 @@ Future<Map<String, dynamic>?> openWallet() => _invokeMethod(AriesMethod.openWall
 
 Future<Map<String, dynamic>?> receiveInvitation(String url) =>
     _invokeMethod(AriesMethod.invitation, [url]);
+
+Future<Map<String, dynamic>?> shutdown() => _invokeMethod(AriesMethod.shutdown);
 
 Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method,
     [dynamic arguments]) async {

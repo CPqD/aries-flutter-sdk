@@ -56,6 +56,13 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+            ElevatedButton(
+              onPressed: () async {
+                final result = await shutdown();
+                print(result);
+              },
+              child: Text('Desligar Agente'),
+            ),
           ],
         ),
       ),

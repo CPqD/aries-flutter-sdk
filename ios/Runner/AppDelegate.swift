@@ -49,7 +49,7 @@ var agent: Agent!
                                  autoAcceptProof: .never)
         Task{
             do {
-                agent = Agent(agentConfig: config, agentDelegate: await CredentialHandler.shared)
+                agent = Agent(agentConfig: config, agentDelegate:  CredentialHandler.shared)
                 try await agent!.initialize()
             } catch {
                 print("Cannot initialize agent: \(error)")
@@ -83,6 +83,8 @@ var agent: Agent!
                     self!.openWallet(flutterResult: result)
                 case "receiveInvitation":
                     self!.receiveInvitation(url: (call.arguments as! [String])[0], flutterResult: result)
+                case "closewallet":
+                    self!.closeWallet(flutterResult: result)
                 default:
                     var dict : [String : Any] = [:]
                     dict["error"] = ""
@@ -120,7 +122,23 @@ var agent: Agent!
             }
         }
     }
-    
+    func closeWallet(flutterResult : @escaping FlutterResult) {
+        Task {
+            do {
+                try await agent!.shutdown()
+                var dict : [String : Any] = [:]
+                dict["error"] = ""
+                dict["result"] = true
+                flutterResult(dict)
+            } catch {
+                print(error)
+                var dict : [String : Any] = [:]
+                dict["error"] = "\(error)"
+                dict["result"] = false
+                flutterResult(dict)
+            }
+        }
+    }
 }
 
 
