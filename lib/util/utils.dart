@@ -16,7 +16,7 @@ Future<Map<String, dynamic>?> init() => _invokeMethod(AriesMethod.init);
 Future<Map<String, dynamic>?> openWallet() => _invokeMethod(AriesMethod.openWallet);
 
 Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method) async {
-  print("invoke ${method.value}");
+  print("\ninvoke ${method.value}");
 
   try {
     return Map<String, dynamic>.from(await channelWallet.invokeMethod(method.value));

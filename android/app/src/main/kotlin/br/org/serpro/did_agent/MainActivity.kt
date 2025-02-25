@@ -16,15 +16,14 @@ import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
 import org.hyperledger.ariesframework.credentials.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
+import java.io.File
 import java.lang.Exception
-
 
 class MainActivity: FlutterFragmentActivity() {
     companion object {
         private const val INTEGRITYCHANNEL = "br.gov.serprocpqd/wallet"
     }
     private var agent: Agent? = null
-    private var genesisPath: String = ""
 
     private var result: MethodChannel.Result? = null
     private lateinit var resultCallback: MethodChannel.Result
@@ -60,7 +59,7 @@ class MainActivity: FlutterFragmentActivity() {
         Log.d("MainActivity", "init called from Kotlin...")
 
         try {
-            genesisPath = assets.open("bcovrin-genesis.txn").bufferedReader().use { it.readText() }
+           copyResourceFile(genesisPath)
         } catch (e: Exception) {
             Log.e("MainActivity", "Cannot open genesis: ${e.message}")
             result.error("1", "Cannot open genesis: ${e.message}", null)
@@ -68,6 +67,12 @@ class MainActivity: FlutterFragmentActivity() {
         }
 
         result.success(mapOf("error" to "", "result" to true))
+    }
+
+    private fun copyResourceFile(resource: String) {
+        val inputStream = applicationContext.assets.open(resource)
+        val file = File(applicationContext.filesDir.absolutePath, resource)
+        file.outputStream().use { inputStream.copyTo(it) }
     }
 
      private fun openWallet(result: MethodChannel.Result) {
@@ -80,6 +85,8 @@ class MainActivity: FlutterFragmentActivity() {
             try {
                 key = Agent.generateWalletKey()
                 sharedPreferences.edit().putString("flutter.walletKey", key).apply()
+
+                Log.d("MainActivity", "Key was generated successfully")
             } catch (e: Exception) {
                 Log.e("MainActivity", "Cannot generate key: ${e.message}")
                 result.error("1", "Cannot generate key: ${e.message}", null)
@@ -91,7 +98,7 @@ class MainActivity: FlutterFragmentActivity() {
 
          val config = AgentConfig(
             walletKey = key,
-            genesisPath = genesisPath,
+            genesisPath = File(applicationContext.filesDir.absolutePath, genesisPath).absolutePath,
             mediatorConnectionsInvite = invitationUrl,
             mediatorPickupStrategy = MediatorPickupStrategy.Implicit,
             label = "SampleApp",
@@ -99,10 +106,16 @@ class MainActivity: FlutterFragmentActivity() {
             autoAcceptProof = AutoAcceptProof.Never
         )
 
+         Log.d("MainActivity", "Agent Config")
+
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 agent = Agent(applicationContext, config)
+                Log.d("MainActivity", "Agent Created")
+
                 agent?.initialize()
+                Log.d("MainActivity", "Agent Initialized")
+
                 val response = mapOf("error" to "", "result" to true)
                 result.success(response)
             } catch (e: Exception) {
