@@ -1,15 +1,27 @@
 import 'package:flutter/services.dart';
 
 final channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
-final methodOpenWallet = "openwallet";
 
-Future<Map<String, dynamic>?> openWallet() async {
-  print("openWallet");
+enum AriesMethod {
+  init('init'),
+  openWallet('openwallet');
+
+  final String value;
+
+  const AriesMethod(this.value);
+}
+
+Future<Map<String, dynamic>?> init() => _invokeMethod(AriesMethod.init);
+
+Future<Map<String, dynamic>?> openWallet() => _invokeMethod(AriesMethod.openWallet);
+
+Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method) async {
+  print("invoke ${method.value}");
+
   try {
-    final result = await channelWallet.invokeMethod(methodOpenWallet);
-    return Map<String, dynamic>.from(result);
+    return Map<String, dynamic>.from(await channelWallet.invokeMethod(method.value));
   } on PlatformException catch (e) {
-    print("Failed to Invoke Open Wallet: '${e.message}'.");
+    print("Failed to Invoke ${method.value}: '${e.message}'.");
     return null;
   }
 }

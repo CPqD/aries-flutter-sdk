@@ -24,6 +24,7 @@ class MainActivity: FlutterFragmentActivity() {
         private const val INTEGRITYCHANNEL = "br.gov.serprocpqd/wallet"
     }
     private var agent: Agent? = null
+    private var genesisPath: String = ""
 
     private var result: MethodChannel.Result? = null
     private lateinit var resultCallback: MethodChannel.Result
@@ -34,6 +35,13 @@ class MainActivity: FlutterFragmentActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, INTEGRITYCHANNEL).setMethodCallHandler {
                 call, result ->
             when (call.method) {
+                "init" -> {
+                    try {
+                        init(result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao inicializar agente: "+e.toString(),null)
+                    }
+                }
                 "openwallet" -> {
                     try {
                         openWallet(result)
@@ -46,6 +54,20 @@ class MainActivity: FlutterFragmentActivity() {
         }
 
         
+    }
+
+    private fun init(result: MethodChannel.Result) {
+        Log.d("MainActivity", "init called from Kotlin...")
+
+        try {
+            genesisPath = assets.open("bcovrin-genesis.txn").bufferedReader().use { it.readText() }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot open genesis: ${e.message}")
+            result.error("1", "Cannot open genesis: ${e.message}", null)
+            return
+        }
+
+        result.success(mapOf("error" to "", "result" to true))
     }
 
      private fun openWallet(result: MethodChannel.Result) {
@@ -66,7 +88,6 @@ class MainActivity: FlutterFragmentActivity() {
         }
 
          val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
-         val genesisPath = assets.open("bcovrin-genesis.txn").bufferedReader().use { it.readText() }
 
          val config = AgentConfig(
             walletKey = key,
