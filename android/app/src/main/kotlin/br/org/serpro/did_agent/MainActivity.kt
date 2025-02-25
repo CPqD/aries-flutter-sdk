@@ -60,6 +60,13 @@ class MainActivity: FlutterFragmentActivity() {
                         result?.error("1","Erro ao processar o methodchannel receiveInvitation: "+e.toString(),null)
                     }
                 }
+                "shutdown" -> {
+                    try {
+                        shutdown(result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel shutdown: "+e.toString(),null)
+                    }
+                }
                 else -> result.notImplemented()
             }
         }
@@ -155,8 +162,33 @@ class MainActivity: FlutterFragmentActivity() {
             try {
                 val (_, connection) = agent!!.oob.receiveInvitationFromUrl(invitationUrl)
                 Log.d("MainActivity", "Connected to ${connection ?: "unknown agent"}")
+
+                result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
                 Log.e("MainActivity","Unable to connect: ${e.localizedMessage}")
+
+                result.error("1", e.message, null)
+            }
+        }
+    }
+
+    private fun shutdown(result: MethodChannel.Result) {
+        Log.d("MainActivity", "shutdown called from Kotlin...")
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                agent!!.shutdown()
+
+                result.success(mapOf("error" to "", "result" to true))
+            } catch (e: Exception) {
+                Log.e("MainActivity","Unable to shutdown agent: ${e.localizedMessage}")
+
+                result.error("1", e.message, null)
             }
         }
     }
