@@ -25,8 +25,12 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               onPressed: () async {
                 configureChannelSwift();
-                final result = await openWallet();
-                print(result);
+
+                final initResult = await init();
+                print(initResult);
+
+                final openResult = await openWallet();
+                print(openResult);
               },
               child: Text('Open Wallet'),
             ),
