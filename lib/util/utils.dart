@@ -4,7 +4,8 @@ final channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
 
 enum AriesMethod {
   init('init'),
-  openWallet('openwallet');
+  openWallet('openwallet'),
+  invitation('receiveInvitation');
 
   final String value;
 
@@ -15,11 +16,16 @@ Future<Map<String, dynamic>?> init() => _invokeMethod(AriesMethod.init);
 
 Future<Map<String, dynamic>?> openWallet() => _invokeMethod(AriesMethod.openWallet);
 
-Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method) async {
+Future<Map<String, dynamic>?> receiveInvitation(String url) =>
+    _invokeMethod(AriesMethod.invitation, [url]);
+
+Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method,
+    [dynamic arguments]) async {
   print("\ninvoke ${method.value}");
 
   try {
-    return Map<String, dynamic>.from(await channelWallet.invokeMethod(method.value));
+    return Map<String, dynamic>.from(
+        await channelWallet.invokeMethod(method.value, arguments));
   } on PlatformException catch (e) {
     print("Failed to Invoke ${method.value}: '${e.message}'.");
     return null;

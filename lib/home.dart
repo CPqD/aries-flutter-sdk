@@ -11,6 +11,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  TextEditingController invitationController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,6 +35,26 @@ class _HomePageState extends State<HomePage> {
                 print(openResult);
               },
               child: Text('Open Wallet'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: invitationController,
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final invitation =
+                          await receiveInvitation(invitationController.text);
+                      print(invitation);
+                    },
+                    child: Text('Aceitar\nConvite!'),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
