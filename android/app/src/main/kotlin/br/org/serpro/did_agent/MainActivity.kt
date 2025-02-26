@@ -183,6 +183,7 @@ class MainActivity: FlutterFragmentActivity() {
         lifecycleScope.launch(Dispatchers.Main) {
             try {
                 agent!!.shutdown()
+                agent = null;
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {

@@ -1,39 +1,15 @@
+import 'package:did_agent/agent/aries_method.dart';
+import 'package:did_agent/agent/aries_result.dart';
 import 'package:flutter/services.dart';
 
-final channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
+Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
 
-enum AriesMethod {
-  init('init'),
-  openWallet('openwallet'),
-  invitation('receiveInvitation'),
-  shutdown('shutdown');
+Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
 
-  final String value;
+Future<AriesResult> receiveInvitation(String url) =>
+    AriesResult.invoke(AriesMethod.invitation, {'invitationUrl': url});
 
-  const AriesMethod(this.value);
-}
-
-Future<Map<String, dynamic>?> init() => _invokeMethod(AriesMethod.init);
-
-Future<Map<String, dynamic>?> openWallet() => _invokeMethod(AriesMethod.openWallet);
-
-Future<Map<String, dynamic>?> receiveInvitation(String url) =>
-    _invokeMethod(AriesMethod.invitation, {'invitationUrl': url});
-
-Future<Map<String, dynamic>?> shutdown() => _invokeMethod(AriesMethod.shutdown);
-
-Future<Map<String, dynamic>?> _invokeMethod(AriesMethod method,
-    [dynamic arguments]) async {
-  print("\ninvoke ${method.value}");
-
-  try {
-    return Map<String, dynamic>.from(
-        await channelWallet.invokeMethod(method.value, arguments));
-  } on PlatformException catch (e) {
-    print("Failed to Invoke ${method.value}: '${e.message}'.");
-    return null;
-  }
-}
+Future<AriesResult> shutdown() => AriesResult.invoke(AriesMethod.shutdown);
 
 Future<dynamic> recebeFromSwift(MethodCall call) async {
   switch (call.method) {

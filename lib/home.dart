@@ -1,3 +1,4 @@
+import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 import 'credentials_page.dart';
@@ -32,7 +33,7 @@ class _HomePageState extends State<HomePage> {
                 final initResult = await init();
                 print(initResult);
 
-                if (initResult == null) {
+                if (!initResult.success) {
                   initResultDialog(initResult);
                 } else {
                   final openResult = await openWallet();
@@ -89,38 +90,41 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void initResultDialog(Map<String, dynamic>? result) => showResultDialog(
-      isSuccess: result != null,
+  void initResultDialog(AriesResult result) => showResultDialog(
+      result: result,
       successText: "Agente iniciado com sucesso",
       errorText: "Não foi possível iniciar agente");
 
-  void openWalletResultDialog(Map<String, dynamic>? result) => showResultDialog(
-      isSuccess: result != null,
+  void openWalletResultDialog(AriesResult result) => showResultDialog(
+      result: result,
       successText: "Carteira aberta com sucesso",
       errorText: "Não foi possível abrir carteira");
 
-  void invitationResultDialog(Map<String, dynamic>? result) => showResultDialog(
-      isSuccess: result != null,
+  void invitationResultDialog(AriesResult result) => showResultDialog(
+      result: result,
       successText: "Convite aceito com sucesso",
       errorText: "Não foi possível aceitar convite");
 
-  void shutdownResultDialog(Map<String, dynamic>? result) => showResultDialog(
-      isSuccess: result != null,
+  void shutdownResultDialog(AriesResult result) => showResultDialog(
+      result: result,
       successText: "Agente desligado com sucesso",
       errorText: "Não foi possível desligar agente");
 
   void showResultDialog({
-    required bool isSuccess,
+    required AriesResult result,
     required String successText,
     required String errorText,
   }) {
+    String title = result.success ? "Sucesso" : "Erro";
+    String content = result.success ? successText : '$errorText (${result.error})';
+
     if (mounted) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text(isSuccess ? "Sucesso" : "Erro"),
-            content: Text(isSuccess ? successText : errorText),
+            title: Text(title),
+            content: Text(content),
             actions: <Widget>[
               TextButton(
                 child: Text('OK'),
