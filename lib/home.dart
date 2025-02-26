@@ -1,19 +1,24 @@
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
+
 import 'credentials_page.dart';
 
+final GlobalKey<HomePageState> homePageKey = GlobalKey<HomePageState>();
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+  HomePage({required this.title}) : super(key: homePageKey);
 
   final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   TextEditingController invitationController = TextEditingController();
+  String? credentialId;
+  String? proofId;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,7 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             ElevatedButton(
               onPressed: () async {
-                configureChannelSwift();
+                configureChannelNative();
 
                 final initResult = await init();
                 print(initResult);
@@ -77,6 +82,15 @@ class _HomePageState extends State<HomePage> {
             ),
             ElevatedButton(
               onPressed: () async {
+                final subscribeResult = await subscribe();
+                print(subscribeResult);
+
+                subscribeResultDialog(subscribeResult);
+              },
+              child: Text('Subscribe'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
                 final result = await shutdown();
                 print(result);
 
@@ -104,6 +118,11 @@ class _HomePageState extends State<HomePage> {
       result: result,
       successText: "Convite aceito com sucesso",
       errorText: "Não foi possível aceitar convite");
+
+  void subscribeResultDialog(AriesResult result) => showResultDialog(
+      result: result,
+      successText: "Ouvindo eventos...",
+      errorText: "Não foi possível ouvir eventos");
 
   void shutdownResultDialog(AriesResult result) => showResultDialog(
       result: result,
@@ -136,6 +155,78 @@ class _HomePageState extends State<HomePage> {
           );
         },
       );
+    }
+  }
+
+  void receivedCredential(String credentialId, String credentialState) {
+    setState(() {
+      this.credentialId = credentialId;
+    });
+
+    if (credentialState == "OfferReceived") {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Oferta de Credential Recebida'),
+            content: Text('ID da Credencial: $credentialId'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Accept'),
+                onPressed: () {
+                  print('Credential Accepted: $credentialId');
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Refuse'),
+                onPressed: () {
+                  print('Credential Refused: $credentialId');
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      print('credentialState: $credentialState');
+    }
+  }
+
+  void receivedProof(String proofId, String proofState) {
+    setState(() {
+      this.proofId = proofId;
+    });
+
+    if (proofState == "OfferReceived") {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Proof ID Updated'),
+            content: Text('New Proof ID: $proofId'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Accept'),
+                onPressed: () {
+                  print('Proof Accepted: $proofId');
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Refuse'),
+                onPressed: () {
+                  print('Proof Refused: $proofId');
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      print('proofState: $proofState');
     }
   }
 }

@@ -13,10 +13,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hyperledger.ariesframework.agent.Agent
+import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
+import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
 import org.hyperledger.ariesframework.credentials.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
+import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
+import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
+import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
+import org.hyperledger.ariesframework.proofs.models.ProofState
 import java.io.File
 import java.lang.Exception
 
@@ -32,53 +38,61 @@ class MainActivity: FlutterFragmentActivity() {
     private var result: MethodChannel.Result? = null
     private lateinit var resultCallback: MethodChannel.Result
 
+    private lateinit var methodChannel: MethodChannel
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, INTEGRITYCHANNEL).setMethodCallHandler {
-                call, result ->
+        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, INTEGRITYCHANNEL)
+
+        methodChannel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "init" -> {
                     try {
                         init(result)
-                    }catch (e:Exception){
-                        result?.error("1","Erro ao inicializar agente: "+e.toString(),null)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao inicializar agente: " + e.toString(), null)
                     }
                 }
                 "openwallet" -> {
                     try {
                         openWallet(result)
-                    }catch (e:Exception){
-                        result?.error("1","Erro ao processar o methodchannel openwallet: "+e.toString(),null)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel openwallet: " + e.toString(), null)
                     }
                 }
                 "receiveInvitation" -> {
                     try {
                         val invitationUrl = call.argument<String>("invitationUrl")
                         receiveInvitation(invitationUrl, result)
-                    }catch (e:Exception){
-                        result?.error("1","Erro ao processar o methodchannel receiveInvitation: "+e.toString(),null)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel receiveInvitation: " + e.toString(), null)
+                    }
+                }
+                "subscribe" -> {
+                    try {
+                        subscribeEvents(result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel subscribe: " + e.toString(), null)
                     }
                 }
                 "shutdown" -> {
                     try {
                         shutdown(result)
-                    }catch (e:Exception){
-                        result?.error("1","Erro ao processar o methodchannel shutdown: "+e.toString(),null)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel shutdown: " + e.toString(), null)
                     }
                 }
                 else -> result.notImplemented()
             }
         }
-
-        
     }
 
     private fun init(result: MethodChannel.Result) {
         Log.d("MainActivity", "init called from Kotlin...")
 
         try {
-           copyResourceFile(genesisPath)
+            copyResourceFile(genesisPath)
         } catch (e: Exception) {
             Log.e("MainActivity", "Cannot open genesis: ${e.message}")
             result.error("1", "Cannot open genesis: ${e.message}", null)
@@ -94,13 +108,13 @@ class MainActivity: FlutterFragmentActivity() {
         file.outputStream().use { inputStream.copyTo(it) }
     }
 
-     private fun openWallet(result: MethodChannel.Result) {
+    private fun openWallet(result: MethodChannel.Result) {
         Log.d("MainActivity", "openWallet called from Kotlin...")
 
-         val sharedPreferences: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
-         walletKey = sharedPreferences.getString("flutter.walletKey", null)
+        val sharedPreferences: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+        walletKey = sharedPreferences.getString("flutter.walletKey", null)
 
-         if (walletKey == null) {
+        if (walletKey == null) {
             try {
                 walletKey = Agent.generateWalletKey()
                 sharedPreferences.edit().putString("flutter.walletKey", walletKey).apply()
@@ -113,9 +127,9 @@ class MainActivity: FlutterFragmentActivity() {
             }
         }
 
-         val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
+        val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
 
-         val config = AgentConfig(
+        val config = AgentConfig(
             walletKey = walletKey!!,
             genesisPath = File(applicationContext.filesDir.absolutePath, genesisPath).absolutePath,
             mediatorConnectionsInvite = invitationUrl,
@@ -125,7 +139,7 @@ class MainActivity: FlutterFragmentActivity() {
             autoAcceptProof = AutoAcceptProof.Never
         )
 
-         Log.d("MainActivity", "Agent Config")
+        Log.d("MainActivity", "Agent Config")
 
         CoroutineScope(Dispatchers.Main).launch {
             try {
@@ -165,11 +179,54 @@ class MainActivity: FlutterFragmentActivity() {
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
-                Log.e("MainActivity","Unable to connect: ${e.localizedMessage}")
+                Log.e("MainActivity", "Unable to connect: ${e.localizedMessage}")
 
                 result.error("1", e.message, null)
             }
         }
+    }
+
+    private fun subscribeEvents(result: MethodChannel.Result) {
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        agent!!.eventBus.subscribe<AgentEvents.CredentialEvent> {
+            lifecycleScope.launch(Dispatchers.Main) {
+                Log.d("MainActivity", "Credential ${it.record.state}: ${it.record.id}")
+                sendCredentialToFlutter(it.record.id, it.record.state.toString())
+            }
+        }
+
+        agent!!.eventBus.subscribe<AgentEvents.ProofEvent> {
+            lifecycleScope.launch(Dispatchers.Main) {
+                Log.d("MainActivity", "Proof ${it.record.state}: ${it.record.id}")
+                sendProofToFlutter(it.record.id, it.record.state.toString())
+            }
+        }
+
+        agent!!.eventBus.subscribe<AgentEvents.ProblemReportEvent> {
+            lifecycleScope.launch(Dispatchers.Main) {
+                if (it.message is CredentialProblemReportMessage) {
+                    Log.e("MainActivity", "Issuer reported a problem while issuing the credential - ${it.message.description.en}")
+                }
+                if (it.message is PresentationProblemReportMessage) {
+                    Log.e("MainActivity", "Verifier reported a problem while verifying the presentation - ${it.message.description.en}")
+                }
+                if (it.message is MediationProblemReportMessage) {
+                    Log.e("MainActivity", "Mediator reported a problem - ${it.message.description.en}")
+                }
+            }
+        }
+    }
+
+    private fun sendCredentialToFlutter(id: String, state: String) {
+        methodChannel.invokeMethod("credentialReceived", mapOf("id" to id, "state" to state))
+    }
+
+    private fun sendProofToFlutter(id: String, state: String) {
+        methodChannel.invokeMethod("proofReceived", mapOf("id" to id, "state" to state))
     }
 
     private fun shutdown(result: MethodChannel.Result) {
@@ -187,7 +244,7 @@ class MainActivity: FlutterFragmentActivity() {
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
-                Log.e("MainActivity","Unable to shutdown agent: ${e.localizedMessage}")
+                Log.e("MainActivity", "Unable to shutdown agent: ${e.localizedMessage}")
 
                 result.error("1", e.message, null)
             }

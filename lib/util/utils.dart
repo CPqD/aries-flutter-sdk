@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/aries_method.dart';
 import 'package:did_agent/agent/aries_result.dart';
+import 'package:did_agent/home.dart';
 import 'package:flutter/services.dart';
 
 Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
@@ -9,16 +10,33 @@ Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
 Future<AriesResult> receiveInvitation(String url) =>
     AriesResult.invoke(AriesMethod.invitation, {'invitationUrl': url});
 
+Future<AriesResult> subscribe() => AriesResult.invoke(AriesMethod.subscribe);
+
 Future<AriesResult> shutdown() => AriesResult.invoke(AriesMethod.shutdown);
 
-Future<dynamic> recebeFromSwift(MethodCall call) async {
+Future<dynamic> recebeFromNative(MethodCall call) async {
   switch (call.method) {
     case 'calldart':
-      // Do something
       final Map arguments = call.arguments;
       print(arguments);
       return "$arguments";
-    // break;
+    case 'credentialReceived':
+      print('credentialReceived on FLUTTER: ${call.arguments}');
+
+      final Map<String, String> arguments = Map<String, String>.from(call.arguments);
+
+      homePageKey.currentState
+          ?.receivedCredential(arguments["id"] ?? '', arguments["state"] ?? '');
+
+      return "$arguments";
+    case 'proofReceived':
+      print('proofReceived on FLUTTER: ${call.arguments}');
+
+      final Map<String, String> arguments = Map<String, String>.from(call.arguments);
+      homePageKey.currentState
+          ?.receivedProof(arguments["id"] ?? '', arguments["state"] ?? '');
+
+      return "$arguments";
     default:
       throw PlatformException(
         code: 'Unimplemented',
@@ -27,6 +45,6 @@ Future<dynamic> recebeFromSwift(MethodCall call) async {
   }
 }
 
-configureChannelSwift() {
-  channelWallet.setMethodCallHandler(recebeFromSwift);
+configureChannelNative() {
+  channelWallet.setMethodCallHandler(recebeFromNative);
 }
