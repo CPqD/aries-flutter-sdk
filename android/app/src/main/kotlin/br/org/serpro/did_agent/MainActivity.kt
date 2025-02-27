@@ -23,8 +23,10 @@ import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemR
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.proofs.models.ProofState
+import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import java.io.File
 import java.lang.Exception
+
 
 const val genesisPath = "bcovrin-genesis.txn"
 
@@ -83,6 +85,23 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel shutdown: " + e.toString(), null)
                     }
                 }
+                "acceptOffer" -> {
+                    try {
+                        val credentialRecordId = call.argument<String>("credentialRecordId")
+                        acceptOffer(credentialRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel acceptOffer: "+e.toString(),null)
+                    }
+                }
+                "declineOffer" -> {
+                    try { 
+                        val credentialRecordId = call.argument<String>("credentialRecordId")
+                        declineOffer(credentialRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel declineOffer: "+e.toString(),null)
+                    }
+                }
+                
                 else -> result.notImplemented()
             }
         }
@@ -250,4 +269,60 @@ class MainActivity: FlutterFragmentActivity() {
             }
         }
     }
+
+    private fun acceptOffer(credentialRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "accept offer called from Kotlin...")
+
+        if (credentialRecordId == null) {
+            result.error("1", "CredenctialRecordId is null", null)
+            return
+        }
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+        val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId, autoAcceptCredential = AutoAcceptCredential.Always);
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                agent!!.credentials.acceptOffer(acceptOfferOption)
+
+                result.success(mapOf("error" to "", "result" to true))
+            } catch (e: Exception) {
+                Log.e("MainActivity","Failed to receive a credential: ${e.localizedMessage}")
+
+                result.error("1", e.message, null)
+            }
+        }
+    }
+
+    private fun declineOffer(credentialRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "decline offer called from Kotlin...")
+
+        if (credentialRecordId == null) {
+            result.error("1", "CredentialRecordId is null", null)
+            return
+        }
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId, autoAcceptCredential = AutoAcceptCredential.Never);
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                agent!!.credentials.declineOffer(acceptOfferOption)
+
+                result.success(mapOf("error" to "", "result" to true))
+            } catch (e: Exception) {
+                Log.e("MainActivity","Failed to decline a credential: ${e.localizedMessage}")
+
+                result.error("1", e.message, null)
+            }
+        }
+    }
 }
+
