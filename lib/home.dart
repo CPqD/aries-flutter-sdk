@@ -1,4 +1,5 @@
 import 'package:did_agent/agent/aries_result.dart';
+import 'package:did_agent/agent/credential_state.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -173,7 +174,7 @@ class HomePageState extends State<HomePage> {
       this.credentialId = credentialId;
     });
 
-    if (credentialState == "OfferReceived") {
+    if (CredentialState.offerReceived.equals(credentialState)) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -217,7 +218,7 @@ class HomePageState extends State<HomePage> {
       this.proofId = proofId;
     });
 
-    if (proofState == "OfferReceived") {
+    if (CredentialState.offerReceived.equals(proofState)) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
