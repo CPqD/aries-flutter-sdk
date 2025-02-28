@@ -190,7 +190,7 @@ class HomePageState extends State<HomePage> {
                   //if (!acceptOfferResult.success) {
                   //} else {}
                   print('Credential Accepted: $credentialId');
-                  print('Accept Offer Result: ${acceptOfferResult.result}');
+                  print('Accept Offer Result: ${acceptOfferResult.value}');
                   Navigator.of(context).pop();
                 },
               ),
@@ -200,7 +200,7 @@ class HomePageState extends State<HomePage> {
                   final declineOfferResult = await declineOffer(credentialId);
 
                   print('Credential Refused: $credentialId');
-                  print('Refused Offer Result: ${declineOfferResult.result}');
+                  print('Refused Offer Result: ${declineOfferResult.value}');
                   Navigator.of(context).pop();
                 },
               ),
