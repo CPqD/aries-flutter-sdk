@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 
 const channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
 
-class AriesResult {
+class AriesResult<T> {
   final bool success;
   final String error;
-  final String result;
+  final T? value;
 
-  AriesResult({required this.success, this.error = "", this.result = ""});
+  AriesResult({required this.success, this.error = "", this.value});
 
   factory AriesResult.fromDynamic(dynamic value) {
     if (value != null && value is Map) {
@@ -16,12 +16,12 @@ class AriesResult {
 
       return AriesResult(
         error: mapValue["error"],
-        result: '${mapValue["result"]}',
+        value: mapValue["result"],
         success: mapValue["error"].isEmpty,
       );
     }
 
-    return AriesResult(error: "Aries Error", result: "", success: false);
+    return AriesResult(error: "Aries Error", value: null, success: false);
   }
 
   static Future<AriesResult> invoke(AriesMethod method, [dynamic arguments]) async {
@@ -40,6 +40,6 @@ class AriesResult {
 
   @override
   String toString() {
-    return 'AriesResult{success: $success, error: $error, result: $result}';
+    return 'AriesResult{success: $success, error: $error, result: $value}';
   }
 }
