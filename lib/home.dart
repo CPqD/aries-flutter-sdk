@@ -130,6 +130,16 @@ class HomePageState extends State<HomePage> {
       successText: "Agente desligado com sucesso",
       errorText: "Não foi possível desligar agente");
 
+  void acceptOfferResultDialog(AriesResult result) => showResultDialog(
+      result: result,
+      successText: "Oferta aceita com sucesso",
+      errorText: "Não foi possível aceitar oferta");
+
+  void declineOfferResultDialog(AriesResult result) => showResultDialog(
+      result: result,
+      successText: "Oferta recusada com sucesso",
+      errorText: "Não foi possível recusar oferta");
+
   void showResultDialog({
     required AriesResult result,
     required String successText,
@@ -174,15 +184,23 @@ class HomePageState extends State<HomePage> {
             actions: <Widget>[
               TextButton(
                 child: Text('Accept'),
-                onPressed: () {
+                onPressed: () async {
+                  final acceptOfferResult = await acceptOffer(credentialId);
+
+                  //if (!acceptOfferResult.success) {
+                  //} else {}
                   print('Credential Accepted: $credentialId');
+                  print('Accept Offer Result: ${acceptOfferResult.result}');
                   Navigator.of(context).pop();
                 },
               ),
               TextButton(
                 child: Text('Refuse'),
-                onPressed: () {
+                onPressed: () async {
+                  final declineOfferResult = await declineOffer(credentialId);
+
                   print('Credential Refused: $credentialId');
+                  print('Refused Offer Result: ${declineOfferResult.result}');
                   Navigator.of(context).pop();
                 },
               ),

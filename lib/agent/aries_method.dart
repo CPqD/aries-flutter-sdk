@@ -4,7 +4,9 @@ enum AriesMethod {
   getCredentials('getCredentials'),
   invitation('receiveInvitation'),
   subscribe('subscribe'),
-  shutdown('shutdown');
+  shutdown('shutdown'),
+  acceptOffer('acceptOffer'),
+  declineOffer('declineOffer');
 
   final String value;
 

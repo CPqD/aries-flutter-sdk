@@ -32,6 +32,12 @@ Future<AriesResult> subscribe() => AriesResult.invoke(AriesMethod.subscribe);
 
 Future<AriesResult> shutdown() => AriesResult.invoke(AriesMethod.shutdown);
 
+Future<AriesResult> acceptOffer(String credentialRecordId) => AriesResult.invoke(
+    AriesMethod.acceptOffer, {'credentialRecordId': credentialRecordId});
+
+Future<AriesResult> declineOffer(String credentialRecordId) => AriesResult.invoke(
+    AriesMethod.declineOffer, {'credentialRecordId': credentialRecordId});
+
 Future<dynamic> recebeFromNative(MethodCall call) async {
   switch (call.method) {
     case 'calldart':
