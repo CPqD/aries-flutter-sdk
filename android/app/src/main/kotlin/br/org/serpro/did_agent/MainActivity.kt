@@ -213,7 +213,7 @@ class MainActivity: FlutterFragmentActivity() {
 
         agent!!.eventBus.subscribe<AgentEvents.CredentialEvent> {
             lifecycleScope.launch(Dispatchers.Main) {
-                Log.d("MainActivity", "Credential ${it.record.state}: ${it.record.id}")
+                Log.d("MainActivity", "Credential ${it.record.state}: ${it.record.id} - ${it.record.threadId}")
                 sendCredentialToFlutter(it.record.id, it.record.state.toString())
             }
         }

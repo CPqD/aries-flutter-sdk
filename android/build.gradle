@@ -33,6 +33,9 @@ allprojects {
                 password = getExtraString("githubToken")
             }
         }
+        maven {
+            setUrl("https://nexus.aic.serpro.gov.br/repository/snapshots/")
+        }
         maven { url 'https://jitpack.io' }
     }
 }
