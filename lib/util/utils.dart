@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/aries_method.dart';
 import 'package:did_agent/agent/aries_result.dart';
+import 'package:did_agent/agent/credential_record.dart';
 import 'package:did_agent/home.dart';
 import 'package:flutter/services.dart';
 
@@ -7,8 +8,25 @@ Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
 
 Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
 
-Future<AriesResult> receiveInvitation(String url) =>
-    AriesResult.invoke(AriesMethod.invitation, {'invitationUrl': url});
+Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
+  final result = await AriesResult.invoke(AriesMethod.getCredentials);
+
+  if (!result.success || result.value == null || result.value is! List<Map>) {
+    return AriesResult(success: false, error: result.error, value: []);
+  }
+
+  final originalList = List<Map<String, String?>>.from(result.value);
+
+  List<CredentialRecord> resultList =
+      originalList.map((map) => CredentialRecord.fromMap(map)).toList();
+
+  return AriesResult(success: true, error: result.error, value: resultList);
+}
+
+Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
+      AriesMethod.invitation,
+      {'invitationUrl': url},
+    );
 
 Future<AriesResult> subscribe() => AriesResult.invoke(AriesMethod.subscribe);
 

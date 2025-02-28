@@ -12,17 +12,16 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
-import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
 import org.hyperledger.ariesframework.credentials.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
-import org.hyperledger.ariesframework.proofs.models.ProofState
 import java.io.File
 import java.lang.Exception
 
@@ -59,6 +58,13 @@ class MainActivity: FlutterFragmentActivity() {
                         openWallet(result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel openwallet: " + e.toString(), null)
+                    }
+                }
+                "getCredentials" -> {
+                    try {
+                        getCredentials(result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getCredentials: " + e.toString(), null)
                     }
                 }
                 "receiveInvitation" -> {
@@ -159,6 +165,52 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun getCredentials(result: MethodChannel.Result) {
+        Log.d("MainActivity", "getCredentials called from Kotlin...")
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        try {
+            val credentials = runBlocking{ agent?.credentialRepository?.getAll()};
+
+            Log.d("MainActivity", "credentials: ${credentials.toString()}")
+
+            val credentialsList = mutableListOf<Map<String, String?>>()
+
+            if (credentials.isNullOrEmpty()) {
+                result.success(credentialsList)
+                return
+            }
+
+            for (credential in credentials) {
+                val credentialMap = mapOf(
+                    "id" to credential.id,
+                    "revocationId" to credential.credentialRevocationId,
+                    "linkSecretId" to credential.linkSecretId,
+                    "credential" to credential.credential,
+                    "schemaId" to credential.schemaId,
+                    "schemaName" to credential.schemaName,
+                    "schemaVersion" to credential.schemaVersion,
+                    "schemaIssuerId" to credential.schemaIssuerId,
+                    "issuerId" to credential.issuerId,
+                    "definitionId" to credential.credentialDefinitionId,
+                    "revocationRegistryId" to credential.revocationRegistryId
+                )
+
+                credentialsList.add(credentialMap)
+            }
+
+            result.success(credentialsList)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get credentials: ${e.message}")
+            result.error("1", "Cannot get credentials: ${e.message}", null)
+            return
+        }
+    }
+
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
 
@@ -222,10 +274,12 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     private fun sendCredentialToFlutter(id: String, state: String) {
+        Log.e("MainActivity", "Invoking credentialReceived from Kotlin")
         methodChannel.invokeMethod("credentialReceived", mapOf("id" to id, "state" to state))
     }
 
     private fun sendProofToFlutter(id: String, state: String) {
+        Log.e("MainActivity", "Invoking proofReceived from Kotlin")
         methodChannel.invokeMethod("proofReceived", mapOf("id" to id, "state" to state))
     }
 
