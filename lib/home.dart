@@ -185,23 +185,37 @@ class HomePageState extends State<HomePage> {
               TextButton(
                 child: Text('Accept'),
                 onPressed: () async {
+                  Navigator.of(context).pop();
+
                   final acceptOfferResult = await acceptOffer(credentialId);
 
-                  //if (!acceptOfferResult.success) {
-                  //} else {}
-                  print('Credential Accepted: $credentialId');
-                  print('Accept Offer Result: ${acceptOfferResult.value}');
-                  Navigator.of(context).pop();
+                  if (acceptOfferResult.success) {
+                    print('Credential Accepted: $credentialId');
+                  }
+
+                  showResultDialog(
+                    result: acceptOfferResult,
+                    successText: "Credencial Recebida",
+                    errorText: "Falha ao receber credencial",
+                  );
                 },
               ),
               TextButton(
                 child: Text('Refuse'),
                 onPressed: () async {
+                  Navigator.of(context).pop();
+
                   final declineOfferResult = await declineOffer(credentialId);
 
-                  print('Credential Refused: $credentialId');
-                  print('Refused Offer Result: ${declineOfferResult.value}');
-                  Navigator.of(context).pop();
+                  if (declineOfferResult.success) {
+                    print('Credential Refused: $credentialId');
+                  }
+
+                  showResultDialog(
+                    result: declineOfferResult,
+                    successText: "Credencial Recusada",
+                    errorText: "Falha ao recusar credencial",
+                  );
                 },
               ),
             ],
