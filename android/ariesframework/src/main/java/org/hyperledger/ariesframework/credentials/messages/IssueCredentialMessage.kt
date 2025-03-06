@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.credentials.messages
 
+import android.util.Log
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.hyperledger.ariesframework.agent.AgentMessage
@@ -17,6 +18,8 @@ class IssueCredentialMessage(
     }
 
     fun getCredentialAttachmentById(id: String): Attachment? {
+        Log.d("IssueCredentialMessage","--> getCredentialAttachmentById\n\n")
+
         return credentialAttachments.firstOrNull { it.id == id }
     }
 }

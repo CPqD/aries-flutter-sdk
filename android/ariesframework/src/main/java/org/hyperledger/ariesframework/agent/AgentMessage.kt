@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.agent
 
+import android.util.Log
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -33,19 +34,27 @@ open class AgentMessage(
         get() = thread?.threadId ?: id
 
     open fun requestResponse(): Boolean {
+        Log.e("AgentMessage","--> requestResponse\n\n")
+
         return true
     }
 
     fun toJsonString(): String {
+        Log.e("AgentMessage","--> toJsonString\n\n")
+
         return MessageSerializer.encodeToString(this)
     }
 
     fun replaceNewDidCommPrefixWithLegacyDidSov() {
+//        Log.e("AgentMessage","--> replaceNewDidCommPrefixWithLegacyDidSov()\n\n")
+
         type = Dispatcher.replaceNewDidCommPrefixWithLegacyDidSov(type)
     }
 
     companion object {
         fun generateId(): String {
+//            Log.e("AgentMessage","--> generateId\n\n")
+
             return UUID.randomUUID().toString()
         }
     }
@@ -64,6 +73,8 @@ object MessageSerializer : JsonContentPolymorphicSerializer<AgentMessage>(AgentM
     }
 
     override fun selectDeserializer(element: JsonElement): KSerializer<AgentMessage> {
+        Log.e("AgentMessage","--> MessageSerializer.selectDeserializer\n\n")
+
         val type = element.jsonObject["@type"]?.jsonPrimitive?.content
         return if (serializers.containsKey(type)) {
             serializers[type]!!

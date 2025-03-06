@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.routing.handlers
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
@@ -10,6 +11,8 @@ class MediationGrantHandler(val agent: Agent) : MessageHandler {
     override val messageType = MediationGrantMessage.type
 
     override suspend fun handle(messageContext: InboundMessageContext): OutboundMessage? {
+        Log.e("MediationGrantHandler","--> handle\n\n")
+
         agent.mediationRecipient.processMediationGrant(messageContext)
         return null
     }

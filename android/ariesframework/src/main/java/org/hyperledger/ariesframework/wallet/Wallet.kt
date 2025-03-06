@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.wallet
 
+import android.util.Log
 import askar_uniffi.AskarCrypto
 import askar_uniffi.AskarKeyAlg
 import askar_uniffi.AskarSession
@@ -57,6 +58,8 @@ class Wallet(private val agent: Agent) {
         }
 
     suspend fun initialize() {
+        Log.e("Wallet","--> initialize\n\n")
+
         logger.info("Initializing wallet for ${agent.agentConfig.label}")
         if (store != null) {
             logger.warn("Wallet already initialized.")
@@ -90,6 +93,8 @@ class Wallet(private val agent: Agent) {
     }
 
     suspend fun close() {
+        Log.e("Wallet","--> close\n\n")
+
         logger.debug("Closing wallet")
         session?.close()
         store?.close()
@@ -100,6 +105,8 @@ class Wallet(private val agent: Agent) {
     }
 
     suspend fun delete() {
+        Log.e("Wallet","--> delete\n\n")
+
         logger.debug("Deleting wallet")
         if (store != null) {
             close()
@@ -124,10 +131,14 @@ class Wallet(private val agent: Agent) {
     }
 
     suspend fun initPublicDid(seed: String) {
+        Log.e("Wallet","--> initPublicDid($seed)\n\n")
+
         publicDid = createDid(seed)
     }
 
     suspend fun createDid(seed: String? = null): DidInfo {
+        Log.e("Wallet","--> createDid($seed)\n\n")
+
         // Use fromSecretBytes() instead of fromSeed() for compatibility with indy-sdk
         val key = if (seed == null) {
             keyFactory.generate(AskarKeyAlg.ED25519, false)
@@ -153,6 +164,8 @@ class Wallet(private val agent: Agent) {
         recipientKeys: List<String>,
         senderVerkey: String?,
     ): EncryptedMessage {
+        Log.d("Wallet","pack (message: $message, recipientKeys: $recipientKeys, senderVerkey: $senderVerkey)\n\n")
+
         val cek = keyFactory.generate(AskarKeyAlg.C20P, true)
         val senderKey = if (senderVerkey != null) {
             session!!.fetchKey(senderVerkey, false)
@@ -224,6 +237,8 @@ class Wallet(private val agent: Agent) {
     }
 
     suspend fun unpack(encryptedMessage: EncryptedMessage): DecryptedMessageContext {
+        Log.e("Wallet","--> unpack\n\n")
+
         val protected = Json.decodeFromString<ProtectedHeader>(String(encryptedMessage.protected.decodeBase64url()))
         if (protected.alg != "Anoncrypt" && protected.alg != "Authcrypt") {
             throw RuntimeException("Unsupported pack algorithm: ${protected.alg}")

@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection
 
+import android.util.Log
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.didcommx.peerdid.DIDDocPeerDID
@@ -34,6 +35,8 @@ class PeerDIDService(val agent: Agent) {
      * @return The created Peer DID.
      */
     suspend fun createPeerDID(verkey: String, useLegacyService: Boolean = true): String {
+        Log.e("PeerDIDService","--> createPeerDID\n\n")
+
         logger.debug("Creating Peer DID for verkey: $verkey")
         val (endpoints, routingKeys) = agent.mediationRecipient.getRoutingInfo()
         val didRoutingKeys = routingKeys.map { rawKey ->
@@ -83,6 +86,8 @@ class PeerDIDService(val agent: Agent) {
      * @return The parsed DID Document.
      */
     suspend fun parsePeerDID(did: String): DidDoc {
+        Log.e("PeerDIDService","--> parsePeerDID($did)\n\n")
+
         logger.debug("Parsing Peer DID: $did")
         val json = resolvePeerDID(did, VerificationMaterialFormatPeerDID.BASE58)
         logger.debug("Parsed Peer DID JSON: $json")

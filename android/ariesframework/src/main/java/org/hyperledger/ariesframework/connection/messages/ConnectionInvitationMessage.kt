@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection.messages
 
+import android.util.Log
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -30,6 +31,8 @@ class ConnectionInvitationMessage(
         const val type = "https://didcomm.org/connections/1.0/invitation"
 
         fun fromUrl(invitationUrl: String): ConnectionInvitationMessage {
+            Log.e("ConnectionInvitationMessage","--> fromUrl($invitationUrl)\n\n")
+
             val url = URL(invitationUrl)
             val queryParams = url.query?.split("&")?.associate {
                 val (key, value) = it.split("=")
@@ -46,6 +49,8 @@ class ConnectionInvitationMessage(
     }
 
     fun toUrl(domain: String): String {
+        Log.e("ConnectionInvitationMessage","--> toUrl($domain)\n\n")
+
         val invitationJson = Json.encodeToString(this)
         val encodedInvitation = invitationJson.toByteArray().encodeBase64url()
         return "$domain?c_i=$encodedInvitation"

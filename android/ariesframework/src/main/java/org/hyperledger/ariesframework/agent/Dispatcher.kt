@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.agent
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.slf4j.LoggerFactory
 
@@ -13,6 +14,8 @@ class Dispatcher(val agent: Agent) {
     }
 
     suspend fun dispatch(messageContext: InboundMessageContext) {
+        Log.e("AgentMessage","--> dispatch: ${messageContext.message.type}\n\n")
+
         logger.debug("Dispatching message of type: ${messageContext.message.type}")
         val handler = handlers[messageContext.message.type]
             ?: throw Exception("No handler for message type: ${messageContext.message.type}")
@@ -41,6 +44,8 @@ class Dispatcher(val agent: Agent) {
 
     companion object {
         fun replaceNewDidCommPrefixWithLegacyDidSov(messageType: String): String {
+//            Log.e("AgentMessage","--> replaceNewDidCommPrefixWithLegacyDidSov($messageType)\n\n")
+
             val didSovPrefix = "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec"
             val didCommPrefix = "https://didcomm.org"
 

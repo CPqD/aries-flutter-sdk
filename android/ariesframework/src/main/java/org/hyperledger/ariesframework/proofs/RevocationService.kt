@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.proofs
 
+import android.util.Log
 import anoncreds_uniffi.Credential
 import anoncreds_uniffi.CredentialRevocationState
 import anoncreds_uniffi.Prover
@@ -35,6 +36,9 @@ class RevocationService(val agent: Agent) {
     private val logger = LoggerFactory.getLogger(RevocationService::class.java)
 
     suspend fun getRevocationRegistries(proof: PartialProof): String {
+        Log.e("RevocationService","--> getRevocationRegistries\n\n")
+
+
         val revocationRegistries = mutableMapOf<String, MutableMap<String, JsonObject>>()
 
         proof.identifiers.concurrentForEach { identifier ->
@@ -61,6 +65,8 @@ class RevocationService(val agent: Agent) {
         proof: PartialProof,
         revocationRegistryDefinitions: Map<String, RevocationRegistryDefinition>,
     ): List<anoncreds_uniffi.RevocationStatusList> {
+        Log.e("RevocationService","--> getRevocationStatusLists\n\n")
+
         val revocationStatusLists = mutableListOf<anoncreds_uniffi.RevocationStatusList>()
 
         proof.identifiers.concurrentForEach { identifier ->
@@ -93,6 +99,8 @@ class RevocationService(val agent: Agent) {
         revocationRegistryId: String,
         revocationInterval: RevocationInterval,
     ): Pair<Boolean, Int> {
+        Log.e("RevocationService","--> getRevocationStatus\n\n")
+
         val (revocationRegistryDeltaJson, deltaTimestamp) = agent.ledgerService.getRevocationRegistryDelta(
             revocationRegistryId,
             revocationInterval.to!!,
@@ -108,6 +116,8 @@ class RevocationService(val agent: Agent) {
         credential: Credential,
         timestamp: Int,
     ): CredentialRevocationState {
+        Log.e("RevocationService","--> createRevocationState\n\n")
+
         val credentialRevocationId = credential.revRegIndex()
             ?: throw Exception("Credential does not have revocation information.")
         val revocationRegistryId = credential.revRegId()

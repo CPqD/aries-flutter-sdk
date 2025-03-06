@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.oob
 
+import android.util.Log
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
@@ -34,6 +35,7 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private fun registerHandlers(dispatcher: Dispatcher) {
+
         dispatcher.registerHandler(HandshakeReuseHandler(agent))
         dispatcher.registerHandler(HandshakeReuseAcceptedHandler(agent))
     }
@@ -60,6 +62,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return out-of-band record.
      */
     suspend fun createInvitation(config: CreateOutOfBandInvitationConfig): OutOfBandRecord {
+        Log.e("OutOfBandCommand","--> createInvitation\n\n")
+
         val multiUseInvitation = config.multiUseInvitation ?: false
         val handshake = config.handshake ?: true
         val autoAcceptConnection = config.autoAcceptConnection ?: agent.agentConfig.autoAcceptConnections
@@ -145,6 +149,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         url: String,
         config: ReceiveOutOfBandInvitationConfig? = null,
     ): Pair<OutOfBandRecord?, ConnectionRecord?> {
+        Log.e("OutOfBandCommand","--> receiveInvitationFromUrl\n\n")
+
         val (outOfBandInvitation, invitation) = parseInvitationShortUrl(url)
         if (invitation != null) {
             val connection = agent.connections.receiveInvitation(invitation, null, config?.autoAcceptConnection, config?.alias)
@@ -162,10 +168,14 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return out-of-band invitation and connection invitation if one has been parsed.
      */
     suspend fun parseInvitationShortUrl(url: String): Pair<OutOfBandInvitation?, ConnectionInvitationMessage?> {
+        Log.e("OutOfBandCommand","--> parseInvitationShortUrl\n\n")
+
         return InvitationUrlParser.parseUrl(url)
     }
 
     private fun getSupportedHandshakeProtocols(): List<HandshakeProtocol> {
+        Log.e("OutOfBandCommand","--> getSupportedHandshakeProtocols\n\n")
+
         return listOf(HandshakeProtocol.Connections, HandshakeProtocol.DidExchange11)
     }
 
@@ -189,6 +199,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         invitation: OutOfBandInvitation,
         config: ReceiveOutOfBandInvitationConfig? = null,
     ): Pair<OutOfBandRecord, ConnectionRecord?> {
+        Log.e("OutOfBandCommand","--> receiveInvitation\n\n")
+
         val autoAcceptInvitation = config?.autoAcceptInvitation ?: true
         val autoAcceptConnection = config?.autoAcceptConnection ?: true
         val reuseConnection = config?.reuseConnection ?: false
@@ -252,6 +264,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         outOfBandId: String,
         config: ReceiveOutOfBandInvitationConfig? = null,
     ): Pair<OutOfBandRecord, ConnectionRecord?> {
+        Log.e("OutOfBandCommand","--> acceptInvitation\n\n")
+
         var outOfBandRecord = agent.outOfBandService.getById(outOfBandId)
         val existingConnection = findExistingConnection(outOfBandInvitation = outOfBandRecord.outOfBandInvitation)
 
@@ -300,6 +314,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private suspend fun processMessages(messages: List<String>, connectionRecord: ConnectionRecord) {
+        Log.e("OutOfBandCommand","--> processMessages\n\n")
+
         val message = messages.firstOrNull { message ->
             val agentMessage = try {
                 MessageSerializer.decodeFromString(message)
@@ -317,6 +333,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         outOfBandRecord: OutOfBandRecord,
         connectionRecord: ConnectionRecord,
     ): Boolean {
+        Log.e("OutOfBandCommand","--> handleHandshakeReuse\n\n")
+
         val reuseMessage = agent.outOfBandService.createHandShakeReuse(outOfBandRecord, connectionRecord)
         val message = OutboundMessage(reuseMessage, connectionRecord)
         agent.messageSender.send(message)
@@ -329,6 +347,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private suspend fun findExistingConnection(outOfBandInvitation: OutOfBandInvitation): ConnectionRecord? {
+        Log.e("OutOfBandCommand","--> findExistingConnection $outOfBandInvitation\n\n")
+
         val invitationKey = outOfBandInvitation.invitationKey() ?: return null
         val connections = agent.connectionService.findAllByInvitationKey(invitationKey)
 
@@ -339,6 +359,8 @@ class OutOfBandCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private suspend fun selectHandshakeProtocol(handshakeProtocols: List<HandshakeProtocol>): HandshakeProtocol? {
+        Log.e("OutOfBandCommand","--> selectHandshakeProtocol\n\n")
+
         if (handshakeProtocols.isEmpty()) {
             return null
         }

@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.proofs.messages
 
+import android.util.Log
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.hyperledger.ariesframework.agent.AgentMessage
@@ -17,10 +18,14 @@ class PresentationMessage(
     }
 
     fun getPresentationAttachmentById(id: String): Attachment? {
+        Log.e("PresentationMessage","--> getPresentationAttachmentById($id)\n\n")
+
         return presentationAttachments.firstOrNull { it.id == id }
     }
 
     fun indyProof(): String {
+        Log.e("PresentationMessage","--> indyProof\n\n")
+
         val attachment = getPresentationAttachmentById(INDY_PROOF_ATTACHMENT_ID)
         return attachment?.getDataAsString() ?: throw Exception("Presentation attachment not found")
     }

@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.credentials.handlers
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
@@ -12,6 +13,8 @@ class OfferCredentialHandler(val agent: Agent) : MessageHandler {
     override val messageType = OfferCredentialMessage.type
 
     override suspend fun handle(messageContext: InboundMessageContext): OutboundMessage? {
+        Log.e("OfferCredentialHandler","--> handle(messageContext: ${messageContext.toString()})\n\n")
+
         val credentialRecord = agent.credentialService.processOffer(messageContext)
 
         if (credentialRecord.autoAcceptCredential == AutoAcceptCredential.Always ||

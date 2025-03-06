@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection
 
+import android.util.Log
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.Dispatcher
@@ -35,6 +36,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private fun registerHandlers(dispatcher: Dispatcher) {
+        Log.e("ConnectionCommand","--> registerHandlers\n\n")
+
         dispatcher.registerHandler(ConnectionRequestHandler(agent))
         dispatcher.registerHandler(ConnectionResponseHandler(agent))
         dispatcher.registerHandler(TrustPingMessageHandler(agent))
@@ -44,6 +47,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private fun registerMessages() {
+        Log.e("ConnectionCommand","--> registerMessages\n\n")
+
         MessageSerializer.registerMessage(ConnectionInvitationMessage.type, ConnectionInvitationMessage::class)
         MessageSerializer.registerMessage(ConnectionRequestMessage.type, ConnectionRequestMessage::class)
         MessageSerializer.registerMessage(ConnectionResponseMessage.type, ConnectionResponseMessage::class)
@@ -70,6 +75,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         label: String? = null,
         imageUrl: String? = null,
     ): OutboundMessage {
+        Log.e("ConnectionCommand","--> createConnection($autoAcceptConnection, $alias, $multiUseInvitation, $label, $imageUrl)\n\n")
+
         return agent.connectionService.createInvitation(
             agent.mediationRecipient.getRouting(),
             autoAcceptConnection,
@@ -96,6 +103,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         autoAcceptConnection: Boolean? = null,
         alias: String? = null,
     ): ConnectionRecord {
+        Log.e("ConnectionCommand","--> receiveInvitation($invitation, $outOfBandInvitation, $autoAcceptConnection, $alias)\n\n")
+
         logger.debug("Receive connection invitation")
         var connection = agent.connectionService.processInvitation(
             invitation,
@@ -124,6 +133,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         autoAcceptConnection: Boolean? = null,
         alias: String? = null,
     ): ConnectionRecord {
+        Log.e("ConnectionCommand","--> receiveInvitationFromUrl($invitationUrl, $autoAcceptConnection, $alias)\n\n")
+
         val invitation = ConnectionInvitationMessage.fromUrl(invitationUrl)
         return receiveInvitation(invitation, null, autoAcceptConnection, alias)
     }
@@ -136,6 +147,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return new connection record.
      */
     suspend fun acceptInvitation(connectionId: String, autoAcceptConnection: Boolean? = null): ConnectionRecord {
+        Log.e("ConnectionCommand","--> acceptInvitation($connectionId, $autoAcceptConnection)\n\n")
+
         logger.debug("Accept connection invitation")
         val message = agent.connectionService.createRequest(connectionId, autoAcceptConnection = autoAcceptConnection)
         agent.messageSender.send(message)
@@ -155,6 +168,8 @@ class ConnectionCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         handshakeProtocol: HandshakeProtocol? = null,
         config: ReceiveOutOfBandInvitationConfig? = null,
     ): ConnectionRecord {
+        Log.e("ConnectionCommand","--> acceptOutOfBandInvitation($outOfBandRecord, $handshakeProtocol, $config)\n\n")
+
         val connection = receiveInvitation(
             null,
             outOfBandRecord.outOfBandInvitation,

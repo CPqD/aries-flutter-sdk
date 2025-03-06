@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.agent
 
+import android.util.Log
 import org.hyperledger.ariesframework.DecryptedMessageContext
 import org.hyperledger.ariesframework.EncryptedMessage
 import org.hyperledger.ariesframework.InboundMessageContext
@@ -13,10 +14,18 @@ class MessageReceiver(val agent: Agent) {
     private val logger = LoggerFactory.getLogger(MessageReceiver::class.java)
 
     suspend fun receiveMessage(encryptedMessage: EncryptedMessage) {
+        Log.e("MessageReceiver","--> receiveMessage - encryptedMessage: $encryptedMessage\n\n")
+
         try {
             val decryptedMessage = agent.wallet.unpack(encryptedMessage)
+            logger.error("[$] receiveMessage - decryptedMessage: $decryptedMessage")
+
             val message = MessageSerializer.decodeFromString(decryptedMessage.plaintextMessage)
+            logger.error("[$] receiveMessage - message: $message")
+
             val connection = findConnection(decryptedMessage, message)
+            logger.error("[$] receiveMessage - connection: $connection")
+
             val messageContext = InboundMessageContext(
                 message,
                 decryptedMessage.plaintextMessage,
@@ -26,12 +35,16 @@ class MessageReceiver(val agent: Agent) {
             )
             agent.dispatcher.dispatch(messageContext)
         } catch (e: Exception) {
-            logger.error("failed to receive message: $e")
+            logger.error("[$] failed to receive message: $e")
         }
     }
 
     suspend fun receivePlaintextMessage(plaintextMessage: String, connection: ConnectionRecord) {
         try {
+            Log.e("MessageReceiver","--> receivePlaintextMessage\n\n")
+
+            logger.error("[$] receivePlaintextMessage - encryptedMessage: $plaintextMessage")
+
             val message = MessageSerializer.decodeFromString(plaintextMessage)
             val messageContext = InboundMessageContext(
                 message,
@@ -42,11 +55,14 @@ class MessageReceiver(val agent: Agent) {
             )
             agent.dispatcher.dispatch(messageContext)
         } catch (e: Exception) {
-            logger.error("failed to receive message: $e")
+            logger.error("[\$] failed to receive plainText message: $e")
         }
     }
 
     private suspend fun findConnection(decryptedMessage: DecryptedMessageContext, message: AgentMessage): ConnectionRecord? {
+        Log.e("MessageReceiver","--> findConnection\n\n")
+
+
         var connection = findConnectionByMessageKeys(decryptedMessage)
         if (connection == null) {
             connection = findConnectionByMessageThreadId(message)
@@ -58,6 +74,9 @@ class MessageReceiver(val agent: Agent) {
     }
 
     private suspend fun findConnectionByMessageThreadId(message: AgentMessage): ConnectionRecord? {
+        Log.e("MessageReceiver","--> findConnectionByMessageThreadId($message)\n\n")
+
+
         val pthId = message.thread?.parentThreadId ?: ""
         val oobRecord = agent.outOfBandService.findByInvitationId(pthId)
         val invitationKey = oobRecord?.outOfBandInvitation?.invitationKey() ?: ""
@@ -65,6 +84,9 @@ class MessageReceiver(val agent: Agent) {
     }
 
     private suspend fun updateConnectionTheirDidDoc(connection: ConnectionRecord, senderKey: String?) {
+        Log.e("MessageReceiver","--> updateConnectionTheirDidDoc(${connection.toString()}, $senderKey)\n\n")
+
+
         if (senderKey == null) {
             return
         }
@@ -85,6 +107,8 @@ class MessageReceiver(val agent: Agent) {
     }
 
     private suspend fun findConnectionByMessageKeys(decryptedMessage: DecryptedMessageContext): ConnectionRecord? {
+        Log.e("MessageReceiver","--> findConnectionByMessageKeys(${decryptedMessage.toString()})\n\n")
+
         return agent.connectionService.findByKeys(
             decryptedMessage.senderKey ?: "",
             decryptedMessage.recipientKey ?: "",

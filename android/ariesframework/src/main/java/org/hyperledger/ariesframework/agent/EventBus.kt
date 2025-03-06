@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.agent
 
+import android.util.Log
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
@@ -18,11 +19,15 @@ class EventBus {
     val events = _events.asSharedFlow()
 
     suspend fun publish(event: Any) {
+        Log.e("EventBus","--> publish\n\n")
+
         _events.emit(event)
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     inline fun <reified T> subscribe(crossinline onEvent: suspend (T) -> Unit) {
+        Log.e("EventBus","--> subscribe\n\n")
+
         GlobalScope.launch {
             events.filterIsInstance<T>()
                 .collect { event ->
@@ -34,6 +39,8 @@ class EventBus {
 
     @OptIn(FlowPreview::class)
     suspend inline fun <reified T> waitFor(crossinline predicate: suspend (T) -> Boolean): Boolean {
+        Log.e("EventBus","--> waitFor\n\n")
+
         return try {
             events.filterIsInstance<T>()
                 .filter { predicate(it) }

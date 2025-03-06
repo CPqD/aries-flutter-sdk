@@ -1,15 +1,22 @@
 package org.hyperledger.ariesframework.storage
 
+import android.util.Log
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentMessage
 import org.hyperledger.ariesframework.agent.Dispatcher
 
 class DidCommMessageRepository(agent: Agent) : Repository<DidCommMessageRecord>(DidCommMessageRecord::class, agent) {
     override suspend fun save(record: DidCommMessageRecord) {
+        Log.e("DidCommMessageRepository","--> save($record)\n\n")
+
+
         throw Exception("Do not call save() directly. We need to change the prefix of the message type before save the record.")
     }
 
     suspend fun saveAgentMessage(role: DidCommMessageRole, agentMessage: AgentMessage, associatedRecordId: String) {
+        Log.e("DidCommMessageRepository","--> saveAgentMessage($role, $agentMessage, $associatedRecordId)\n\n")
+
+
         if (agent.agentConfig.useLegacyDidSovPrefix) {
             agentMessage.replaceNewDidCommPrefixWithLegacyDidSov()
         }
@@ -17,6 +24,9 @@ class DidCommMessageRepository(agent: Agent) : Repository<DidCommMessageRecord>(
     }
 
     suspend fun saveOrUpdateAgentMessage(role: DidCommMessageRole, agentMessage: AgentMessage, associatedRecordId: String) {
+        Log.e("DidCommMessageRepository","--> saveOrUpdateAgentMessage($role, $agentMessage, $associatedRecordId)\n\n")
+
+
         if (agent.agentConfig.useLegacyDidSovPrefix) {
             agentMessage.replaceNewDidCommPrefixWithLegacyDidSov()
         }
@@ -31,6 +41,8 @@ class DidCommMessageRepository(agent: Agent) : Repository<DidCommMessageRecord>(
     }
 
     suspend fun getAgentMessage(associatedRecordId: String, messageType: String): String {
+        Log.e("DidCommMessageRepository","--> getAgentMessage($associatedRecordId, $messageType)\n\n")
+
         var type = messageType
         if (agent.agentConfig.useLegacyDidSovPrefix) {
             type = Dispatcher.replaceNewDidCommPrefixWithLegacyDidSov(messageType)
@@ -40,6 +52,9 @@ class DidCommMessageRepository(agent: Agent) : Repository<DidCommMessageRecord>(
     }
 
     suspend fun findAgentMessage(associatedRecordId: String, messageType: String): String? {
+        Log.e("DidCommMessageRepository","--> findAgentMessage($associatedRecordId, $messageType)\n\n")
+
+
         var type = messageType
         if (agent.agentConfig.useLegacyDidSovPrefix) {
             type = Dispatcher.replaceNewDidCommPrefixWithLegacyDidSov(messageType)

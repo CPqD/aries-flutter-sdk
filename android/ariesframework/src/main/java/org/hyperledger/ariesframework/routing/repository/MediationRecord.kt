@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.routing.repository
 
+import android.util.Log
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
@@ -48,6 +49,8 @@ data class MediationRecord(
     val invitationUrl: String,
 ) : BaseRecord() {
     override fun getTags(): Tags {
+        Log.e("MediationRecipient","--> getTags\n\n")
+
         var tags = (_tags ?: mutableMapOf()).toMutableMap()
 
         tags["state"] = state.name

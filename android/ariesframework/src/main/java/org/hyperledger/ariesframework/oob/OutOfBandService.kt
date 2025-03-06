@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.oob
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
@@ -17,6 +18,8 @@ class OutOfBandService(val agent: Agent) {
     private val logger = LoggerFactory.getLogger(OutOfBandService::class.java)
 
     suspend fun processHandshakeReuse(messageContext: InboundMessageContext): HandshakeReuseAcceptedMessage {
+        Log.d("OutOfBandService","--> processHandshakeReuse\n\n")
+
         val reuseMessage = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as HandshakeReuseMessage
 
         val parentThreadId = reuseMessage.thread?.parentThreadId
@@ -36,6 +39,8 @@ class OutOfBandService(val agent: Agent) {
     }
 
     suspend fun processHandshakeReuseAccepted(messageContext: InboundMessageContext) {
+        Log.d("OutOfBandService","--> processHandshakeReuseAccepted\n\n")
+
         val reuseAcceptedMessage = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as HandshakeReuseAcceptedMessage
 
         val parentThreadId = reuseAcceptedMessage.thread?.parentThreadId
@@ -56,6 +61,9 @@ class OutOfBandService(val agent: Agent) {
     }
 
     suspend fun createHandShakeReuse(outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord): HandshakeReuseMessage {
+        Log.d("OutOfBandService","--> createHandShakeReuse\n\n")
+
+
         val reuseMessage = HandshakeReuseMessage(outOfBandRecord.outOfBandInvitation.id)
 
         outOfBandRecord.reuseConnectionId = connectionRecord.id
@@ -65,40 +73,58 @@ class OutOfBandService(val agent: Agent) {
     }
 
     suspend fun save(outOfBandRecord: OutOfBandRecord) {
+        Log.d("OutOfBandService","--> save\n\n")
+
         outOfBandRepository.save(outOfBandRecord)
     }
 
     suspend fun updateState(outOfBandRecord: OutOfBandRecord, newState: OutOfBandState) {
+        Log.e("OutOfBandService","--> updateState\n\n")
+
         outOfBandRecord.state = newState
         outOfBandRepository.update(outOfBandRecord)
         agent.eventBus.publish(AgentEvents.OutOfBandEvent(outOfBandRecord.copy()))
     }
 
     suspend fun findById(outOfBandRecordId: String): OutOfBandRecord? {
+        Log.e("OutOfBandService","--> findById\n\n")
+
         return outOfBandRepository.findById(outOfBandRecordId)
     }
 
     suspend fun getById(outOfBandRecordId: String): OutOfBandRecord {
+        Log.e("OutOfBandService","--> getById\n\n")
+
         return outOfBandRepository.getById(outOfBandRecordId)
     }
 
     suspend fun findByInvitationId(invitationId: String): OutOfBandRecord? {
+        Log.e("OutOfBandService","--> findByInvitationId\n\n")
+
         return outOfBandRepository.findByInvitationId(invitationId)
     }
 
     suspend fun findAllByInvitationKey(invitationKey: String): List<OutOfBandRecord> {
+        Log.e("OutOfBandService","--> findAllByInvitationKey\n\n")
+
         return outOfBandRepository.findAllByInvitationKey(invitationKey)
     }
 
     suspend fun findByFingerprint(fingerprint: String): OutOfBandRecord? {
+        Log.e("OutOfBandService","--> findByFingerprint\n\n")
+
         return outOfBandRepository.findByFingerprint(fingerprint)
     }
 
     suspend fun getAll(): List<OutOfBandRecord> {
+        Log.e("OutOfBandService","--> getAll\n\n")
+
         return outOfBandRepository.getAll()
     }
 
     suspend fun deleteById(outOfBandId: String) {
+        Log.e("OutOfBandService","--> deleteById\n\n")
+
         outOfBandRepository.deleteById(outOfBandId)
     }
 }

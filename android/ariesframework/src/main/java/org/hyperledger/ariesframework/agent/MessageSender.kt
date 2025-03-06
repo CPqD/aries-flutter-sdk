@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.agent
 
+import android.util.Log
 import org.hyperledger.ariesframework.EnvelopeKeys
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.OutboundPackage
@@ -26,6 +27,8 @@ class MessageSender(val agent: Agent) {
 
     private fun outboundTransportForEndpoint(endpoint: String): OutboundTransport? {
         if (defaultOutboundTransport != null) {
+            Log.e("MessageSender","--> outboundTransportForEndpoint(${endpoint})\n\n")
+
             return defaultOutboundTransport
         } else if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
             return httpOutboundTransport
@@ -37,6 +40,8 @@ class MessageSender(val agent: Agent) {
     }
 
     private fun decorateMessage(message: OutboundMessage): AgentMessage {
+        Log.e("MessageSender","--> decorateMessage(${message})\n\n")
+
         val agentMessage = message.payload
         // If the agent is initialized, and the message is a TrustPing message, set the transport to "all".
         // This enables the agent to receive undelivered messages from the mediator.
@@ -74,6 +79,8 @@ class MessageSender(val agent: Agent) {
     }
 
     suspend fun send(message: OutboundMessage, endpointPrefix: String? = null) {
+        Log.e("MessageSender","--> send(${message})\n\n")
+
         val agentMessage = decorateMessage(message)
         val services = findDidCommServices(message.connection)
         if (services.isEmpty()) {
@@ -101,6 +108,8 @@ class MessageSender(val agent: Agent) {
     }
 
     private fun findDidCommServices(connection: ConnectionRecord): List<DidComm> {
+        Log.d("MessageSender","findDidCommServices(${connection})\n\n")
+
         if (connection.theirDidDoc != null) {
             return connection.theirDidDoc!!.didCommServices()
         }
@@ -124,6 +133,9 @@ class MessageSender(val agent: Agent) {
     }
 
     private suspend fun sendMessageToService(message: AgentMessage, service: DidComm, senderKey: String, connectionId: String) {
+        Log.d("MessageSender","sendMessageToService(${message}, $service, $senderKey, $connectionId)\n\n")
+
+
         val keys = EnvelopeKeys(service.recipientKeys, service.routingKeys ?: emptyList(), senderKey)
 
         val outboundPackage = packMessage(message, keys, service.serviceEndpoint, connectionId)
@@ -133,6 +145,9 @@ class MessageSender(val agent: Agent) {
     }
 
     private suspend fun packMessage(message: AgentMessage, keys: EnvelopeKeys, endpoint: String, connectionId: String): OutboundPackage {
+        Log.d("MessageSender","packMessage(${message}, $keys, $endpoint, $connectionId)\n\n")
+
+
         var encryptedMessage = agent.wallet.pack(message, keys.recipientKeys, keys.senderKey)
 
         var recipientKeys = keys.recipientKeys
@@ -149,6 +164,8 @@ class MessageSender(val agent: Agent) {
     }
 
     fun close() {
+        Log.e("MessageSender","--> close\n\n")
+
         wsOutboundTransport.closeSocket()
     }
 }

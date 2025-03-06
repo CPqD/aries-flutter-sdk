@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.proofs
 
+import android.util.Log
 import anoncreds_uniffi.Credential
 import anoncreds_uniffi.CredentialDefinition
 import anoncreds_uniffi.Presentation
@@ -73,6 +74,8 @@ class ProofService(val agent: Agent) {
         comment: String? = null,
         autoAcceptProof: AutoAcceptProof? = null,
     ): Pair<RequestPresentationMessage, ProofExchangeRecord> {
+        Log.e("ProofCommand","--> createRequest($proofRequest, $connectionRecord, $comment, $autoAcceptProof)\n\n")
+
         connectionRecord?.assertReady()
 
         val proofRequestJson = Json.encodeToString(proofRequest)
@@ -104,6 +107,8 @@ class ProofService(val agent: Agent) {
      * @return proof record associated with the presentation request message.
      */
     suspend fun processRequest(messageContext: InboundMessageContext): ProofExchangeRecord {
+        Log.e("ProofCommand","--> processRequest($messageContext)\n\n")
+
         val proofRequestMessage = MessageSerializer.decodeFromString(messageContext.plaintextMessage)
 
         val connection = messageContext.assertReadyConnection()
@@ -134,6 +139,8 @@ class ProofService(val agent: Agent) {
         requestedCredentials: RequestedCredentials,
         comment: String? = null,
     ): Pair<PresentationMessage, ProofExchangeRecord> {
+        Log.e("ProofCommand","--> createPresentation($proofRecord, $requestedCredentials, $comment)\n\n")
+
         proofRecord.assertState(ProofState.RequestReceived)
 
         val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(proofRecord.id, RequestPresentationMessage.type)
@@ -161,6 +168,8 @@ class ProofService(val agent: Agent) {
      * @return proof record associated with the presentation message.
      */
     suspend fun processPresentation(messageContext: InboundMessageContext): ProofExchangeRecord {
+        Log.e("ProofCommand","--> processPresentation($messageContext)\n\n")
+
         val presentationMessage = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as PresentationMessage
 
         val proofRecord = agent.proofRepository.getByThreadAndConnectionId(presentationMessage.threadId, null)
@@ -186,6 +195,8 @@ class ProofService(val agent: Agent) {
      * @return the presentation acknowledgement message and an associated proof record.
      */
     suspend fun createAck(proofRecord: ProofExchangeRecord): Pair<PresentationAckMessage, ProofExchangeRecord> {
+        Log.e("ProofCommand","--> createAck($proofRecord)\n\n")
+
         proofRecord.assertState(ProofState.PresentationReceived)
 
         val ackMessage = PresentationAckMessage(proofRecord.threadId, AckStatus.OK)
@@ -201,6 +212,8 @@ class ProofService(val agent: Agent) {
      * @return the presentation problem report message and an associated proof record.
      */
     suspend fun createPresentationDeclinedProblemReport(proofRecord: ProofExchangeRecord): Pair<PresentationProblemReportMessage, ProofExchangeRecord> {
+        Log.e("ProofCommand","--> createPresentationDeclinedProblemReport($proofRecord)\n\n")
+
         proofRecord.assertState(ProofState.RequestReceived)
 
         val probMessage = PresentationProblemReportMessage(proofRecord.threadId)
@@ -216,6 +229,8 @@ class ProofService(val agent: Agent) {
      * @return proof record associated with the presentation acknowledgement message.
      */
     suspend fun processAck(messageContext: InboundMessageContext): ProofExchangeRecord {
+        Log.e("ProofCommand","--> processAck($messageContext)\n\n")
+
         val ackMessage = MessageSerializer.decodeFromString(messageContext.plaintextMessage)
         val connection = messageContext.assertReadyConnection()
 
@@ -235,6 +250,8 @@ class ProofService(val agent: Agent) {
      * @return ``RetrievedCredentials`` object.
      */
     suspend fun getRequestedCredentialsForProofRequest(proofRequest: ProofRequest): RetrievedCredentials {
+        Log.e("ProofCommand","--> getRequestedCredentialsForProofRequest($proofRequest)\n\n")
+
         val retrievedCredentials = RetrievedCredentials()
         val lock = Mutex()
 
@@ -285,6 +302,9 @@ class ProofService(val agent: Agent) {
      * @return a ``RequestedCredentials`` object.
      */
     suspend fun autoSelectCredentialsForProofRequest(retrievedCredentials: RetrievedCredentials): RequestedCredentials {
+        Log.e("ProofCommand","--> autoSelectCredentialsForProofRequest($retrievedCredentials)\n\n")
+
+
         val requestedCredentials = RequestedCredentials()
         retrievedCredentials.requestedAttributes.keys.forEach { attributeName ->
             val attributeArray = retrievedCredentials.requestedAttributes[attributeName]!!
@@ -327,6 +347,9 @@ class ProofService(val agent: Agent) {
      * @return true if the proof is valid, false otherwise.
      */
     suspend fun verifyProof(proofRequest: String, proof: String): Boolean = coroutineScope {
+        Log.e("ProofCommand","--> verifyProof($proofRequest, $proof)\n\n")
+
+
         logger.debug("verifying proof: $proof")
         val partialProof = Json { ignoreUnknownKeys = true }.decodeFromString<PartialProof>(proof)
         val schemas = async { getSchemas(partialProof.identifiers.map { it.schemaId }.toSet()) }
@@ -356,6 +379,9 @@ class ProofService(val agent: Agent) {
         nonRevoked: RevocationInterval?,
         credential: IndyCredentialInfo,
     ): Pair<Boolean?, Int?> {
+        Log.e("ProofCommand","--> getRevocationStatusForRequestedItem)\n\n")
+
+
         val requestNonRevoked = nonRevoked ?: proofRequest.nonRevoked
         val credentialRevocationId = credential.credentialRevocationId
         val revocationRegistryId = credential.revocationRegistryId
@@ -371,6 +397,9 @@ class ProofService(val agent: Agent) {
     }
 
     suspend fun createProof(proofRequest: String, requestedCredentials: RequestedCredentials): ByteArray {
+        Log.e("ProofCommand","--> createProof($proofRequest, $requestedCredentials)\n\n")
+
+
         logger.debug("Creating proof with requestedCredentials: ${requestedCredentials.toJsonString()}")
         val anoncredsCreds = mutableListOf<RequestedCredential>()
         val credentialIds = requestedCredentials.getCredentialIdentifiers()
@@ -437,6 +466,8 @@ class ProofService(val agent: Agent) {
     }
 
     suspend fun getSchemas(schemaIds: Set<String>): Map<String, Schema> {
+        Log.e("ProofCommand","--> getSchemas($schemaIds)\n\n")
+
         val schemas = mutableMapOf<String, Schema>()
         val lock = Mutex()
 
@@ -451,6 +482,9 @@ class ProofService(val agent: Agent) {
     }
 
     suspend fun getCredentialDefinitions(credentialDefinitionIds: Set<String>): Map<String, CredentialDefinition> {
+        Log.e("ProofCommand","--> getCredentialDefinitions($credentialDefinitionIds)\n\n")
+
+
         val credentialDefinitions = mutableMapOf<String, CredentialDefinition>()
         val lock = Mutex()
 
@@ -465,6 +499,9 @@ class ProofService(val agent: Agent) {
     }
 
     suspend fun getRevocationRegistryDefinitions(revocationRegistryIds: Set<String>): Map<String, RevocationRegistryDefinition> {
+        Log.e("ProofCommand","--> getRevocationRegistryDefinitions($revocationRegistryIds)\n\n")
+
+
         val revocationRegistryDefinitions = mutableMapOf<String, RevocationRegistryDefinition>()
         val lock = Mutex()
 
@@ -479,6 +516,9 @@ class ProofService(val agent: Agent) {
     }
 
     suspend fun updateState(proofRecord: ProofExchangeRecord, newState: ProofState) {
+        Log.e("ProofCommand","--> updateState($proofRecord, $newState)\n\n")
+
+
         proofRecord.state = newState
         agent.proofRepository.update(proofRecord)
         agent.eventBus.publish(AgentEvents.ProofEvent(proofRecord.copy()))

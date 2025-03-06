@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.credentials.repository
 
+import android.util.Log
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
@@ -38,6 +39,8 @@ data class CredentialExchangeRecord(
     var credentialDefinitionId: String? = null,
 ) : BaseRecord() {
     override fun getTags(): Tags {
+        Log.e("CredentialExchangeRecord","--> getTags\n\n")
+
         val tags = (_tags ?: mutableMapOf()).toMutableMap()
 
         tags["connectionId"] = connectionId
@@ -48,6 +51,9 @@ data class CredentialExchangeRecord(
     }
 
     fun getCredentialInfo(): IndyCredentialView? {
+        Log.e("CredentialExchangeRecord","--> getCredentialInfo\n\n")
+
+
         if (credentialAttributes == null) {
             return null
         }
@@ -58,18 +64,25 @@ data class CredentialExchangeRecord(
     }
 
     fun assertProtocolVersion(version: String) {
+        Log.e("CredentialExchangeRecord","--> assertProtocolVersion($version)\n\n")
+
+
         if (this.protocolVersion != version) {
             throw Exception("Credential record has invalid protocol version ${this.protocolVersion}. Expected version $version")
         }
     }
 
     fun assertState(vararg expectedStates: CredentialState) {
+        Log.e("CredentialExchangeRecord","--> assertState(${expectedStates.toString()})\n\n")
+
         if (!expectedStates.contains(this.state)) {
             throw Exception("Credential record is in invalid state ${this.state}. Valid states are: $expectedStates")
         }
     }
 
     fun assertConnection(currentConnectionId: String) {
+        Log.e("CredentialExchangeRecord","--> assertConnection('$currentConnectionId')\n\n")
+
         if (this.connectionId != currentConnectionId) {
             throw Exception(
                 "Credential record is associated with connection '${this.connectionId}'." +

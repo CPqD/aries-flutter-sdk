@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection
 
+import android.util.Log
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.InboundMessageContext
@@ -46,6 +47,8 @@ class ConnectionService(val agent: Agent) {
         imageUrl: String?,
         threadId: String?,
     ): ConnectionRecord {
+        Log.e("ConnectionService","--> createConnection(role: $role, state: $state, invitation: $invitation)\n\n")
+
         val publicKey = Ed25119Sig2018(
             "${routing.did}#1",
             routing.did,
@@ -110,6 +113,8 @@ class ConnectionService(val agent: Agent) {
         label: String? = null,
         imageUrl: String? = null,
     ): OutboundMessage {
+        Log.e("ConnectionService","--> createInvitation\n\n")
+
         var connectionRecord = createConnection(
             ConnectionRole.Inviter,
             ConnectionState.Invited,
@@ -162,6 +167,8 @@ class ConnectionService(val agent: Agent) {
         autoAcceptConnection: Boolean? = null,
         alias: String? = null,
     ): ConnectionRecord {
+        Log.e("ConnectionService","--> processInvitation\n\n")
+
         require((invitation != null || outOfBandInvitation != null) && (invitation == null || outOfBandInvitation == null)) {
             "Either invitation or outOfBandInvitation must be set, but not both."
         }
@@ -204,6 +211,8 @@ class ConnectionService(val agent: Agent) {
         imageUrl: String? = null,
         autoAcceptConnection: Boolean? = null,
     ): OutboundMessage {
+        Log.e("ConnectionService","--> createRequest($connectionId, $label, $imageUrl, $autoAcceptConnection)\n\n")
+
         logger.debug("Creating connection request for connection: $connectionId")
         var connectionRecord = connectionRepository.getById(connectionId)
         assert(connectionRecord.state == ConnectionState.Invited)
@@ -235,6 +244,8 @@ class ConnectionService(val agent: Agent) {
      * @return updated connection record.
      */
     suspend fun processRequest(messageContext: InboundMessageContext): ConnectionRecord {
+        Log.e("ConnectionService","--> processRequest($messageContext)\n\n")
+
         logger.debug("Processing connection request message")
         val message = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as ConnectionRequestMessage
 
@@ -298,6 +309,8 @@ class ConnectionService(val agent: Agent) {
      * @return outbound message containing connection response.
      */
     suspend fun createResponse(connectionId: String): OutboundMessage {
+        Log.e("ConnectionService","--> createResponse($connectionId)\n\n")
+
         logger.debug("Creating connection response for connection: $connectionId")
         var connectionRecord = connectionRepository.getById(connectionId)
         logger.debug("Connection record: {}", Json.encodeToString(connectionRecord))
@@ -318,6 +331,8 @@ class ConnectionService(val agent: Agent) {
     }
 
     suspend fun processResponse(messageContext: InboundMessageContext): ConnectionRecord {
+        Log.e("ConnectionService","--> processResponse($messageContext)\n\n")
+
         logger.debug("Processing connection response message")
         val message = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as ConnectionResponseMessage
 
@@ -357,6 +372,8 @@ class ConnectionService(val agent: Agent) {
      * @return outbound message containing trust ping message.
      */
     suspend fun createTrustPing(connectionId: String, responseRequested: Boolean? = null, comment: String? = null): OutboundMessage {
+        Log.e("ConnectionService","--> createTrustPing($connectionId, $responseRequested, $comment)\n\n")
+
         var connectionRecord = connectionRepository.getById(connectionId)
         assert(connectionRecord.state == ConnectionState.Responded || connectionRecord.state == ConnectionState.Complete)
         val trustPing = TrustPingMessage(comment, responseRequested ?: true)
@@ -369,12 +386,16 @@ class ConnectionService(val agent: Agent) {
     }
 
     suspend fun updateState(connectionRecord: ConnectionRecord, newState: ConnectionState) {
+        Log.e("ConnectionService","--> updateState($connectionRecord, $newState)\n\n")
+
         connectionRecord.state = newState
         connectionRepository.update(connectionRecord)
         agent.eventBus.publish(AgentEvents.ConnectionEvent(connectionRecord.copy()))
     }
 
     suspend fun fetchState(connectionRecord: ConnectionRecord): ConnectionState {
+        Log.e("ConnectionService","--> fetchState($connectionRecord)\n\n")
+
         if (connectionRecord.state == ConnectionState.Complete) {
             return connectionRecord.state
         }
@@ -391,6 +412,8 @@ class ConnectionService(val agent: Agent) {
      * @return the connection record, if found.
      */
     suspend fun findByInvitationKey(key: String): ConnectionRecord? {
+        Log.e("ConnectionService","--> findByInvitationKey($key)\n\n")
+
         val connections = connectionRepository.findByQuery(
             """
             {"invitationKey": "$key"}
@@ -409,6 +432,8 @@ class ConnectionService(val agent: Agent) {
      * @return the connection record, if found.
      */
     suspend fun findAllByInvitationKey(key: String): List<ConnectionRecord> {
+        Log.e("ConnectionService","--> findAllByInvitationKey($key)\n\n")
+
         return connectionRepository.findByQuery(
             """
             {"invitationKey": "$key"}
@@ -423,6 +448,8 @@ class ConnectionService(val agent: Agent) {
      * @return the connection record.
      */
     suspend fun getByThreadId(threadId: String): ConnectionRecord {
+        Log.e("ConnectionService","--> getByThreadId($threadId)\n\n")
+
         return connectionRepository.getSingleByQuery(
             """
             {"threadId": "$threadId"}
@@ -438,6 +465,8 @@ class ConnectionService(val agent: Agent) {
      * @return the connection record, if found.
      */
     suspend fun findByKeys(senderKey: String, recipientKey: String): ConnectionRecord? {
+        Log.e("ConnectionService","--> findByKeys($senderKey, $recipientKey)\n\n")
+
         return connectionRepository.findSingleByQuery(
             """
             {"verkey": "$recipientKey", "theirKey": "$senderKey"}

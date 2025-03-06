@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.ledger
 
+import android.util.Log
 import anoncreds_uniffi.CredentialDefinition
 import anoncreds_uniffi.Issuer
 import anoncreds_uniffi.RevocationRegistryDefinition
@@ -70,6 +71,8 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun registerSchema(did: DidInfo, schemaTemplate: SchemaTemplate): String {
+        Log.e("LedgerService","--> registerSchema('${did.toString()}', '${schemaTemplate.toString()}')\n\n")
+
         val schema = issuer.createSchema(
             schemaTemplate.name,
             schemaTemplate.version,
@@ -92,6 +95,8 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun getSchema(schemaId: String): Pair<String, Int> {
+        Log.e("LedgerService","--> getSchema('${schemaId}')\n\n")
+
         logger.debug("Get Schema with id: $schemaId")
         val request = ledger.buildGetSchemaRequest(null, schemaId)
         val res = submitReadRequest(request)
@@ -117,6 +122,8 @@ class LedgerService(val agent: Agent) {
         did: DidInfo,
         credentialDefinitionTemplate: CredentialDefinitionTemplate,
     ): String {
+        Log.e("LedgerService","--> registerCredentialDefinition('${did.toString()}', '${credentialDefinitionTemplate.toString()}')\n\n")
+
         val schema = Schema(credentialDefinitionTemplate.schema)
         val credDefTuple = issuer.createCredentialDefinition(
             schema.schemaId(),
@@ -153,8 +160,12 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun getCredentialDefinition(id: String): String {
+        Log.e("LedgerService","--> getCredentialDefinition('$id')\n\n")
+
         logger.debug("Get CredentialDefinition with id: $id")
         val request = ledger.buildGetCredDefRequest(null, id)
+        Log.e("LedgerService","getCredentialDefinition - request: ${request.toString()}\n\n")
+
         val response = submitReadRequest(request)
         val json = Json.decodeFromString<JsonObject>(response)
         val result = json.get("result") as JsonObject?
@@ -182,6 +193,8 @@ class LedgerService(val agent: Agent) {
         did: DidInfo,
         revRegDefTemplate: RevocationRegistryDefinitionTemplate,
     ): String {
+        Log.e("LedgerService","--> registerRevocationRegistryDefinition('$did', '${revRegDefTemplate.toString()}')\n\n")
+
         logger.debug("Registering RevocationRegistryDefinition")
         val credentialDefinitionRecord = agent.credentialDefinitionRepository.getByCredDefId(revRegDefTemplate.credDefId)
         val credDef = CredentialDefinition(credentialDefinitionRecord.credDef)
@@ -240,6 +253,8 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun getRevocationRegistryDefinition(id: String): String {
+        Log.e("LedgerService","--> getRevocationRegistryDefinition('$id')\n\n")
+
         logger.debug("Get RevocationRegistryDefinition with id: $id")
         val request = ledger.buildGetRevocRegDefRequest(null, id)
         val response = submitReadRequest(request)
@@ -263,6 +278,8 @@ class LedgerService(val agent: Agent) {
         to: Int = (System.currentTimeMillis() / 1000L).toInt(),
         from: Int = 0,
     ): Pair<String, Int> {
+        Log.e("LedgerService","--> getRevocationRegistryDelta('$id')\n\n")
+
         logger.debug("Get RevocationRegistryDelta with id: $id")
         val request = ledger.buildGetRevocRegDeltaRequest(null, id, from.toLong(), to.toLong())
         val res = submitReadRequest(request)
@@ -280,6 +297,8 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun getRevocationRegistry(id: String, timestamp: Int): Pair<String, Int> {
+        Log.e("LedgerService","--> getRevocationRegistry(id: $id, timestamp: $timestamp)\n\n")
+
         logger.debug("Get RevocationRegistry with id: $id, timestamp: $timestamp")
         val request = ledger.buildGetRevocRegRequest(null, id, timestamp.toLong())
         val response = submitReadRequest(request)
@@ -296,6 +315,8 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun revokeCredential(did: DidInfo, credDefId: String, revocationIndex: Int) {
+        Log.e("LedgerService","--> revokeCredential(did: ${did.toString()}, credDefId: '$credDefId', revocationIndex: $revocationIndex)\n\n")
+
         logger.debug("Revoking credential with index: $revocationIndex")
         val credentialDefinitionRecord = agent.credentialDefinitionRepository.getByCredDefId(credDefId)
         val revocationRecord = agent.revocationRegistryRepository.findByCredDefId(credDefId)
@@ -329,6 +350,8 @@ class LedgerService(val agent: Agent) {
     }
 
     private fun validateResponse(response: String) {
+        Log.e("LedgerService","--> validateResponse(response: $response)\n\n")
+
         val indyResponse = jsonIgnoreUnknown.decodeFromString<IndyResponse>(response)
         if (indyResponse.op != "REPLY") {
             throw Exception("Submit request failed: ${indyResponse.reason ?: "Unknown error"}")
@@ -336,6 +359,8 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun submitWriteRequest(request: Request, did: DidInfo) {
+        Log.e("LedgerService","--> submitWriteRequest(request: ${request.toString()}, did: ${did.toString()})\n\n")
+
         if (pool == null) {
             throw Exception("Pool is not initialized")
         }
@@ -351,11 +376,15 @@ class LedgerService(val agent: Agent) {
     }
 
     suspend fun submitReadRequest(request: Request): String {
+        Log.e("LedgerService","--> submitReadRequest(request: ${request.toString()})\n\n")
+
         if (pool == null) {
             throw Exception("Pool is not initialized")
         }
 
         val response = pool!!.submitRequest(request)
+        Log.e("LedgerService","pool!!.submitRequest(${request.toString()}): ${response}\n\n")
+
         validateResponse(response)
         return response
     }

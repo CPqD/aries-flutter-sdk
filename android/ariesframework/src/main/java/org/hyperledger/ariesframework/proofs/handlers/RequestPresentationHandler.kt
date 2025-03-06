@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.proofs.handlers
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
@@ -12,6 +13,9 @@ class RequestPresentationHandler(val agent: Agent) : MessageHandler {
     override val messageType = RequestPresentationMessage.type
 
     override suspend fun handle(messageContext: InboundMessageContext): OutboundMessage? {
+        Log.e("RequestPresentationHandler","--> handle\n\n")
+
+
         val proofRecord = agent.proofService.processRequest(messageContext)
 
         if (proofRecord.autoAcceptProof == AutoAcceptProof.Always ||
@@ -24,6 +28,9 @@ class RequestPresentationHandler(val agent: Agent) : MessageHandler {
     }
 
     suspend fun createPresentation(record: ProofExchangeRecord, messageContext: InboundMessageContext): OutboundMessage? {
+        Log.e("RequestPresentationHandler","--> createPresentation\n\n")
+
+
         val retrievedCredentials = agent.proofs.getRequestedCredentialsForProofRequest(record.id)
         val requestedCredentials = agent.proofService.autoSelectCredentialsForProofRequest(retrievedCredentials)
 

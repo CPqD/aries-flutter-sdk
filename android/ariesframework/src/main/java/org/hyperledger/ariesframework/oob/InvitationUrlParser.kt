@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.oob
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -14,6 +15,8 @@ import java.net.URLDecoder
 
 object InvitationUrlParser {
     fun getInvitationType(invitationUrl: String): InvitationType {
+        Log.e("InvitationUrlParser","--> getInvitationType($invitationUrl)\n\n")
+
         val url = URL(invitationUrl)
         val queryParams = url.query?.split("&")?.associate {
             val (key, value) = it.split("=")
@@ -30,6 +33,8 @@ object InvitationUrlParser {
     }
 
     suspend fun parseUrl(url: String): Pair<OutOfBandInvitation?, ConnectionInvitationMessage?> {
+        Log.e("InvitationUrlParser","--> parseUrl($url)\n\n")
+
         val type = getInvitationType(url)
         var invitation: ConnectionInvitationMessage? = null
         var outOfBandInvitation: OutOfBandInvitation? = null
@@ -47,6 +52,9 @@ object InvitationUrlParser {
     }
 
     private suspend fun invitationFromShortUrl(url: String): Pair<OutOfBandInvitation?, ConnectionInvitationMessage?> {
+        Log.e("InvitationUrlParser","--> invitationFromShortUrl($url)\n\n")
+
+
         var invitationJson = withContext(Dispatchers.IO) {
             URL(url).openConnection().run {
                 this as HttpURLConnection

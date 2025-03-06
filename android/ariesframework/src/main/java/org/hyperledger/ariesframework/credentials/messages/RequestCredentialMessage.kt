@@ -17,6 +17,7 @@ class RequestCredentialMessage(
     }
 
     fun getRequestAttachmentById(id: String): Attachment? {
+
         return requestAttachments.firstOrNull { it.id == id }
     }
 }

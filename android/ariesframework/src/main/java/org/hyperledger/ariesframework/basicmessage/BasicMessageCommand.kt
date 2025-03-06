@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.basicmessage
 
+import android.util.Log
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.Dispatcher
 import org.hyperledger.ariesframework.agent.MessageSerializer
@@ -16,10 +17,14 @@ class BasicMessageCommand(val agent: Agent, private val dispatcher: Dispatcher) 
     }
 
     private fun registerHandlers(dispatcher: Dispatcher) {
+        Log.e("BasicMessageCommand","--> registerHandlers\n\n")
+
         dispatcher.registerHandler(BasicMessageHandler(agent))
     }
 
     private fun registerMessages() {
+        Log.e("BasicMessageCommand","--> registerMessages\n\n")
+
         MessageSerializer.registerMessage(BasicMessage.type, BasicMessage::class)
     }
 }

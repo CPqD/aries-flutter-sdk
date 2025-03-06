@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.agent
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -22,6 +23,9 @@ class HttpOutboundTransport(val agent: Agent) : OutboundTransport {
     private val logger = LoggerFactory.getLogger(HttpOutboundTransport::class.java)
 
     override suspend fun sendPackage(_package: OutboundPackage) {
+        Log.e("HttpOutboundTransport","--> sendPackage\n\n")
+
+
         logger.debug("Sending outbound message to endpoint: {}", _package.endpoint)
 
         val responseText = withContext(Dispatchers.IO) {

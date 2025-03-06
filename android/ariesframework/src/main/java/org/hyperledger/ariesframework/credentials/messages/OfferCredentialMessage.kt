@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.credentials.messages
 
+import android.util.Log
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.hyperledger.ariesframework.agent.AgentMessage
@@ -20,10 +21,14 @@ class OfferCredentialMessage(
     }
 
     fun getOfferAttachmentById(id: String): Attachment? {
+        Log.d("OfferCredentialMessage","--> getOfferAttachmentById\n\n")
+
         return offerAttachments.firstOrNull { it.id == id }
     }
 
     fun getCredentialOffer(): String {
+        Log.d("OfferCredentialMessage","--> getCredentialOffer\n\n")
+
         val attachment = getOfferAttachmentById(OfferCredentialMessage.INDY_CREDENTIAL_OFFER_ATTACHMENT_ID)
         return attachment?.getDataAsString() ?: throw Exception("Credential offer attachment not found")
     }

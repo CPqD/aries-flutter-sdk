@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.anoncreds.storage
 
+import android.util.Log
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
@@ -24,6 +25,8 @@ class RevocationRegistryRecord(
     var registryIndex: Int = 0,
 ) : BaseRecord() {
     override fun getTags(): Tags {
+        Log.e("RevocationRegistryRecord","--> getTags\n\n")
+
         val tags = (_tags ?: mutableMapOf()).toMutableMap()
         tags["credDefId"] = credDefId
         tags["revocRegId"] = revocRegId

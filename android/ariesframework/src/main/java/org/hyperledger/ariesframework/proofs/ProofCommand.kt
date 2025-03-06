@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.proofs
 
+import android.util.Log
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.OutboundMessage
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory
 
 class ProofCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     private val logger = LoggerFactory.getLogger(ProofCommand::class.java)
+
 
     init {
         registerHandlers(dispatcher)
@@ -55,6 +57,8 @@ class ProofCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         comment: String? = null,
         autoAcceptProof: AutoAcceptProof? = null,
     ): ProofExchangeRecord {
+        Log.e("ProofCommand","--> requestProof($connectionId, $proofRequest, $comment, $autoAcceptProof)\n\n")
+
         val connection = agent.connectionRepository.getById(connectionId)
         val (message, record) = agent.proofService.createRequest(
             proofRequest,
@@ -82,6 +86,8 @@ class ProofCommand(val agent: Agent, private val dispatcher: Dispatcher) {
         requestedCredentials: RequestedCredentials,
         comment: String? = null,
     ): ProofExchangeRecord {
+        Log.e("ProofCommand","--> acceptRequest($proofRecordId, $requestedCredentials, $comment)\n\n")
+
         val record = agent.proofRepository.getById(proofRecordId)
         val (message, proofRecord) = agent.proofService.createPresentation(
             record,
@@ -105,6 +111,8 @@ class ProofCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     suspend fun declineRequest(
         proofRecordId: String,
     ): ProofExchangeRecord {
+        Log.e("ProofCommand","--> declineRequest($proofRecordId)\n\n")
+
         val record = agent.proofRepository.getById(proofRecordId)
         val (message, proofRecord) = agent.proofService.createPresentationDeclinedProblemReport(record)
 
@@ -122,6 +130,8 @@ class ProofCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return proof record associated with the sent presentation acknowledgement message.
      */
     suspend fun acceptPresentation(proofRecordId: String): ProofExchangeRecord {
+        Log.e("ProofCommand","--> acceptPresentation($proofRecordId)\n\n")
+
         val record = agent.proofRepository.getById(proofRecordId)
         val connection = agent.connectionRepository.getById(record.connectionId)
         val (message, proofRecord) = agent.proofService.createAck(record)
@@ -137,6 +147,8 @@ class ProofCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return [RetrievedCredentials] object.
      */
     suspend fun getRequestedCredentialsForProofRequest(proofRecordId: String): RetrievedCredentials {
+        Log.e("ProofCommand","--> getRequestedCredentialsForProofRequest($proofRecordId)\n\n")
+
         val record = agent.proofRepository.getById(proofRecordId)
         val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(
             record.id,

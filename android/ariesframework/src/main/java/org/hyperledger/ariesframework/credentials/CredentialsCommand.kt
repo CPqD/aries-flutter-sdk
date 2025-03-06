@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.credentials
 
+import android.util.Log
 import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
@@ -31,6 +32,8 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private fun registerHandlers(dispatcher: Dispatcher) {
+        Log.e("CredentialService","--> registerHandlers(dispatcher: ${dispatcher.toString()})\n\n")
+
         dispatcher.registerHandler(CredentialAckHandler(agent))
         dispatcher.registerHandler(IssueCredentialHandler(agent))
         dispatcher.registerHandler(OfferCredentialHandler(agent))
@@ -38,6 +41,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
     }
 
     private fun registerMessages() {
+        Log.e("CredentialService","--> registerMessages\n\n")
+
+
         MessageSerializer.registerMessage(CredentialAckMessage.type, CredentialAckMessage::class)
         MessageSerializer.registerMessage(IssueCredentialMessage.type, IssueCredentialMessage::class)
         MessageSerializer.registerMessage(OfferCredentialMessage.type, OfferCredentialMessage::class)
@@ -53,6 +59,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return credential record associated with the sent proposal message.
      */
     suspend fun proposeCredential(options: CreateProposalOptions): CredentialExchangeRecord {
+        Log.e("CredentialService","--> proposeCredential(options: ${options.toString()})\n\n")
+
+
         val (message, credentialRecord) = agent.credentialService.createProposal(options)
         agent.messageSender.send(OutboundMessage(message, options.connection))
 
@@ -67,6 +76,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return credential record associated with the sent credential offer message.
      */
     suspend fun offerCredential(options: CreateOfferOptions): CredentialExchangeRecord {
+        Log.e("CredentialService","--> offerCredential(options: ${options.toString()})\n\n")
+
+
         val (message, credentialRecord) = agent.credentialService.createOffer(options)
         val connection = options.connection ?: throw Exception("Connection is required for sending credential offer")
         agent.messageSender.send(OutboundMessage(message, connection))
@@ -82,10 +94,22 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return credential record associated with the sent credential request message.
      */
     suspend fun acceptOffer(options: AcceptOfferOptions): CredentialExchangeRecord {
+        Log.e("CredentialsCommand","--> Calling agent.credentialService.createRequest\n\n")
+
         val message = agent.credentialService.createRequest(options)
+        Log.e("CredentialsCommand","--> Result from agent.credentialService.createRequest: ${message.toJsonString()}\n" +
+                "\n")
+
         val credentialRecord = agent.credentialExchangeRepository.getById(options.credentialRecordId)
+        Log.e("CredentialsCommand","--> Result from agent.credentialExchangeRepository.getById('${options.credentialRecordId}'): ${credentialRecord.toString()}\n" +
+                "\n")
+
         val connection = agent.connectionRepository.getById(credentialRecord.connectionId)
+        Log.e("CredentialsCommand","--> Result from agent.connectionRepository.getById('${credentialRecord.connectionId}'): ${connection.toString()}\n" +
+                "\n")
+
         agent.messageSender.send(OutboundMessage(message, connection))
+        Log.e("CredentialsCommand","--> Called send!!\n\n")
 
         return credentialRecord
     }
@@ -97,6 +121,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return credential record associated with the declined credential.
      */
     suspend fun declineOffer(options: AcceptOfferOptions): CredentialExchangeRecord {
+        Log.e("CredentialService","--> declineOffer(options: ${options.toString()})\n\n")
+
+
         val message = agent.credentialService.createOfferDeclinedProblemReport(options)
         var credentialRecord = agent.credentialExchangeRepository.getById(options.credentialRecordId)
         val connection = agent.connectionRepository.getById(credentialRecord.connectionId)
@@ -112,6 +139,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return credential record associated with the sent credential message.
      */
     suspend fun acceptRequest(options: AcceptRequestOptions): CredentialExchangeRecord {
+        Log.e("CredentialService","--> acceptRequest(options: ${options.toString()})\n\n")
+
+
         val message = agent.credentialService.createCredential(options)
         val credentialRecord = agent.credentialExchangeRepository.getById(options.credentialRecordId)
         val connection = agent.connectionRepository.getById(credentialRecord.connectionId)
@@ -128,6 +158,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return credential record associated with the sent credential acknowledgement message.
      */
     suspend fun acceptCredential(options: AcceptCredentialOptions): CredentialExchangeRecord {
+        Log.e("CredentialService","--> acceptCredential(options: ${options.toString()})\n\n")
+
+
         val message = agent.credentialService.createAck(options)
         val credentialRecord = agent.credentialExchangeRepository.getById(options.credentialRecordId)
         val connection = agent.connectionRepository.getById(credentialRecord.connectionId)
@@ -143,6 +176,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return the offer message associated with the credential record.
      */
     suspend fun findOfferMessage(credentialRecordId: String): OfferCredentialMessage? {
+        Log.e("CredentialService","--> findOfferMessage(credentialRecordId: $credentialRecordId)\n\n")
+
+
         val messageJson = agent.didCommMessageRepository.findAgentMessage(credentialRecordId, OfferCredentialMessage.type)
 
         return if (messageJson != null) {
@@ -159,6 +195,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return the request message associated with the credential record.
      */
     suspend fun findRequestMessage(credentialRecordId: String): RequestCredentialMessage? {
+        Log.e("CredentialService","--> findRequestMessage(credentialRecordId: $credentialRecordId)\n\n")
+
+
         val messageJson = agent.didCommMessageRepository.findAgentMessage(credentialRecordId, RequestCredentialMessage.type)
 
         return if (messageJson != null) {
@@ -175,6 +214,9 @@ class CredentialsCommand(val agent: Agent, private val dispatcher: Dispatcher) {
      * @return the credential message associated with the credential record.
      */
     suspend fun findCredentialMessage(credentialRecordId: String): IssueCredentialMessage? {
+        Log.e("CredentialService","--> findCredentialMessage(credentialRecordId: $credentialRecordId)\n\n")
+
+
         val messageJson = agent.didCommMessageRepository.findAgentMessage(credentialRecordId, IssueCredentialMessage.type)
 
         return if (messageJson != null) {

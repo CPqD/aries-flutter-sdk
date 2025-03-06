@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.routing.handlers
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
@@ -10,6 +11,8 @@ class MediationDenyHandler(val agent: Agent) : MessageHandler {
     override val messageType = MediationDenyMessage.type
 
     override suspend fun handle(messageContext: InboundMessageContext): OutboundMessage? {
+        Log.e("MediationDenyHandler","--> handle\n\n")
+
         agent.mediationRecipient.processMediationDeny(messageContext)
         return null
     }

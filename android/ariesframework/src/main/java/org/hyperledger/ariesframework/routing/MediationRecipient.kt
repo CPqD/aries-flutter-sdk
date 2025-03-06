@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.routing
 
+import android.util.Log
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -72,6 +73,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun getRoutingInfo(): Pair<List<String>, List<String>> {
+        Log.e("MediationRecipient","--> getRoutingInfo\n\n")
+
         val mediator = repository.getDefault()
         val endpoints = if (mediator?.endpoint == null) {
             agent.agentConfig.endpoints
@@ -84,6 +87,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun getRouting(): Routing {
+        Log.e("MediationRecipient","--> getRouting\n\n")
+
         val (endpoints, routingKeys) = getRoutingInfo()
         val (did, verkey) = agent.wallet.createDid()
         val mediator = repository.getDefault()
@@ -95,6 +100,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun initialize(mediatorConnectionsInvite: String) {
+        Log.e("MediationRecipient","--> initialize($mediatorConnectionsInvite)\n\n")
+
         logger.debug("Initialize mediation with invitation: $mediatorConnectionsInvite")
 
         val (outOfBandInvitation, invitation) = InvitationUrlParser.parseUrl(mediatorConnectionsInvite)
@@ -125,6 +132,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
 
     // TODO: support multiple mediators
     private suspend fun assertInvitationUrl() {
+        Log.e("MediationRecipient","--> assertInvitationUrl\n\n")
+
         val mediationRecord = repository.getDefault()
         if (mediationRecord != null && !hasSameInvitationUrl(mediationRecord)) {
             repository.delete(mediationRecord)
@@ -132,6 +141,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     private suspend fun requestMediationIfNecessry(connection: ConnectionRecord) {
+        Log.e("MediationRecipient","--> requestMediationIfNecessry($connection)\n\n")
+
         var mediationRecord = repository.getDefault()
         if (mediationRecord != null) {
             if (mediationRecord.isReady()) {
@@ -162,11 +173,15 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     private fun hasSameInvitationUrl(mediationRecord: MediationRecord): Boolean {
+        Log.e("MediationRecipient","--> hasSameInvitationUrl(mediationRecord: $mediationRecord)\n\n")
+
         return mediationRecord.invitationUrl == agent.agentConfig.mediatorConnectionsInvite
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     private suspend fun initiateMessagePickup(mediator: MediationRecord) {
+        Log.e("MediationRecipient","--> initiateMessagePickup\n\n")
+
         val mediatorConnection = agent.connectionRepository.getById(mediator.connectionId)
         pickupTimer = timer(period = agent.agentConfig.mediatorPollingInterval * 1000) {
             GlobalScope.launch {
@@ -176,6 +191,9 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun pickupMessages(mediatorConnection: ConnectionRecord) {
+        Log.d("MediationRecipient","pickupMessages($mediatorConnection)\n\n")
+
+
         mediatorConnection.assertReady()
 
         if (agent.agentConfig.mediatorPickupStrategy == MediatorPickupStrategy.PickUpV1) {
@@ -201,6 +219,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun pickupMessages() {
+        Log.d("MediationRecipient","pickupMessages()\n\n")
+
         val mediator = repository.getDefault()
         if (mediator == null || !mediator.isReady()) {
             return
@@ -210,6 +230,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun createRequest(connection: ConnectionRecord): OutboundMessage {
+        Log.e("MediationRecipient","--> createRequest\n\n")
+
         val message = MediationRequestMessage(Clock.System.now())
         val mediationRecord = MediationRecord(
             state = MediationState.Requested,
@@ -225,6 +247,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun processMediationGrant(messageContext: InboundMessageContext) {
+        Log.e("MediationRecipient","--> processMediationGrant\n\n")
+
         val connection = messageContext.assertReadyConnection()
         val mediationRecord = repository.getByConnectionId(connection.id)
         val message = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as MediationGrantMessage
@@ -247,6 +271,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun processMediationDeny(messageContext: InboundMessageContext) {
+        Log.e("MediationRecipient","--> processMediationDeny\n\n")
+
         val connection = messageContext.assertReadyConnection()
         val mediationRecord = repository.getByConnectionId(connection.id)
         mediationRecord.assertState(MediationState.Requested)
@@ -257,6 +283,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun processBatchMessage(messageContext: InboundMessageContext) {
+        Log.e("MediationRecipient","--> processBatchMessage\n\n")
+
         if (messageContext.connection == null) {
             throw Exception("No connection associated with incoming message with id ${messageContext.message.id}")
         }
@@ -270,6 +298,8 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun processKeylistUpdateResults(messageContext: InboundMessageContext) {
+        Log.e("MediationRecipient","--> processKeylistUpdateResults\n\n")
+
         val connection = messageContext.assertReadyConnection()
         val mediationRecord = repository.getByConnectionId(connection.id)
         mediationRecord.assertReady()
@@ -287,6 +317,9 @@ class MediationRecipient(private val agent: Agent, private val dispatcher: Dispa
     }
 
     suspend fun keylistUpdate(mediator: MediationRecord, verkey: String) {
+        Log.e("MediationRecipient","--> keylistUpdate\n\n")
+
+
         mediator.assertReady()
         val keylistUpdateMessage = KeylistUpdateMessage(listOf(KeylistUpdate(verkey, KeylistUpdateAction.ADD)))
         val connection = agent.connectionRepository.getById(mediator.connectionId)

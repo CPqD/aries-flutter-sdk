@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.anoncreds
 
+import android.util.Log
 import askar_uniffi.AskarEntryOperation
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.proofs.models.AttributeFilter
@@ -13,6 +14,8 @@ class AnoncredsService(val agent: Agent) {
     private val secretCategory = "link-secret-category"
 
     suspend fun createLinkSecret(): String {
+        Log.e("AnoncredsService","--> createLinkSecret\n\n")
+
         val linkSecretId = java.util.UUID.randomUUID().toString()
         val linkSecret = anoncreds_uniffi.createLinkSecret()
         agent.wallet.session!!.update(AskarEntryOperation.INSERT, secretCategory, linkSecretId, linkSecret.toByteArray(), null, null)
@@ -20,12 +23,17 @@ class AnoncredsService(val agent: Agent) {
     }
 
     suspend fun getLinkSecret(id: String): String {
+        Log.e("AnoncredsService","--> getLinkSecret $id\n\n")
+
         val linkSecret = agent.wallet.session!!.fetch(secretCategory, id, false)
             ?: throw Exception("Link secret not found for id $id")
         return String(linkSecret.value())
     }
 
     suspend fun getCredentialsForProofRequest(proofRequest: ProofRequest, referent: String): List<IndyCredentialInfo> {
+        Log.e("AnoncredsService","--> getCredentialsForProofRequest $proofRequest, $referent\n\n")
+
+
         val requestedAttribute = proofRequest.requestedAttributes[referent] ?: proofRequest.requestedPredicates[referent]?.asProofAttributeInfo()
             ?: throw Exception("Referent not found in proof request")
         val tags = mutableMapOf<String, String>()
@@ -57,6 +65,8 @@ class AnoncredsService(val agent: Agent) {
     }
 
     private fun queryFromRestrictions(restrictions: List<AttributeFilter>): Map<String, String> {
+        Log.e("AnoncredsService","--> queryFromRestrictions\n\n")
+
         val tags = mutableMapOf<String, String>()
         for (restriction in restrictions) {
             restriction.schemaId?.let { tags["schemaId"] = it }

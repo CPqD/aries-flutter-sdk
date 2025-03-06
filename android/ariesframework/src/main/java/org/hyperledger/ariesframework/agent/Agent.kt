@@ -1,6 +1,7 @@
 package org.hyperledger.ariesframework.agent
 
 import android.content.Context
+import android.util.Log
 import askar_uniffi.AskarStoreManager
 import org.hyperledger.ariesframework.EncryptedMessage
 import org.hyperledger.ariesframework.anoncreds.AnoncredsService
@@ -111,6 +112,8 @@ class Agent(val context: Context, val agentConfig: AgentConfig) {
      * Remove the wallet and ledger data. This makes the agent as if it was never initialized.
      */
     suspend fun reset() {
+        Log.e("Agent","--> reset\n\n")
+
         if (isInitialized()) {
             shutdown()
         }
@@ -118,6 +121,8 @@ class Agent(val context: Context, val agentConfig: AgentConfig) {
     }
 
     suspend fun receiveMessage(encryptedMessage: EncryptedMessage) {
+        Log.e("Agent","--> receiveMessage\n\n")
+
         messageReceiver.receiveMessage(encryptedMessage)
     }
 
@@ -126,6 +131,8 @@ class Agent(val context: Context, val agentConfig: AgentConfig) {
      * It is useful for testing.
      */
     fun setOutboundTransport(outboundTransport: OutboundTransport) {
+        Log.e("Agent","--> setOutboundTransport\n\n")
+
         messageSender.setOutboundTransport(outboundTransport)
     }
 
@@ -134,6 +141,8 @@ class Agent(val context: Context, val agentConfig: AgentConfig) {
          * Generate a key to encrypt the wallet.
          */
         fun generateWalletKey(): String {
+            Log.e("Agent","--> generateWalletKey\n\n")
+
             return AskarStoreManager().generateRawStoreKey(null)
         }
     }

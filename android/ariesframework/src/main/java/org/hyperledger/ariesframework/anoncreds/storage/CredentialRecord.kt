@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.anoncreds.storage
 
+import android.util.Log
 import anoncreds_uniffi.Credential
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -68,6 +69,8 @@ class CredentialRecord(
     }
 
     override fun getTags(): Tags {
+        Log.e("CredentialRecord","--> getTags\n\n")
+
         val tags = (_tags ?: mutableMapOf()).toMutableMap()
         tags["credentialId"] = credentialId
         credentialRevocationId?.let { tags["credentialRevocationId"] = it }

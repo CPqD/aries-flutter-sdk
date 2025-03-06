@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection
 
+import android.util.Log
 import org.hyperledger.ariesframework.InboundMessageContext
 import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
@@ -35,6 +36,8 @@ class DidExchangeService(val agent: Agent) {
         label: String? = null,
         autoAcceptConnection: Boolean? = null,
     ): OutboundMessage {
+        Log.e("DidExchangeService","--> createRequest($connectionId, $label)\n\n")
+
         var connectionRecord = connectionRepository.getById(connectionId)
         assert(connectionRecord.state == ConnectionState.Invited)
         assert(connectionRecord.role == ConnectionRole.Invitee)
@@ -63,6 +66,8 @@ class DidExchangeService(val agent: Agent) {
      * @return updated connection record.
      */
     suspend fun processRequest(messageContext: InboundMessageContext): ConnectionRecord {
+        Log.e("DidExchangeService","--> processRequest\n\n")
+
         val message = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as DidExchangeRequestMessage
         val recipientKey = messageContext.recipientVerkey
             ?: throw Exception("Unable to process connection request without recipientVerkey")
@@ -113,6 +118,8 @@ class DidExchangeService(val agent: Agent) {
      * @return outbound message containing DID exchange response.
      */
     suspend fun createResponse(connectionId: String): OutboundMessage {
+        Log.e("DidExchangeService","--> createResponse $connectionId\n\n")
+
         var connectionRecord = connectionRepository.getById(connectionId)
         assert(connectionRecord.state == ConnectionState.Requested)
         assert(connectionRecord.role == ConnectionRole.Inviter)
@@ -147,6 +154,8 @@ class DidExchangeService(val agent: Agent) {
      * @return updated connection record.
      */
     suspend fun processResponse(messageContext: InboundMessageContext): ConnectionRecord {
+        Log.e("DidExchangeService","--> processResponse\n\n")
+
         val message = MessageSerializer.decodeFromString(messageContext.plaintextMessage) as DidExchangeResponseMessage
         var connectionRecord = try {
             agent.connectionService.getByThreadId(message.threadId)
@@ -171,6 +180,8 @@ class DidExchangeService(val agent: Agent) {
     }
 
     private fun verifyDidRotate(message: DidExchangeResponseMessage, connectionRecord: ConnectionRecord) {
+        Log.e("DidExchangeService","--> verifyDidRotate\n\n")
+
         val didRotateAttachment = message.didRotate
             ?: throw Exception("Missing valid did_rotate in response: ${message.didRotate}")
         val jws = didRotateAttachment.data.jws
@@ -200,6 +211,8 @@ class DidExchangeService(val agent: Agent) {
      * @return outbound message containing a DID exchange complete message.
      */
     suspend fun createComplete(connectionId: String): OutboundMessage {
+        Log.e("DidExchangeService","--> createComplete $connectionId\n\n")
+
         var connectionRecord = connectionRepository.getById(connectionId)
         assert(connectionRecord.state == ConnectionState.Responded)
 
@@ -215,6 +228,8 @@ class DidExchangeService(val agent: Agent) {
     }
 
     private suspend fun updateState(connectionRecord: ConnectionRecord, newState: ConnectionState) {
+        Log.e("DidExchangeService","--> updateState (connectionRecord: $connectionRecord, newState: $newState)\n\n")
+
         connectionRecord.state = newState
         connectionRepository.update(connectionRecord)
         agent.eventBus.publish(AgentEvents.ConnectionEvent(connectionRecord.copy()))

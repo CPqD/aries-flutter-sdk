@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection.repository
 
+import android.util.Log
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
@@ -17,7 +18,7 @@ import java.lang.Exception
 data class ConnectionRecord(
     @EncodeDefault
     override var id: String = generateId(),
-    public override var _tags: Tags? = null,
+    override var _tags: Tags? = null,
     @EncodeDefault
     override val createdAt: Instant = Clock.System.now(),
     override var updatedAt: Instant? = null,
@@ -40,6 +41,8 @@ data class ConnectionRecord(
     var errorMessage: String? = null,
 ) : BaseRecord() {
     override fun getTags(): Tags {
+        Log.e("ConnectionRecord","--> getTags\n\n")
+
         var tags = (_tags ?: mutableMapOf()).toMutableMap()
 
         tags["state"] = state.name
@@ -63,18 +66,26 @@ data class ConnectionRecord(
     }
 
     fun myKey(): String? {
+        Log.e("ConnectionRecord","--> myKey\n\n")
+
         return didDoc.didCommServices().firstOrNull()?.recipientKeys?.firstOrNull()
     }
 
     fun theirKey(): String? {
+        Log.e("ConnectionRecord","--> theirKey\n\n")
+
         return theirDidDoc?.didCommServices()?.firstOrNull()?.recipientKeys?.firstOrNull()
     }
 
     fun isReady(): Boolean {
+//        Log.d("ConnectionRecord","isReady\n\n")
+
         return state in listOf(ConnectionState.Responded, ConnectionState.Complete)
     }
 
     fun assertReady() {
+        // Log.e("ConnectionRecord","--> assertReady\n\n")
+
         if (!isReady()) {
             throw Exception(
                 "Connection record is not ready to be used. Expected ${ConnectionState.Responded} or ${ConnectionState.Complete}," +

@@ -1,5 +1,6 @@
 package org.hyperledger.ariesframework.connection
 
+import android.util.Log
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -25,6 +26,8 @@ class JwsService(val agent: Agent) {
      * @return The created JWS.
      */
     suspend fun createJws(payload: ByteArray, verkey: String): JwsGeneralFormat {
+        Log.e("JwsService","--> createJws\n\n")
+
         val keyEntry = agent.wallet.session!!.fetchKey(verkey, false)
             ?: throw Exception("Unable to find key for verkey: $verkey")
         val key = keyEntry.loadLocalKey()
@@ -57,6 +60,8 @@ class JwsService(val agent: Agent) {
      * @return A pair containing the validity of the JWS and the signer's verkey.
      */
     fun verifyJws(jws: Jws, payload: ByteArray): Pair<Boolean, String> {
+        Log.e("JwsService","--> verifyJws\n\n")
+
         logger.debug("Verifying JWS...")
         val firstSig = when (jws) {
             is JwsGeneralFormat -> jws
