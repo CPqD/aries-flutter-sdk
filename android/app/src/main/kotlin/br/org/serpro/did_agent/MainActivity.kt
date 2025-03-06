@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.annotation.NonNull
+import com.google.gson.Gson
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -187,50 +188,55 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     private fun getCredentials(result: MethodChannel.Result) {
-        Log.d("MainActivity", "getCredentials called from Kotlin...")
+    Log.d("MainActivity", "getCredentials called from Kotlin...")
 
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
-
-        try {
-            val credentials = runBlocking{ agent?.credentialRepository?.getAll()};
-
-            Log.d("MainActivity", "credentials: ${credentials.toString()}")
-
-            val credentialsList = mutableListOf<Map<String, String?>>()
-
-            if (credentials.isNullOrEmpty()) {
-                result.success(credentialsList)
-                return
-            }
-
-            for (credential in credentials) {
-                val credentialMap = mapOf(
-                    "id" to credential.id,
-                    "revocationId" to credential.credentialRevocationId,
-                    "linkSecretId" to credential.linkSecretId,
-                    "credential" to credential.credential,
-                    "schemaId" to credential.schemaId,
-                    "schemaName" to credential.schemaName,
-                    "schemaVersion" to credential.schemaVersion,
-                    "schemaIssuerId" to credential.schemaIssuerId,
-                    "issuerId" to credential.issuerId,
-                    "definitionId" to credential.credentialDefinitionId,
-                    "revocationRegistryId" to credential.revocationRegistryId
-                )
-
-                credentialsList.add(credentialMap)
-            }
-
-            result.success(credentialsList)
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Cannot get credentials: ${e.message}")
-            result.error("1", "Cannot get credentials: ${e.message}", null)
-            return
-        }
+    if (agent == null) {
+        result.error("1", "Agent is null", null)
+        return
     }
+
+    try {
+        val credentials = runBlocking { agent?.credentialRepository?.getAll() }
+
+        Log.d("MainActivity", "credentials: ${credentials.toString()}")
+
+        val credentialsList = mutableListOf<Map<String, Any?>>()
+
+        if (credentials.isNullOrEmpty()) {
+            Log.d("MainActivity", "getCredentials -> credentials.isNullOrEmpty")
+
+            result.success(mapOf("error" to "", "result" to Gson().toJson(credentialsList)))
+
+            return
+        }
+
+        Log.d("MainActivity", "getCredentials -> credentials is not Null Or Empty")
+
+        for (credential in credentials) {
+            val credentialMap: Map<String, Any?> = mapOf(
+                "id" to credential.id,
+                "revocationId" to credential.credentialRevocationId,
+                "linkSecretId" to credential.linkSecretId,
+                "credential" to credential.credential,
+                "schemaId" to credential.schemaId,
+                "schemaName" to credential.schemaName,
+                "schemaVersion" to credential.schemaVersion,
+                "schemaIssuerId" to credential.schemaIssuerId,
+                "issuerId" to credential.issuerId,
+                "definitionId" to credential.credentialDefinitionId,
+                "revocationRegistryId" to credential.revocationRegistryId
+            )
+
+            credentialsList.add(credentialMap)
+        }
+
+        result.success(mapOf("error" to "", "result" to Gson().toJson(credentialsList)))
+    } catch (e: Exception) {
+        Log.e("MainActivity", "Cannot get credentials: ${e.message}")
+        result.error("1", "Cannot get credentials: ${e.message}", null)
+        return
+    }
+}
 
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
@@ -276,8 +282,6 @@ class MainActivity: FlutterFragmentActivity() {
             agent!!.eventBus.subscribe<AgentEvents.CredentialEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
                     Log.d("MainActivity", "Credential ${it.record.id}: ${it.record.toString()}")
-
-                    // acceptOffer(it.record.id, result)
 
                     sendCredentialToFlutter(it.record.id, it.record.state.toString())
                 }

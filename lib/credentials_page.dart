@@ -19,7 +19,7 @@ class CredentialsPage extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.success == false) {
+          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.success == false) {
             return Center(child: Text('Error: ${snapshot.error ?? snapshot.data?.error}'));
           }
 

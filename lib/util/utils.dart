@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:did_agent/agent/aries_method.dart';
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/credential_record.dart';
@@ -11,16 +13,25 @@ Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
 Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
   final result = await AriesResult.invoke(AriesMethod.getCredentials);
 
-  if (!result.success || result.value == null || result.value is! List<Map>) {
+  if (!result.success || result.value == null) {
     return AriesResult(success: false, error: result.error, value: []);
   }
 
-  final originalList = List<Map<String, String?>>.from(result.value);
+  try {
+    final List<dynamic> jsonList = jsonDecode(result.value);
 
-  List<CredentialRecord> resultList =
-      originalList.map((map) => CredentialRecord.fromMap(map)).toList();
+    final originalList = List<Map<String, dynamic>>.from(jsonList);
 
-  return AriesResult(success: true, error: result.error, value: resultList);
+    return AriesResult(
+      success: true,
+      error: result.error,
+      value: originalList.map((map) => CredentialRecord.fromMap(map)).toList(),
+    );
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString(), value: []);
+  }
 }
 
 Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
