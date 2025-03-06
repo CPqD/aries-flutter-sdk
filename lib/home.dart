@@ -186,22 +186,20 @@ class HomePageState extends State<HomePage> {
                 child: Text('Accept'),
                 onPressed: () async {
                   final acceptOfferResult = await acceptOffer(credentialId);
-
-                  //if (!acceptOfferResult.success) {
-                  //} else {}
                   print('Credential Accepted: $credentialId');
                   print('Accept Offer Result: ${acceptOfferResult.value}');
                   Navigator.of(context).pop();
+                  acceptOfferResultDialog(acceptOfferResult);
                 },
               ),
               TextButton(
                 child: Text('Refuse'),
                 onPressed: () async {
                   final declineOfferResult = await declineOffer(credentialId);
-
                   print('Credential Refused: $credentialId');
                   print('Refused Offer Result: ${declineOfferResult.value}');
                   Navigator.of(context).pop();
+                  declineOfferResultDialog(declineOfferResult);
                 },
               ),
             ],
