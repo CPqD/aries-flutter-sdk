@@ -2,6 +2,7 @@ import 'package:did_agent/agent/aries_result.dart';
 import 'package:flutter/material.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:did_agent/agent/credential_record.dart';
+import 'credential_details_page.dart';
 
 class CredentialsPage extends StatelessWidget {
   const CredentialsPage({super.key});
@@ -20,7 +21,8 @@ class CredentialsPage extends StatelessWidget {
           }
 
           if (snapshot.hasError || !snapshot.hasData || snapshot.data!.success == false) {
-            return Center(child: Text('Error: ${snapshot.error ?? snapshot.data?.error}'));
+            return Center(
+                child: Text('Error: ${snapshot.error ?? snapshot.data?.error}'));
           }
 
           if (snapshot.data!.value!.isEmpty) {
@@ -33,9 +35,18 @@ class CredentialsPage extends StatelessWidget {
             itemCount: credentials.length,
             itemBuilder: (context, index) {
               final credential = credentials[index];
+
               return ListTile(
-                title: Text('Credential ID: "${credential.id}"'),
-                subtitle: Text('Schema Name: "${credential.schemaName}"'),
+                title: Text(credential.id),
+                subtitle: Text(credential.getSubtitle()),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CredentialDetailsPage(credential: credential),
+                    ),
+                  );
+                },
               );
             },
           );

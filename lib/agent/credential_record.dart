@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class CredentialRecord {
   final String id;
   final String revocationId;
@@ -42,8 +44,52 @@ class CredentialRecord {
     );
   }
 
+  String getSubtitle() {
+    return 'revocationId: $revocationId\n'
+        'schemaName: $schemaName\n'
+        'schemaVersion: $schemaVersion';
+  }
+
+  Map<String, dynamic> getValues() {
+    try {
+      final decodedCredential = Map<String, dynamic>.from(jsonDecode(credential));
+      return Map<String, dynamic>.from(decodedCredential["values"]);
+    } catch (e) {
+      print('Failed to get credential values: ${e.toString()}');
+      return {};
+    }
+  }
+
+  Map<String, dynamic> getRawValues() {
+    try {
+      final values = getValues();
+
+      Map<String, dynamic> simplifiedValues = {};
+
+      values.forEach((key, value) {
+        simplifiedValues[key] = Map<String, dynamic>.from(value)['raw'];
+      });
+
+      return simplifiedValues;
+    } catch (e) {
+      print('Failed to get credential values: ${e.toString()}');
+      return {};
+    }
+  }
+
   @override
   String toString() {
-    return 'CredentialRecord{id: $id, revocationId: $revocationId, linkSecretId: $linkSecretId, schemaId: $schemaId}';
+    return 'CredentialRecord{'
+        'id: $id, '
+        'revocationId: $revocationId, '
+        'linkSecretId: $linkSecretId, '
+        'schemaId: $schemaId, '
+        'schemaName: $schemaName, '
+        'schemaVersion: $schemaVersion, '
+        'schemaIssuerId: $schemaIssuerId, '
+        'issuerId: $issuerId, '
+        'definitionId: $definitionId, '
+        'revocationRegistryId: $revocationRegistryId'
+        '}';
   }
 }
