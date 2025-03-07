@@ -130,15 +130,25 @@ class HomePageState extends State<HomePage> {
       successText: "Agente desligado com sucesso",
       errorText: "Não foi possível desligar agente");
 
-  void acceptOfferResultDialog(AriesResult result) => showResultDialog(
+  void acceptCredentialResultDialog(AriesResult result) => showResultDialog(
       result: result,
-      successText: "Oferta aceita com sucesso",
-      errorText: "Não foi possível aceitar oferta");
+      successText: "Credencial recebida com sucesso",
+      errorText: "Não foi possível aceitar credencial");
 
-  void declineOfferResultDialog(AriesResult result) => showResultDialog(
+  void declineCredentialDialog(AriesResult result) => showResultDialog(
       result: result,
-      successText: "Oferta recusada com sucesso",
-      errorText: "Não foi possível recusar oferta");
+      successText: "Credencial recusada com sucesso",
+      errorText: "Não foi possível recusar credencial");
+
+  void acceptProofResultDialog(AriesResult result) => showResultDialog(
+      result: result,
+      successText: "Prova aceita com sucesso",
+      errorText: "Não foi possível aceitar credencial");
+
+  void declineProofDialog(AriesResult result) => showResultDialog(
+      result: result,
+      successText: "Prova recusada com sucesso",
+      errorText: "Não foi possível recusar credencial");
 
   void showResultDialog({
     required AriesResult result,
@@ -185,21 +195,29 @@ class HomePageState extends State<HomePage> {
               TextButton(
                 child: Text('Accept'),
                 onPressed: () async {
-                  final acceptOfferResult = await acceptOffer(credentialId);
-                  print('Credential Accepted: $credentialId');
-                  print('Accept Offer Result: ${acceptOfferResult.value}');
                   Navigator.of(context).pop();
-                  acceptOfferResultDialog(acceptOfferResult);
+
+                  final acceptOfferResult = await acceptOffer(credentialId);
+
+                  if (acceptOfferResult.success) {
+                    print('Credential Accepted: $credentialId');
+                  }
+
+                  acceptCredentialResultDialog(acceptOfferResult);
                 },
               ),
               TextButton(
                 child: Text('Refuse'),
                 onPressed: () async {
-                  final declineOfferResult = await declineOffer(credentialId);
-                  print('Credential Refused: $credentialId');
-                  print('Refused Offer Result: ${declineOfferResult.value}');
                   Navigator.of(context).pop();
-                  declineOfferResultDialog(declineOfferResult);
+
+                  final declineOfferResult = await declineOffer(credentialId);
+
+                  if (declineOfferResult.success) {
+                    print('Credential Refused: $credentialId');
+                  }
+
+                  declineCredentialDialog(declineOfferResult);
                 },
               ),
             ],

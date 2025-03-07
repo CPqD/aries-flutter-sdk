@@ -26,19 +26,19 @@ class CredentialRecord {
     this.revocationRegistryId,
   });
 
-  factory CredentialRecord.fromMap(Map<String, String?> map) {
+  factory CredentialRecord.fromMap(Map<String, dynamic> map) {
     return CredentialRecord(
-      id: map["id"] ?? '',
-      revocationId: map["revocationId"] ?? '',
-      linkSecretId: map["linkSecretId"] ?? '',
-      credential: map["credential"] ?? '',
-      schemaId: map["schemaId"] ?? '',
-      schemaName: map["schemaName"] ?? '',
-      schemaVersion: map["schemaVersion"] ?? '',
-      schemaIssuerId: map["schemaIssuerId"] ?? '',
-      issuerId: map["issuerId"] ?? '',
-      definitionId: map["definitionId"] ?? '',
-      revocationRegistryId: map["revocationRegistryId"] ?? '',
+      id: map["id"].toString(),
+      revocationId: map["revocationId"].toString(),
+      linkSecretId: map["linkSecretId"].toString(),
+      credential: map["credential"].toString(),
+      schemaId: map["schemaId"].toString(),
+      schemaName: map["schemaName"].toString(),
+      schemaVersion: map["schemaVersion"].toString(),
+      schemaIssuerId: map["schemaIssuerId"].toString(),
+      issuerId: map["issuerId"].toString(),
+      definitionId: map["definitionId"].toString(),
+      revocationRegistryId: map["revocationRegistryId"].toString(),
     );
   }
 

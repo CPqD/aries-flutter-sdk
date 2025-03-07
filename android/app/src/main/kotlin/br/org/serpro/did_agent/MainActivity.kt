@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.annotation.NonNull
+import com.google.gson.Gson
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -22,13 +23,13 @@ import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
-import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import java.io.File
 import java.lang.Exception
 
 
 const val genesisPath = "bcovrin-genesis.txn"
+const val mediatorUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
 
 class MainActivity: FlutterFragmentActivity() {
     companion object {
@@ -36,9 +37,7 @@ class MainActivity: FlutterFragmentActivity() {
     }
     private var agent: Agent? = null
     private var walletKey: String? = null
-
-    private var result: MethodChannel.Result? = null
-    private lateinit var resultCallback: MethodChannel.Result
+    private var subscribed = false
 
     private lateinit var methodChannel: MethodChannel
 
@@ -117,26 +116,6 @@ class MainActivity: FlutterFragmentActivity() {
     private fun init(result: MethodChannel.Result) {
         Log.d("MainActivity", "init called from Kotlin...")
 
-        try {
-            copyResourceFile(genesisPath)
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Cannot open genesis: ${e.message}")
-            result.error("1", "Cannot open genesis: ${e.message}", null)
-            return
-        }
-
-        result.success(mapOf("error" to "", "result" to true))
-    }
-
-    private fun copyResourceFile(resource: String) {
-        val inputStream = applicationContext.assets.open(resource)
-        val file = File(applicationContext.filesDir.absolutePath, resource)
-        file.outputStream().use { inputStream.copyTo(it) }
-    }
-
-    private fun openWallet(result: MethodChannel.Result) {
-        Log.d("MainActivity", "openWallet called from Kotlin...")
-
         val sharedPreferences: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
         walletKey = sharedPreferences.getString("flutter.walletKey", null)
 
@@ -153,12 +132,35 @@ class MainActivity: FlutterFragmentActivity() {
             }
         }
 
-        val invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
+        result.success(mapOf("error" to "", "result" to true))
+    }
+
+    private fun copyResourceFile(resource: String) {
+        val inputStream = applicationContext.assets.open(resource)
+        val file = File(applicationContext.filesDir.absolutePath, resource)
+        file.outputStream().use { inputStream.copyTo(it) }
+    }
+
+    private fun openWallet(result: MethodChannel.Result) {
+        Log.d("MainActivity", "openWallet called from Kotlin...")
+
+        if (agent != null) {
+            result.error("1", "Wallet is already open", null)
+            return
+        }
+
+        try {
+            copyResourceFile(genesisPath)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot open genesis: ${e.message}")
+            result.error("1", "Cannot open genesis: ${e.message}", null)
+            return
+        }
 
         val config = AgentConfig(
             walletKey = walletKey!!,
             genesisPath = File(applicationContext.filesDir.absolutePath, genesisPath).absolutePath,
-            mediatorConnectionsInvite = invitationUrl,
+            mediatorConnectionsInvite = mediatorUrl,
             mediatorPickupStrategy = MediatorPickupStrategy.Implicit,
             label = "SampleApp",
             autoAcceptCredential = AutoAcceptCredential.Never,
@@ -186,50 +188,55 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     private fun getCredentials(result: MethodChannel.Result) {
-        Log.d("MainActivity", "getCredentials called from Kotlin...")
+    Log.d("MainActivity", "getCredentials called from Kotlin...")
 
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
-
-        try {
-            val credentials = runBlocking{ agent?.credentialRepository?.getAll()};
-
-            Log.d("MainActivity", "credentials: ${credentials.toString()}")
-
-            val credentialsList = mutableListOf<Map<String, String?>>()
-
-            if (credentials.isNullOrEmpty()) {
-                result.success(credentialsList)
-                return
-            }
-
-            for (credential in credentials) {
-                val credentialMap = mapOf(
-                    "id" to credential.id,
-                    "revocationId" to credential.credentialRevocationId,
-                    "linkSecretId" to credential.linkSecretId,
-                    "credential" to credential.credential,
-                    "schemaId" to credential.schemaId,
-                    "schemaName" to credential.schemaName,
-                    "schemaVersion" to credential.schemaVersion,
-                    "schemaIssuerId" to credential.schemaIssuerId,
-                    "issuerId" to credential.issuerId,
-                    "definitionId" to credential.credentialDefinitionId,
-                    "revocationRegistryId" to credential.revocationRegistryId
-                )
-
-                credentialsList.add(credentialMap)
-            }
-
-            result.success(credentialsList)
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Cannot get credentials: ${e.message}")
-            result.error("1", "Cannot get credentials: ${e.message}", null)
-            return
-        }
+    if (agent == null) {
+        result.error("1", "Agent is null", null)
+        return
     }
+
+    try {
+        val credentials = runBlocking { agent?.credentialRepository?.getAll() }
+
+        Log.d("MainActivity", "credentials: ${credentials.toString()}")
+
+        val credentialsList = mutableListOf<Map<String, Any?>>()
+
+        if (credentials.isNullOrEmpty()) {
+            Log.d("MainActivity", "getCredentials -> credentials.isNullOrEmpty")
+
+            result.success(mapOf("error" to "", "result" to Gson().toJson(credentialsList)))
+
+            return
+        }
+
+        Log.d("MainActivity", "getCredentials -> credentials is not Null Or Empty")
+
+        for (credential in credentials) {
+            val credentialMap: Map<String, Any?> = mapOf(
+                "id" to credential.id,
+                "revocationId" to credential.credentialRevocationId,
+                "linkSecretId" to credential.linkSecretId,
+                "credential" to credential.credential,
+                "schemaId" to credential.schemaId,
+                "schemaName" to credential.schemaName,
+                "schemaVersion" to credential.schemaVersion,
+                "schemaIssuerId" to credential.schemaIssuerId,
+                "issuerId" to credential.issuerId,
+                "definitionId" to credential.credentialDefinitionId,
+                "revocationRegistryId" to credential.revocationRegistryId
+            )
+
+            credentialsList.add(credentialMap)
+        }
+
+        result.success(mapOf("error" to "", "result" to Gson().toJson(credentialsList)))
+    } catch (e: Exception) {
+        Log.e("MainActivity", "Cannot get credentials: ${e.message}")
+        result.error("1", "Cannot get credentials: ${e.message}", null)
+        return
+    }
+}
 
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
@@ -264,33 +271,55 @@ class MainActivity: FlutterFragmentActivity() {
             return
         }
 
-        agent!!.eventBus.subscribe<AgentEvents.CredentialEvent> {
-            lifecycleScope.launch(Dispatchers.Main) {
-                Log.d("MainActivity", "Credential ${it.record.state}: ${it.record.id} - ${it.record.threadId}")
-                sendCredentialToFlutter(it.record.id, it.record.state.toString())
-            }
+        if (subscribed) {
+            result.error("1", "Already subscribed!", null)
+            return
         }
 
-        agent!!.eventBus.subscribe<AgentEvents.ProofEvent> {
-            lifecycleScope.launch(Dispatchers.Main) {
-                Log.d("MainActivity", "Proof ${it.record.state}: ${it.record.id}")
-                sendProofToFlutter(it.record.id, it.record.state.toString())
+        subscribed = true
+
+        try {
+            agent!!.eventBus.subscribe<AgentEvents.CredentialEvent> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Log.d("MainActivity", "Credential ${it.record.id}: ${it.record.toString()}")
+
+                    sendCredentialToFlutter(it.record.id, it.record.state.toString())
+                }
             }
+
+            agent!!.eventBus.subscribe<AgentEvents.ProofEvent> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Log.d("MainActivity", "Proof ${it.record.state}: ${it.record.id}")
+                    sendProofToFlutter(it.record.id, it.record.state.toString())
+                }
+            }
+
+            agent!!.eventBus.subscribe<AgentEvents.BasicMessageEvent> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Log.d("MainActivity", "Basic Message Event: ${it.message}")
+                }
+            }
+
+            agent!!.eventBus.subscribe<AgentEvents.ProblemReportEvent> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (it.message is CredentialProblemReportMessage) {
+                        Log.e("MainActivity", "Issuer reported a problem while issuing the credential - ${it.message.description.en}")
+                    }
+                    if (it.message is PresentationProblemReportMessage) {
+                        Log.e("MainActivity", "Verifier reported a problem while verifying the presentation - ${it.message.description.en}")
+                    }
+                    if (it.message is MediationProblemReportMessage) {
+                        Log.e("MainActivity", "Mediator reported a problem - ${it.message.description.en}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Unable to subscribe: ${e.localizedMessage}")
+
+            result.error("1", e.message, null)
         }
 
-        agent!!.eventBus.subscribe<AgentEvents.ProblemReportEvent> {
-            lifecycleScope.launch(Dispatchers.Main) {
-                if (it.message is CredentialProblemReportMessage) {
-                    Log.e("MainActivity", "Issuer reported a problem while issuing the credential - ${it.message.description.en}")
-                }
-                if (it.message is PresentationProblemReportMessage) {
-                    Log.e("MainActivity", "Verifier reported a problem while verifying the presentation - ${it.message.description.en}")
-                }
-                if (it.message is MediationProblemReportMessage) {
-                    Log.e("MainActivity", "Mediator reported a problem - ${it.message.description.en}")
-                }
-            }
-        }
+        result.success(mapOf("error" to "", "result" to true))
     }
 
     private fun sendCredentialToFlutter(id: String, state: String) {
@@ -328,24 +357,25 @@ class MainActivity: FlutterFragmentActivity() {
     private fun acceptOffer(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "accept offer called from Kotlin...")
 
-        if (credentialRecordId == null) {
-            result.error("1", "CredenctialRecordId is null", null)
-            return
-        }
-
         if (agent == null) {
             result.error("1", "Agent is null", null)
             return
         }
+
+        if (credentialRecordId == null) {
+            result.error("1", "credentialRecordId is null", null)
+            return
+        }
+
         val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId, autoAcceptCredential = AutoAcceptCredential.Always);
 
-        lifecycleScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 agent!!.credentials.acceptOffer(acceptOfferOption)
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
-                Log.e("MainActivity","Failed to receive a credential: ${e.localizedMessage}")
+                Log.e("MainActivity","Failed to accept a credential offer: ${e.localizedMessage}")
 
                 result.error("1", e.message, null)
             }
