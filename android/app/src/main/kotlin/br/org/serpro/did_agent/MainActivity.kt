@@ -91,20 +91,36 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel shutdown: " + e.toString(), null)
                     }
                 }
-                "acceptOffer" -> {
+                "acceptCredentialOffer" -> {
                     try {
                         val credentialRecordId = call.argument<String>("credentialRecordId")
-                        acceptOffer(credentialRecordId, result)
+                        acceptCredentialOffer(credentialRecordId, result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel acceptOffer: "+e.toString(),null)
                     }
                 }
-                "declineOffer" -> {
+                "acceptProofOffer" -> {
+                    try {
+                        val proofRecordId = call.argument<String>("proofRecordId")
+                        acceptProofOffer(proofRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel acceptProofOffer: "+e.toString(),null)
+                    }
+                }
+                "declineCredentialOffer" -> {
                     try { 
                         val credentialRecordId = call.argument<String>("credentialRecordId")
-                        declineOffer(credentialRecordId, result)
+                        declineCredentialOffer(credentialRecordId, result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel declineOffer: "+e.toString(),null)
+                    }
+                }
+                "declineProofOffer" -> {
+                    try {
+                        val proofRecordId = call.argument<String>("proofRecordId")
+                        declineProofOffer(proofRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel declineProofOffer: "+e.toString(),null)
                     }
                 }
                 "removeCredential" -> {
@@ -362,7 +378,7 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun acceptOffer(credentialRecordId: String?, result: MethodChannel.Result) {
+    private fun acceptCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "accept offer called from Kotlin...")
 
         if (agent == null) {
@@ -390,7 +406,12 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun declineOffer(credentialRecordId: String?, result: MethodChannel.Result) {
+    private fun acceptProofOffer(proofRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "acceptProofOffer: $proofRecordId")
+        // TODO
+    }
+
+    private fun declineCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "decline offer called from Kotlin...")
 
         if (credentialRecordId == null) {
@@ -416,6 +437,11 @@ class MainActivity: FlutterFragmentActivity() {
                 result.error("1", e.message, null)
             }
         }
+    }
+
+    private fun declineProofOffer(proofRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "declineProofOffer: $proofRecordId")
+        // TODO
     }
 
     private fun removeCredential(credentialRecordId: String?, result: MethodChannel.Result) {

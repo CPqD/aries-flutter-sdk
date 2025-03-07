@@ -39,20 +39,26 @@ Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
       {'invitationUrl': url},
     );
 
+Future<AriesResult> acceptCredentialOffer(String credentialId) => AriesResult.invoke(
+    AriesMethod.acceptCredentialOffer, {'credentialRecordId': credentialId});
+
+Future<AriesResult> acceptProofOffer(String proofId) =>
+    AriesResult.invoke(AriesMethod.acceptProofOffer, {'proofRecordId': proofId});
+
+Future<AriesResult> declineCredentialOffer(String credentialId) => AriesResult.invoke(
+    AriesMethod.declineCredentialOffer, {'credentialRecordId': credentialId});
+
+Future<AriesResult> declineProofOffer(String proofId) =>
+    AriesResult.invoke(AriesMethod.declineProofOffer, {'proofRecordId': proofId});
+
+Future<AriesResult> removeCredential(String credentialId) => AriesResult.invoke(
+    AriesMethod.removeCredential, {'credentialRecordId': credentialId});
+
 Future<AriesResult> subscribe() => AriesResult.invoke(AriesMethod.subscribe);
 
 Future<AriesResult> shutdown() => AriesResult.invoke(AriesMethod.shutdown);
 
-Future<AriesResult> acceptOffer(String credentialRecordId) => AriesResult.invoke(
-    AriesMethod.acceptOffer, {'credentialRecordId': credentialRecordId});
-
-Future<AriesResult> declineOffer(String credentialRecordId) => AriesResult.invoke(
-    AriesMethod.declineOffer, {'credentialRecordId': credentialRecordId});
-
-Future<AriesResult> removeCredential(String credentialRecordId) => AriesResult.invoke(
-    AriesMethod.removeCredential, {'credentialRecordId': credentialRecordId});
-
-Future<dynamic> recebeFromNative(MethodCall call) async {
+Future<dynamic> receiveFromNative(MethodCall call) async {
   switch (call.method) {
     case 'calldart':
       final Map arguments = call.arguments;
@@ -84,5 +90,5 @@ Future<dynamic> recebeFromNative(MethodCall call) async {
 }
 
 configureChannelNative() {
-  channelWallet.setMethodCallHandler(recebeFromNative);
+  channelWallet.setMethodCallHandler(receiveFromNative);
 }

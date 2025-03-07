@@ -130,7 +130,7 @@ class HomePageState extends State<HomePage> {
       successText: "Agente desligado com sucesso",
       errorText: "Não foi possível desligar agente");
 
-  void acceptCredentialResultDialog(AriesResult result) => showResultDialog(
+  void acceptCredentialDialog(AriesResult result) => showResultDialog(
       result: result,
       successText: "Credencial recebida com sucesso",
       errorText: "Não foi possível aceitar credencial");
@@ -140,7 +140,7 @@ class HomePageState extends State<HomePage> {
       successText: "Credencial recusada com sucesso",
       errorText: "Não foi possível recusar credencial");
 
-  void acceptProofResultDialog(AriesResult result) => showResultDialog(
+  void acceptProofDialog(AriesResult result) => showResultDialog(
       result: result,
       successText: "Prova aceita com sucesso",
       errorText: "Não foi possível aceitar credencial");
@@ -197,13 +197,13 @@ class HomePageState extends State<HomePage> {
                 onPressed: () async {
                   Navigator.of(context).pop();
 
-                  final acceptOfferResult = await acceptOffer(credentialId);
+                  final acceptOfferResult = await acceptCredentialOffer(credentialId);
 
                   if (acceptOfferResult.success) {
                     print('Credential Accepted: $credentialId');
                   }
 
-                  acceptCredentialResultDialog(acceptOfferResult);
+                  acceptCredentialDialog(acceptOfferResult);
                 },
               ),
               TextButton(
@@ -211,7 +211,7 @@ class HomePageState extends State<HomePage> {
                 onPressed: () async {
                   Navigator.of(context).pop();
 
-                  final declineOfferResult = await declineOffer(credentialId);
+                  final declineOfferResult = await declineCredentialOffer(credentialId);
 
                   if (declineOfferResult.success) {
                     print('Credential Refused: $credentialId');
@@ -234,26 +234,40 @@ class HomePageState extends State<HomePage> {
       this.proofId = proofId;
     });
 
-    if (CredentialState.offerReceived.equals(proofState)) {
+    if (CredentialState.requestReceived.equals(proofState)) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Proof ID Updated'),
-            content: Text('New Proof ID: $proofId'),
+            title: Text('Oferta de Prova Recebida'),
+            content: Text('ID da Prova: $proofId'),
             actions: <Widget>[
               TextButton(
                 child: Text('Accept'),
-                onPressed: () {
-                  print('Proof Accepted: $proofId');
+                onPressed: () async {
                   Navigator.of(context).pop();
+
+                  final acceptOfferResult = await acceptProofOffer(proofId);
+
+                  if (acceptOfferResult.success) {
+                    print('Proof Accepted: $proofId');
+                  }
+
+                  acceptProofDialog(acceptOfferResult);
                 },
               ),
               TextButton(
                 child: Text('Refuse'),
-                onPressed: () {
-                  print('Proof Refused: $proofId');
+                onPressed: () async {
                   Navigator.of(context).pop();
+
+                  final declineOfferResult = await declineProofOffer(proofId);
+
+                  if (declineOfferResult.success) {
+                    print('Proof Refused: $credentialId');
+                  }
+
+                  declineProofDialog(declineOfferResult);
                 },
               ),
             ],

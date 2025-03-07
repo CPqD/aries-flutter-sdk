@@ -5,8 +5,10 @@ enum AriesMethod {
   invitation('receiveInvitation'),
   subscribe('subscribe'),
   shutdown('shutdown'),
-  acceptOffer('acceptOffer'),
-  declineOffer('declineOffer'),
+  acceptCredentialOffer('acceptCredentialOffer'),
+  acceptProofOffer('acceptProofOffer'),
+  declineCredentialOffer('declineCredentialOffer'),
+  declineProofOffer('declineProofOffer'),
   removeCredential('removeCredential');
 
   final String value;
