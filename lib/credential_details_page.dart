@@ -1,4 +1,5 @@
 import 'package:did_agent/agent/credential_record.dart';
+import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
 class CredentialDetailsPage extends StatelessWidget {
@@ -59,9 +60,7 @@ class CredentialDetailsPage extends StatelessWidget {
                 SizedBox(width: 16), // Add some space between the buttons
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      print('Delete');
-                    },
+                    onPressed: () => _confirmDelete(context),
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
@@ -78,6 +77,41 @@ class CredentialDetailsPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    bool? confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete this credential?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Return false
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Return true
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      final deleteResult = await removeCredential(credential.id);
+      print('Delete Result: ${deleteResult}');
+
+      if (deleteResult.success) {
+        Navigator.pop(context, true);
+      }
+    }
   }
 
   Widget buildDetailRow(String fieldName, String fieldValue) {

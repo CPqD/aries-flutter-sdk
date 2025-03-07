@@ -6,7 +6,8 @@ enum AriesMethod {
   subscribe('subscribe'),
   shutdown('shutdown'),
   acceptOffer('acceptOffer'),
-  declineOffer('declineOffer');
+  declineOffer('declineOffer'),
+  removeCredential('removeCredential');
 
   final String value;
 

@@ -49,6 +49,9 @@ Future<AriesResult> acceptOffer(String credentialRecordId) => AriesResult.invoke
 Future<AriesResult> declineOffer(String credentialRecordId) => AriesResult.invoke(
     AriesMethod.declineOffer, {'credentialRecordId': credentialRecordId});
 
+Future<AriesResult> removeCredential(String credentialRecordId) => AriesResult.invoke(
+    AriesMethod.removeCredential, {'credentialRecordId': credentialRecordId});
+
 Future<dynamic> recebeFromNative(MethodCall call) async {
   switch (call.method) {
     case 'calldart':

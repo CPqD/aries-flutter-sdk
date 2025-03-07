@@ -107,6 +107,14 @@ class MainActivity: FlutterFragmentActivity() {
                         result?.error("1","Erro ao processar o methodchannel declineOffer: "+e.toString(),null)
                     }
                 }
+                "removeCredential" -> {
+                    try {
+                        val credentialRecordId = call.argument<String>("credentialRecordId")
+                        removeCredential(credentialRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel removeCredential: "+e.toString(),null)
+                    }
+                }
                 
                 else -> result.notImplemented()
             }
@@ -407,6 +415,32 @@ class MainActivity: FlutterFragmentActivity() {
 
                 result.error("1", e.message, null)
             }
+        }
+    }
+
+    private fun removeCredential(credentialRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "decline offer called from Kotlin...")
+
+        if (credentialRecordId == null) {
+            result.error("1", "CredentialRecordId is null", null)
+            return
+        }
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        try {
+            val deleteResult = runBlocking { agent?.credentialRepository?.deleteById(credentialRecordId) }
+
+            Log.d("MainActivity","deleteResult: ${deleteResult.toString()}")
+
+            result.success(mapOf("error" to "", "result" to true))
+        } catch (e: Exception) {
+            Log.e("MainActivity","Failed to remove a credential: ${e.localizedMessage}")
+
+            result.error("1", e.message, null)
         }
     }
 }

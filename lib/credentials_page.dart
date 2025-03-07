@@ -4,8 +4,21 @@ import 'package:did_agent/util/utils.dart';
 import 'package:did_agent/agent/credential_record.dart';
 import 'credential_details_page.dart';
 
-class CredentialsPage extends StatelessWidget {
+class CredentialsPage extends StatefulWidget {
   const CredentialsPage({super.key});
+
+  @override
+  _CredentialsPageState createState() => _CredentialsPageState();
+}
+
+class _CredentialsPageState extends State<CredentialsPage> {
+  Future<AriesResult<List<CredentialRecord>>>? _credentialsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _credentialsFuture = getCredentials();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +27,7 @@ class CredentialsPage extends StatelessWidget {
         title: Text('Credentials Page'),
       ),
       body: FutureBuilder<AriesResult<List<CredentialRecord>>>(
-        future: getCredentials(),
+        future: _credentialsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -39,13 +52,19 @@ class CredentialsPage extends StatelessWidget {
               return ListTile(
                 title: Text(credential.id),
                 subtitle: Text(credential.getSubtitle()),
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => CredentialDetailsPage(credential: credential),
                     ),
                   );
+
+                  if (result == true) {
+                    setState(() {
+                      _credentialsFuture = getCredentials();
+                    });
+                  }
                 },
               );
             },
