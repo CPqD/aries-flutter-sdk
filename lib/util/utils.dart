@@ -1,14 +1,39 @@
 import 'dart:convert';
 
-import 'package:did_agent/agent/aries_method.dart';
+import 'package:did_agent/agent/enums/aries_method.dart';
 import 'package:did_agent/agent/aries_result.dart';
-import 'package:did_agent/agent/credential_record.dart';
-import 'package:did_agent/home.dart';
+import 'package:did_agent/agent/models/connection_record.dart';
+import 'package:did_agent/agent/models/credential_record.dart';
+import 'package:did_agent/page/home.dart';
 import 'package:flutter/services.dart';
 
 Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
 
 Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
+
+Future<AriesResult<List<ConnectionRecord>>> getConnections() async {
+  final result = await AriesResult.invoke(AriesMethod.getConnections);
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error, value: []);
+  }
+
+  try {
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    final originalList = List<Map<String, dynamic>>.from(jsonList);
+
+    return AriesResult(
+      success: true,
+      error: result.error,
+      value: originalList.map((map) => ConnectionRecord.fromMap(map)).toList(),
+    );
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString(), value: []);
+  }
+}
 
 Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
   final result = await AriesResult.invoke(AriesMethod.getCredentials);

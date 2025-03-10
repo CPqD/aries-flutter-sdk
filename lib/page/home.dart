@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/aries_result.dart';
-import 'package:did_agent/agent/credential_state.dart';
+import 'package:did_agent/agent/enums/credential_state.dart';
+import 'package:did_agent/page/connections_page.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -58,6 +59,15 @@ class HomePageState extends State<HomePage> {
                 );
               },
               child: Text('Credenciais'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ConnectionsPage()),
+                );
+              },
+              child: Text('Conexões'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

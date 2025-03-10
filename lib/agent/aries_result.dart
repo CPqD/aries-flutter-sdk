@@ -1,4 +1,4 @@
-import 'package:did_agent/agent/aries_method.dart';
+import 'package:did_agent/agent/enums/aries_method.dart';
 import 'package:flutter/services.dart';
 
 const channelWallet = MethodChannel("br.gov.serprocpqd/wallet");

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.annotation.NonNull
-import com.google.gson.Gson
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -25,7 +24,7 @@ import org.hyperledger.ariesframework.problemreports.messages.MediationProblemRe
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import java.io.File
-import java.lang.Exception
+import kotlin.Exception
 
 
 const val genesisPath = "bcovrin-genesis.txn"
@@ -67,6 +66,13 @@ class MainActivity: FlutterFragmentActivity() {
                         getCredentials(result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getCredentials: " + e.toString(), null)
+                    }
+                }
+                "getConnections" -> {
+                    try {
+                        getConnections(result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getConnections: " + e.toString(), null)
                     }
                 }
                 "receiveInvitation" -> {
@@ -212,72 +218,81 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     private fun getCredentials(result: MethodChannel.Result) {
-    Log.d("MainActivity", "getCredentials called from Kotlin...")
+        Log.d("MainActivity", "getCredentials called from Kotlin...")
 
-    if (agent == null) {
-        result.error("1", "Agent is null", null)
-        return
-    }
+        validateAgent()
 
-    try {
-        val credentials = runBlocking { agent?.credentialRepository?.getAll() }
+        try {
+            val credentials = runBlocking { agent?.credentialRepository?.getAll() }
 
-        Log.d("MainActivity", "credentials: ${credentials.toString()}")
+            Log.d("MainActivity", "credentials: ${credentials.toString()}")
 
-        val credentialsList = mutableListOf<Map<String, Any?>>()
+            val credentialsList = mutableListOf<Map<String, Any?>>()
 
-        if (credentials.isNullOrEmpty()) {
-            Log.d("MainActivity", "getCredentials -> credentials.isNullOrEmpty")
+            if (credentials.isNullOrEmpty()) {
+                Log.d("MainActivity", "getCredentials -> credentials.isNullOrEmpty")
 
-            result.success(mapOf("error" to "", "result" to Gson().toJson(credentialsList)))
+                result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsList)))
 
+                return
+            }
+
+            for (credential in credentials) {
+                credentialsList.add(JsonConverter.toMap(credential))
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsList)))
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get credentials: ${e.message}")
+            result.error("1", "Cannot get credentials: ${e.message}", null)
             return
         }
-
-        Log.d("MainActivity", "getCredentials -> credentials is not Null Or Empty")
-
-        for (credential in credentials) {
-            val credentialMap: Map<String, Any?> = mapOf(
-                "id" to credential.id,
-                "revocationId" to credential.credentialRevocationId,
-                "linkSecretId" to credential.linkSecretId,
-                "credential" to credential.credential,
-                "schemaId" to credential.schemaId,
-                "schemaName" to credential.schemaName,
-                "schemaVersion" to credential.schemaVersion,
-                "schemaIssuerId" to credential.schemaIssuerId,
-                "issuerId" to credential.issuerId,
-                "definitionId" to credential.credentialDefinitionId,
-                "revocationRegistryId" to credential.revocationRegistryId
-            )
-
-            credentialsList.add(credentialMap)
-        }
-
-        result.success(mapOf("error" to "", "result" to Gson().toJson(credentialsList)))
-    } catch (e: Exception) {
-        Log.e("MainActivity", "Cannot get credentials: ${e.message}")
-        result.error("1", "Cannot get credentials: ${e.message}", null)
-        return
     }
-}
+
+    private fun getConnections(result: MethodChannel.Result) {
+        Log.d("MainActivity", "getConnections called from Kotlin...")
+
+        validateAgent()
+
+        try {
+            val connections = runBlocking {  agent?.connectionRepository?.getAll() }
+
+            Log.d("MainActivity", "connections: ${connections.toString()}")
+
+            val connectionsList = mutableListOf<Map<String, Any?>>()
+
+            if (connections.isNullOrEmpty()) {
+                Log.d("MainActivity", "getConnections -> connections.isNullOrEmpty")
+
+                result.success(mapOf("error" to "", "result" to JsonConverter.toJson(connectionsList)))
+
+                return
+            }
+
+            Log.d("MainActivity", "getConnections -> connections is not Null Or Empty")
+
+            for (connection in connections) {
+                connectionsList.add(JsonConverter.toMap(connection))
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(connectionsList)))
+
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get connections: ${e.message}")
+            result.error("1", "Cannot get connections: ${e.message}", null)
+            return
+        }
+    }
 
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
 
-        if (invitationUrl == null) {
-            result.error("1", "Invitation URL is null", null)
-            return
-        }
-
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
+        validateAgent()
+        validateNotNull("Invitation URL", invitationUrl)
 
         lifecycleScope.launch(Dispatchers.Main) {
             try {
-                val (_, connection) = agent!!.oob.receiveInvitationFromUrl(invitationUrl)
+                val (_, connection) = agent!!.oob.receiveInvitationFromUrl(invitationUrl!!)
                 Log.d("MainActivity", "Connected to ${connection ?: "unknown agent"}")
 
                 result.success(mapOf("error" to "", "result" to true))
@@ -290,15 +305,8 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     private fun subscribeEvents(result: MethodChannel.Result) {
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
-
-        if (subscribed) {
-            result.error("1", "Already subscribed!", null)
-            return
-        }
+        validateAgent()
+        validateSubscribe()
 
         subscribed = true
 
@@ -359,10 +367,7 @@ class MainActivity: FlutterFragmentActivity() {
     private fun shutdown(result: MethodChannel.Result) {
         Log.d("MainActivity", "shutdown called from Kotlin...")
 
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
+        validateAgent()
 
         lifecycleScope.launch(Dispatchers.Main) {
             try {
@@ -381,17 +386,10 @@ class MainActivity: FlutterFragmentActivity() {
     private fun acceptCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "accept offer called from Kotlin...")
 
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
+        validateNotNull("CredentialRecordId", credentialRecordId)
+        validateAgent()
 
-        if (credentialRecordId == null) {
-            result.error("1", "credentialRecordId is null", null)
-            return
-        }
-
-        val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId, autoAcceptCredential = AutoAcceptCredential.Always);
+        val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId!!, autoAcceptCredential = AutoAcceptCredential.Always);
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -410,17 +408,10 @@ class MainActivity: FlutterFragmentActivity() {
     private fun declineCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "decline offer called from Kotlin...")
 
-        if (credentialRecordId == null) {
-            result.error("1", "CredentialRecordId is null", null)
-            return
-        }
+        validateNotNull("CredentialRecordId", credentialRecordId)
+        validateAgent()
 
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
-
-        val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId, autoAcceptCredential = AutoAcceptCredential.Never);
+        val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId!!, autoAcceptCredential = AutoAcceptCredential.Never);
 
         lifecycleScope.launch(Dispatchers.Main) {
             try {
@@ -492,18 +483,11 @@ class MainActivity: FlutterFragmentActivity() {
     private fun removeCredential(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "decline offer called from Kotlin...")
 
-        if (credentialRecordId == null) {
-            result.error("1", "CredentialRecordId is null", null)
-            return
-        }
-
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
+        validateNotNull("CredentialRecordId", credentialRecordId)
+        validateAgent()
 
         try {
-            val deleteResult = runBlocking { agent?.credentialRepository?.deleteById(credentialRecordId) }
+            val deleteResult = runBlocking { agent?.credentialRepository?.deleteById(credentialRecordId!!) }
 
             Log.d("MainActivity","deleteResult: ${deleteResult.toString()}")
 
@@ -512,6 +496,24 @@ class MainActivity: FlutterFragmentActivity() {
             Log.e("MainActivity","Failed to remove a credential: ${e.localizedMessage}")
 
             result.error("1", e.message, null)
+        }
+    }
+
+    private fun validateAgent() {
+        if (agent == null) {
+            throw Exception("Agent is null")
+        }
+    }
+
+    private fun validateSubscribe() {
+        if (subscribed) {
+            throw Exception("Already subscribed!")
+        }
+    }
+
+    private fun validateNotNull(name: String, value: Any?) {
+        if (value == null) {
+            throw Exception("$name is null")
         }
     }
 }
