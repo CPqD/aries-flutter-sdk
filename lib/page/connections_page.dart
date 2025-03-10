@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/models/connection_record.dart';
+import 'package:did_agent/page/connection_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:did_agent/util/utils.dart';
 
@@ -48,10 +49,26 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
             itemBuilder: (context, index) {
               final connection = connections[index];
 
+              print('connection: $connection');
+
               return ListTile(
-                title: Text(connection.id),
-                subtitle: Text('${connection.theirLabel}\n${connection.state.value}'),
-              );
+                  title: Text(connection.id),
+                  subtitle: Text('${connection.theirLabel}\n${connection.state.value}'),
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ConnectionDetailsPage(connection: connection),
+                      ),
+                    );
+
+                    if (result == true) {
+                      setState(() {
+                        _connectionsFuture = getConnections();
+                      });
+                    }
+                  });
             },
           );
         },

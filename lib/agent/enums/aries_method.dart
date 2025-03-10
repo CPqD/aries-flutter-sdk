@@ -10,6 +10,7 @@ enum AriesMethod {
   acceptProofOffer('acceptProofOffer'),
   declineCredentialOffer('declineCredentialOffer'),
   declineProofOffer('declineProofOffer'),
+  removeConnection('removeConnection'),
   removeCredential('removeCredential');
 
   final String value;

@@ -137,6 +137,14 @@ class MainActivity: FlutterFragmentActivity() {
                         result?.error("1","Erro ao processar o methodchannel removeCredential: "+e.toString(),null)
                     }
                 }
+                "removeConnection" -> {
+                    try {
+                        val connectionRecordId = call.argument<String>("connectionRecordId")
+                        removeConnection(connectionRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel removeConnection: "+e.toString(),null)
+                    }
+                }
                 
                 else -> result.notImplemented()
             }
@@ -494,6 +502,25 @@ class MainActivity: FlutterFragmentActivity() {
             result.success(mapOf("error" to "", "result" to true))
         } catch (e: Exception) {
             Log.e("MainActivity","Failed to remove a credential: ${e.localizedMessage}")
+
+            result.error("1", e.message, null)
+        }
+    }
+
+    private fun removeConnection(connectionRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "decline offer called from Kotlin...")
+
+        validateNotNull("ConnectionRecordId", connectionRecordId)
+        validateAgent()
+
+        try {
+            val deleteResult = runBlocking { agent?.connectionRepository?.deleteById(connectionRecordId!!) }
+
+            Log.d("MainActivity","deleteResult: ${deleteResult.toString()}")
+
+            result.success(mapOf("error" to "", "result" to true))
+        } catch (e: Exception) {
+            Log.e("MainActivity","Failed to remove a connection: ${e.localizedMessage}")
 
             result.error("1", e.message, null)
         }

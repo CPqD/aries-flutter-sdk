@@ -76,6 +76,9 @@ Future<AriesResult> declineCredentialOffer(String credentialId) => AriesResult.i
 Future<AriesResult> declineProofOffer(String proofId) =>
     AriesResult.invoke(AriesMethod.declineProofOffer, {'proofRecordId': proofId});
 
+Future<AriesResult> removeConnection(String connectionId) => AriesResult.invoke(
+    AriesMethod.removeConnection, {'connectionRecordId': connectionId});
+
 Future<AriesResult> removeCredential(String credentialId) => AriesResult.invoke(
     AriesMethod.removeCredential, {'credentialRecordId': credentialId});
 
