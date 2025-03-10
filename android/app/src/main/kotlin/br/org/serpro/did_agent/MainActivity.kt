@@ -99,20 +99,20 @@ class MainActivity: FlutterFragmentActivity() {
                         result?.error("1","Erro ao processar o methodchannel acceptOffer: "+e.toString(),null)
                     }
                 }
-                "acceptProofOffer" -> {
-                    try {
-                        val proofRecordId = call.argument<String>("proofRecordId")
-                        acceptProofOffer(proofRecordId, result)
-                    }catch (e:Exception){
-                        result?.error("1","Erro ao processar o methodchannel acceptProofOffer: "+e.toString(),null)
-                    }
-                }
                 "declineCredentialOffer" -> {
                     try { 
                         val credentialRecordId = call.argument<String>("credentialRecordId")
                         declineCredentialOffer(credentialRecordId, result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel declineOffer: "+e.toString(),null)
+                    }
+                }
+                "acceptProofOffer" -> {
+                    try {
+                        val proofRecordId = call.argument<String>("proofRecordId")
+                        acceptProofOffer(proofRecordId, result)
+                    }catch (e:Exception){
+                        result?.error("1","Erro ao processar o methodchannel acceptProofOffer: "+e.toString(),null)
                     }
                 }
                 "declineProofOffer" -> {
@@ -406,10 +406,6 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun acceptProofOffer(proofRecordId: String?, result: MethodChannel.Result) {
-        Log.d("MainActivity", "acceptProofOffer: $proofRecordId")
-        // TODO
-    }
 
     private fun declineCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "decline offer called from Kotlin...")
@@ -439,9 +435,58 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun acceptProofOffer(proofRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "acceptProofOffer: $proofRecordId")
+        
+        if (proofRecordId == null) {
+            result.error("1", "ProofRecordId is null", null)
+            return
+        }
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val retrievedCredentials = agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId)
+                val requestedCredentials = agent!!.proofService.autoSelectCredentialsForProofRequest(retrievedCredentials)
+                agent!!.proofs.acceptRequest(proofRecordId, requestedCredentials)
+
+                result.success(mapOf("error" to "", "result" to true))
+            } catch (e: Exception) {
+                Log.e("MainActivity","Failed to present proof: ${e.localizedMessage}")
+
+                result.error("1", e.message, null)
+            }
+        }
+    }
+
     private fun declineProofOffer(proofRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "declineProofOffer: $proofRecordId")
-        // TODO
+
+        if (proofRecordId == null) {
+            result.error("1", "ProofRecordId is null", null)
+            return
+        }
+
+        if (agent == null) {
+            result.error("1", "Agent is null", null)
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                agent!!.proofs.declineRequest(proofRecordId)
+
+                result.success(mapOf("error" to "", "result" to true))
+            } catch (e: Exception) {
+                Log.e("MainActivity","Failed to decline a proof: ${e.localizedMessage}")
+
+                result.error("1", e.message, null)         
+            }
+        }
     }
 
     private fun removeCredential(credentialRecordId: String?, result: MethodChannel.Result) {
