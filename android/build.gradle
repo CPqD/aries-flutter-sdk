@@ -1,3 +1,26 @@
+ext["githubUsername"] = null
+ext["githubToken"] = null
+ext["version"] = null
+
+def secretPropsFile = project.rootProject.file("local.properties")
+if (secretPropsFile.exists()) {
+    Properties properties = new Properties()
+    secretPropsFile.withInputStream { properties.load(it) }
+    properties.each { k, v -> ext[k] = v }
+} else {
+    ext["githubUsername"] = System.getenv("GITHUB_ACTOR")
+    ext["githubToken"] = System.getenv("GITHUB_TOKEN")
+    ext["version"] = System.getenv("VERSION")
+}
+
+def getExtraString(name) {
+    try {
+        return ext[name]
+    } catch (ignored) {
+        return ""
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -6,9 +29,12 @@ allprojects {
             setUrl("https://maven.pkg.github.com/hyperledger/aries-framework-kotlin")
             credentials {
                 // You should put these in the local.properties file
-                username = "your github username"
-                password = "your github token for read:packages"
+                username = getExtraString("githubUsername")
+                password = getExtraString("githubToken")
             }
+        }
+        maven {
+            setUrl("https://nexus.aic.serpro.gov.br/repository/snapshots/")
         }
         maven { url 'https://jitpack.io' }
     }

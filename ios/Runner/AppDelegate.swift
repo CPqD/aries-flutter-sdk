@@ -17,7 +17,7 @@ var agent: Agent!
         
         let rootViewController : FlutterViewController = window?.rootViewController as! FlutterViewController
         
-        channelOpenWallet(controller: rootViewController as! FlutterBinaryMessenger)
+        channelWallet(controller: rootViewController as! FlutterBinaryMessenger)
         
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -49,7 +49,7 @@ var agent: Agent!
                                  autoAcceptProof: .never)
         Task{
             do {
-                agent = Agent(agentConfig: config, agentDelegate: await CredentialHandler.shared)
+                agent = Agent(agentConfig: config, agentDelegate:  CredentialHandler.shared)
                 try await agent!.initialize()
             } catch {
                 print("Cannot initialize agent: \(error)")
@@ -68,27 +68,31 @@ var agent: Agent!
             
             flutterResult(dict)
             callDartTest()
-
+            
         }
     }
     
-    func channelOpenWallet(controller : FlutterBinaryMessenger) {
-        let channel = FlutterMethodChannel(name: channelName,
-                                           binaryMessenger: controller)
-        channel.setMethodCallHandler({
-            [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-            
-            switch (call.method) {
-            case "openwallet":
-                self!.openWallet(flutterResult: result)
-            default:
-                var dict : [String : Any] = [:]
-                dict["error"] = ""
-                dict["result"] = false
-                result(dict)
-            }
-        })
-    }
+    func channelWallet(controller : FlutterBinaryMessenger) {
+            let channel = FlutterMethodChannel(name: channelName,
+                                               binaryMessenger: controller)
+            channel.setMethodCallHandler({
+                [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+                
+                switch (call.method) {
+                case "openwallet":
+                    self!.openWallet(flutterResult: result)
+                case "receiveInvitation":
+                    self!.receiveInvitation(url: (call.arguments as! [String])[0], flutterResult: result)
+                case "closewallet":
+                    self!.closeWallet(flutterResult: result)
+                default:
+                    var dict : [String : Any] = [:]
+                    dict["error"] = ""
+                    dict["result"] = false
+                    result(dict)
+                }
+            })
+        }
     
     func callDartTest() {
         let rootViewController : FlutterViewController = window?.rootViewController as! FlutterViewController
@@ -101,6 +105,40 @@ var agent: Agent!
         }
     }
     
+    func receiveInvitation(url: String, flutterResult : @escaping FlutterResult) {
+        Task {
+            do {
+                let (_, connection) = try await agent!.oob.receiveInvitationFromUrl(url)
+                var dict : [String : Any] = [:]
+                dict["error"] = ""
+                dict["result"] = true
+                flutterResult(dict)
+            } catch {
+                print(error)
+                var dict : [String : Any] = [:]
+                dict["error"] = "\(error)"
+                dict["result"] = false
+                flutterResult(dict)
+            }
+        }
+    }
+    func closeWallet(flutterResult : @escaping FlutterResult) {
+        Task {
+            do {
+                try await agent!.shutdown()
+                var dict : [String : Any] = [:]
+                dict["error"] = ""
+                dict["result"] = true
+                flutterResult(dict)
+            } catch {
+                print(error)
+                var dict : [String : Any] = [:]
+                dict["error"] = "\(error)"
+                dict["result"] = false
+                flutterResult(dict)
+            }
+        }
+    }
 }
 
 

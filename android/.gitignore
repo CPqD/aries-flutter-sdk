@@ -12,3 +12,6 @@ key.properties
 **/*.keystore
 **/*.jks
 local.properties
+
+app/.cxx
+app/src/main/jniLibs

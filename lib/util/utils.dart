@@ -1,27 +1,86 @@
+import 'dart:convert';
+
+import 'package:did_agent/agent/aries_method.dart';
+import 'package:did_agent/agent/aries_result.dart';
+import 'package:did_agent/agent/credential_record.dart';
+import 'package:did_agent/home.dart';
 import 'package:flutter/services.dart';
 
-final channelWallet = MethodChannel("br.gov.serprocpqd/wallet");
-final methodOpenWallet = "openwallet";
+Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
 
-Future<Map<String, dynamic>?> openWallet() async {
-  print("openWallet");
+Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
+
+Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
+  final result = await AriesResult.invoke(AriesMethod.getCredentials);
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error, value: []);
+  }
+
   try {
-    final result = await channelWallet.invokeMethod(methodOpenWallet);
-    return Map<String, dynamic>.from(result);
-  } on PlatformException catch (e) {
-    print("Failed to Invoke Open Wallet: '${e.message}'.");
-    return null;
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    final originalList = List<Map<String, dynamic>>.from(jsonList);
+
+    return AriesResult(
+      success: true,
+      error: result.error,
+      value: originalList.map((map) => CredentialRecord.fromMap(map)).toList(),
+    );
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString(), value: []);
   }
 }
 
-Future<dynamic> recebeFromSwift(MethodCall call) async {
+Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
+      AriesMethod.invitation,
+      {'invitationUrl': url},
+    );
+
+Future<AriesResult> acceptCredentialOffer(String credentialId) => AriesResult.invoke(
+    AriesMethod.acceptCredentialOffer, {'credentialRecordId': credentialId});
+
+Future<AriesResult> acceptProofOffer(String proofId) =>
+    AriesResult.invoke(AriesMethod.acceptProofOffer, {'proofRecordId': proofId});
+
+Future<AriesResult> declineCredentialOffer(String credentialId) => AriesResult.invoke(
+    AriesMethod.declineCredentialOffer, {'credentialRecordId': credentialId});
+
+Future<AriesResult> declineProofOffer(String proofId) =>
+    AriesResult.invoke(AriesMethod.declineProofOffer, {'proofRecordId': proofId});
+
+Future<AriesResult> removeCredential(String credentialId) => AriesResult.invoke(
+    AriesMethod.removeCredential, {'credentialRecordId': credentialId});
+
+Future<AriesResult> subscribe() => AriesResult.invoke(AriesMethod.subscribe);
+
+Future<AriesResult> shutdown() => AriesResult.invoke(AriesMethod.shutdown);
+
+Future<dynamic> receiveFromNative(MethodCall call) async {
   switch (call.method) {
     case 'calldart':
-      // Do something
       final Map arguments = call.arguments;
       print(arguments);
       return "$arguments";
-    // break;
+    case 'credentialReceived':
+      print('credentialReceived on FLUTTER: ${call.arguments}');
+
+      final Map<String, String> arguments = Map<String, String>.from(call.arguments);
+
+      homePageKey.currentState
+          ?.receivedCredential(arguments["id"] ?? '', arguments["state"] ?? '');
+
+      return "$arguments";
+    case 'proofReceived':
+      print('proofReceived on FLUTTER: ${call.arguments}');
+
+      final Map<String, String> arguments = Map<String, String>.from(call.arguments);
+      homePageKey.currentState
+          ?.receivedProof(arguments["id"] ?? '', arguments["state"] ?? '');
+
+      return "$arguments";
     default:
       throw PlatformException(
         code: 'Unimplemented',
@@ -30,6 +89,6 @@ Future<dynamic> recebeFromSwift(MethodCall call) async {
   }
 }
 
-configureChannelSwift() {
-  channelWallet.setMethodCallHandler(recebeFromSwift);
+configureChannelNative() {
+  channelWallet.setMethodCallHandler(receiveFromNative);
 }

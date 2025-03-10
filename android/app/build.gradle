@@ -23,7 +23,14 @@ android {
         viewBinding true
     }
 
+    packagingOptions {
+        pickFirst '**/libaskar_uniffi.so'
+    }
+
     sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
         main.java.srcDirs += 'src/main/kotlin'
     }
 
@@ -53,8 +60,9 @@ flutter {
 }
 
 dependencies {
-    implementation project(path: ':ariesframework')
-    implementation("org.hyperledger:anoncreds_uniffi:0.1.1-wrapper.1")
+    implementation("org.hyperledger:aries-framework-kotlin:0.49.1-SNAPSHOT")
+    implementation("org.hyperledger:anoncreds_uniffi:0.2.0-wrapper.1")
+    implementation 'com.google.code.gson:gson:2.8.8'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20"
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.5.31"
 }
