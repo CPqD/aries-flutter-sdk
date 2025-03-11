@@ -153,12 +153,12 @@ class HomePageState extends State<HomePage> {
   void acceptProofDialog(AriesResult result) => showResultDialog(
       result: result,
       successText: "Prova aceita com sucesso",
-      errorText: "Não foi possível aceitar credencial");
+      errorText: "Não foi possível aceitar prova");
 
   void declineProofDialog(AriesResult result) => showResultDialog(
       result: result,
       successText: "Prova recusada com sucesso",
-      errorText: "Não foi possível recusar credencial");
+      errorText: "Não foi possível recusar prova");
 
   void showResultDialog({
     required AriesResult result,

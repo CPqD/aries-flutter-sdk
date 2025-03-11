@@ -53,7 +53,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
               return ListTile(
                   title: Text(connection.id),
-                  subtitle: Text('${connection.theirLabel}\n${connection.state.value}'),
+                  subtitle: Text('${connection.theirLabel}\n${connection.state.value}\n${connection.createdAt?.toLocal()}'),
                   onTap: () async {
                     final result = await Navigator.push(
                       context,

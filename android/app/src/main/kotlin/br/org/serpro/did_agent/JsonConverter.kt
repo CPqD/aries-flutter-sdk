@@ -16,6 +16,8 @@ class JsonConverter {
         fun toMap(connection: ConnectionRecord): Map<String, Any?> {
             return mapOf(
                 "id" to connection.id,
+                "createdAt" to connection.createdAt.toString(),
+                "updatedAt" to connection.updatedAt.toString(),
                 "state" to connection.state.toString(),
                 "role" to connection.role,
                 "did" to connection.did,
@@ -87,9 +89,9 @@ class JsonConverter {
                 "goalCode" to outOfBandInvitation.goalCode,
                 "goal" to outOfBandInvitation.goal,
                 "accept" to outOfBandInvitation.accept,
-                "handshakeProtocols" to outOfBandInvitation.handshakeProtocols,
-                "requests" to outOfBandInvitation.requests,
-                "services" to outOfBandInvitation.services,
+//                "handshakeProtocols" to outOfBandInvitation.handshakeProtocols,
+//                "requests" to outOfBandInvitation.requests,
+//                "services" to outOfBandInvitation.services,
             )
         }
 

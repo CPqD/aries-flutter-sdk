@@ -28,6 +28,8 @@ class ConnectionDetailsPage extends StatelessWidget {
                   ),
                 ),
                 buildDetailRow('ID:', connection.id),
+                buildDetailRow('Created At:', connection.createdAt.toString()),
+                buildDetailRow('Updated At:', connection.updatedAt.toString()),
                 buildDetailRow('State:', connection.state.value),
                 buildDetailRow('Role:', connection.role.value),
                 buildDetailRow('DID:', connection.did),

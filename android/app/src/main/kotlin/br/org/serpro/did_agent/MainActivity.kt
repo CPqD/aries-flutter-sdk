@@ -238,8 +238,6 @@ class MainActivity: FlutterFragmentActivity() {
             val credentialsList = mutableListOf<Map<String, Any?>>()
 
             if (credentials.isNullOrEmpty()) {
-                Log.d("MainActivity", "getCredentials -> credentials.isNullOrEmpty")
-
                 result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsList)))
 
                 return
