@@ -1,0 +1,1468 @@
+{
+	"info": {
+		"_postman_id": "507338a1-d34b-4704-b795-073ab545c35c",
+		"name": "SGD Serpro CPQD - versão 2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14420630"
+	},
+	"item": [
+		{
+			"name": "Obter token",
+			"item": [
+				{
+					"name": "Obter token - Besu",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.token).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"issuer_token\", responseJson.token);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet_name\": \"{{wallet_name}}\",\n    \"password\": \"{{secret}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth-manager/v1/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth-manager",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter token - Indy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.token).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"issuer_token\", responseJson.token);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet_name\": \"{{wallet_name}}\",\n    \"password\": \"{{secret}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/service-authenticator/v1/token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"service-authenticator",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enviar mensagem básica",
+			"item": [
+				{
+					"name": "Gerar convite de conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json();",
+									"pm.test(\"invi_msg_id: \" + responseJson.invi_msg_id, () => {",
+									"    pm.environment.set(\"basic_message_invi_msg_id\", responseJson.invi_msg_id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"alias\": \"basic-message\",\n    \"my_label\": \"label for the connection invitation\",\n    \"metadata\": {},\n    \"handshake_protocols\": [\n        \"https://didcomm.org/connections/1.0\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/out-of-band/create-invitation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"out-of-band",
+								"create-invitation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var inviMsgID = pm.environment.get(\"basic_message_invi_msg_id\");",
+									"",
+									"if (!inviMsgID) {",
+									"    pm.test(\"Variável de ambiente 'basic_message_invi_msg_id' não definida\", function () {",
+									"        pm.expect(inviMsgID).to.not.be.undefined;",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"var jsonData = pm.response.json();",
+									"var connId = null;",
+									"",
+									"jsonData.results.forEach(function(item) {",
+									"    if (item.invitation_msg_id === inviMsgID) {",
+									"        connId = item.connection_id;",
+									"        return;",
+									"    }",
+									"});",
+									"",
+									"if (connId) {",
+									"    pm.test(\"connection_id: \" + connId, () => {",
+									"        pm.environment.set(\"basic_message_connection_id\", connId);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/connections?invitation_msg_id={{basic_message_invi_msg_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"connections"
+							],
+							"query": [
+								{
+									"key": "invitation_msg_id",
+									"value": "{{basic_message_invi_msg_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar mensagem básica",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Mensagem enviada do servidor do CPQD para o celular do cliente\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/connections/{{connection_id}}/send-message",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"connections",
+								"{{connection_id}}",
+								"send-message"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Emitir credencial",
+			"item": [
+				{
+					"name": "Gerar convite de conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json();",
+									"pm.test(\"invi_msg_id: \" + responseJson.invi_msg_id, () => {",
+									"    pm.environment.set(\"credential_offer_invi_msg_id\", responseJson.invi_msg_id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"alias\": \"issue-credential\",\n    \"metadata\": {},\n    \"handshake_protocols\": [\n        \"https://didcomm.org/connections/1.0\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/out-of-band/create-invitation",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"out-of-band",
+								"create-invitation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar conexão",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var inviMsgID = pm.environment.get(\"credential_offer_invi_msg_id\");",
+									"",
+									"if (!inviMsgID) {",
+									"    pm.test(\"Variável de ambiente 'credential_offer_invi_msg_id' não definida\", function () {",
+									"        pm.expect(inviMsgID).to.not.be.undefined;",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"var jsonData = pm.response.json();",
+									"var connId = null;",
+									"",
+									"jsonData.results.forEach(function(item) {",
+									"    if (item.invitation_msg_id === inviMsgID) {",
+									"        connId = item.connection_id;",
+									"        return;",
+									"    }",
+									"});",
+									"",
+									"if (connId) {",
+									"    pm.test(\"connection_id: \" + connId, () => {",
+									"        pm.environment.set(\"credential_offer_connection_id\", connId);",
+									"    });",
+									"}",
+									"",
+									" pm.test(\"connection_id: \" + connId, () => {",
+									"        pm.environment.set(\"connection_id\", connId);",
+									"    });",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/connections?invitation_msg_id={{credential_offer_invi_msg_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"connections"
+							],
+							"query": [
+								{
+									"key": "invitation_msg_id",
+									"value": "{{credential_offer_invi_msg_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar oferta de credencial 2.0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"thread_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"offer_thread_id\", responseJson.thread_id);",
+									"});",
+									"",
+									"",
+									"pm.test(\"credential_exchange_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"credential_exchange_id\", responseJson.cred_ex_id);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auto_remove\": false,\n    \"comment\": \"Oferta de credencial\",\n    \"connection_id\": \"{{connection_id}}\", // connection_id recuperado no passo anterior\n    \"goal_code\": \"identity_verification\",\n    \"credential_preview\": {\n        \"@type\": \"issue-credential/2.0/credential-preview\", //2.0\n        \"attributes\": [\n            {\n                \"name\": \"nome\", // Incluir o nome do atributo igual está no schema (verificar no portal iD Empresas)\n                \"value\": \"monica geller\"\n            },\n            {\n                \"name\": \"email\",\n                \"value\": \"teste@gmail.com\"\n            }\n        ]\n    },\n    \"filter\": {\n        \"indy\": {\n            \"cred_def_id\": \"{{credencial_revogavel}}\" // Incluir o cred_def_id recuperado no portal iD Empresas\n        }\n    },\n    \"trace\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential-2.0/send-offer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential-2.0",
+								"send-offer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar oferta de credencial 1.0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"thread_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"offer_thread_id\", responseJson.thread_id);",
+									"});",
+									"",
+									"",
+									"pm.test(\"credential_exchange_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"credential_exchange_id\", responseJson.credential_exchange_id);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"connection_id\": \"{{connection_id}}\",\n  \"cred_def_id\": \"{{credencial_nao_revogavel}}\",\n  \"credential_preview\": {\n    \"attributes\": [\n      {\n        \"name\": \"nome\", // Incluir o nome do atributo igual está no schema (verificar no portal iD Empresas)\n        \"value\": \"ross geller\"\n    },\n    {\n        \"name\": \"email\",\n        \"value\": \"test@gmail.com\"\n    }\n    ],\n    \"@type\": \"issue-credential/1.0/credential-preview\"\n  },\n  \"auto_issue\": true,\n  \"auto_remove\": true,\n  \"comment\": \"eu\",\n  \"trace\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential/send-offer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential",
+								"send-offer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enviar oferta de credencial 1.0 revogavel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"thread_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"offer_thread_id\", responseJson.thread_id);",
+									"});",
+									"",
+									"pm.test(\"credential_exchange_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"credential_exchange_id\", responseJson.credential_exchange_id);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"connection_id\": \"{{credential_offer_connection_id}}\",\n  \"cred_def_id\": \"{{credencial_revogavel}}\",\n  \"credential_preview\": {\n    \"attributes\": [\n      {\n        \"name\": \"nome\", // Incluir o nome do atributo igual está no schema (verificar no portal iD Empresas)\n        \"value\": \"teste 0959\"\n    },\n    {\n        \"name\": \"email\",\n        \"value\": \"teste@gmail.com\"\n    }\n    ],\n    \"@type\": \"issue-credential/1.0/credential-preview\"\n  },\n  \"auto_issue\": true,\n  \"auto_remove\": false,\n  \"comment\": \"eu\",\n  \"trace\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential/send-offer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential",
+								"send-offer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar status da oferta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{api-key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential/records/{{credential_exchange_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential",
+								"records",
+								"{{credential_exchange_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar status da oferta 2.0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"",
+									"pm.test(\"The response has all properties\", () => {",
+									"    pm.expect(responseJson.thread_id).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"thread_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"offer_thread_id\", responseJson.thread_id);",
+									"});",
+									"",
+									"",
+									"pm.test(\"credential_exchange_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"credential_exchange_id\", responseJson.cred_ex_record.cred_ex_id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{api-key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/issue-credential-2.0/records/{{credential_exchange_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"issue-credential-2.0",
+								"records",
+								"{{credential_exchange_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Revogar credencial",
+			"item": [
+				{
+					"name": "Consultar revogação",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json();",
+									"pm.test(\"rev_reg_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"rev_reg_id\", responseJson.result.rev_reg_id);",
+									"});",
+									"",
+									"",
+									"",
+									"pm.test(\"cred_rev_id: \" + responseJson.thread_id, () => {",
+									"    pm.environment.set(\"cred_rev_id\", responseJson.result.cred_rev_id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{issuer_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/revocation/credential-record?cred_ex_id={{credential_exchange_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"revocation",
+								"credential-record"
+							],
+							"query": [
+								{
+									"key": "cred_ex_id",
+									"value": "{{credential_exchange_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revogar credencial",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"disabled": true
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"comment\": \"the reason why the credential is being revoked\",\n  \"connection_id\": \"{{credential_offer_connection_id}}\",\n  \"cred_ex_id\": \"{{credential_exchange_id}}\",\n  \"notify\": true,\n  \"notify_version\": \"v1_0\",\n  \"publish\": true,\n  //\"thread_id\": \"{{offer_thread_id}}\"\n  \"thread_id\": \"indy::{{rev_reg_id}}::{{cred_rev_id}}\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/revocation/revoke",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"revocation",
+								"revoke"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revogar credencial 2.0",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"disabled": true
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"comment\": \"the reason why the credential is being revoked\",\n  \"connection_id\": \"{{connection_id}}\",\n  \"cred_ex_id\": \"{{credential_exchange_id}}\",\n  \"notify\": true,\n  \"notify_version\": \"v2_0\",\n  \"publish\": true,\n  //\"thread_id\": \"{{offer_thread_id}}\"\n  \"thread_id\": \"indy::{{rev_reg_id}}::{{cred_rev_id}}\",\n  \"role\":\"issuer\",\n  \"initiator\":\"self\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/revocation/revoke",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"revocation",
+								"revoke"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revogar credencial 2.0 [obsolete]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"disabled": true
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"connection_id\":\"{{credential_offer_connection_id}}\",\n    \"role\":\"issuer\",\n    \"initiator\":\"self\",\n    \"auto_offer\":true,\n    \"auto_remove\":false,\n    \"thread_id\":\"indy::{{rev_reg_id}}::{{cred_rev_id}}\",\n    \"state\":\"offer-sent\",\n    \"created_at\":\"2024-05-13T18:05:27.111632Z\",\n    \"updated_at\":\"2024-05-13T18:05:27.111632Z\",\n    \"cred_ex_id\":\"{{credential_exchange_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/revocation/revoke",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"revocation",
+								"revoke"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Criar + verificar prova",
+			"item": [
+				{
+					"name": "Criar prova 2.0 usando o hub-issuer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"presentation_exchange_id\", responseJson.pres_ex_id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{api-key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{issuer_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"connection_id\":\"{{connection_id}}\",\n    \"comment\":\"A test for unbounded proof request\",\n    \"presentation_request\":{\n        \"indy\":{\n            \"name\":\"Proof request for user documents\",\n            \"non_revoked\":{\n                \"from\":{{$timestamp}},\n                \"to\":{{$timestamp}}\n            },\n            \"requested_attributes\":{\n                \"identidade\":{\n                    \"names\":[\"nome\", \"email\"],\n                    \"restrictions\":[\n                        {\n                            \"cred_def_id\":\"{{credencial_revogavel}}\"\n                        }\n                    ]\n                }\n            },\n            \"requested_predicates\":{ },\n            \"nonce\":\"1\",\n            \"version\":\"1.0\"\n        }\n    },\n    \"auto_remove\":false,\n    \"auto_verify\":true,\n    \"trace\":false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/present-proof-2.0/send-request",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"present-proof-2.0",
+								"send-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar prova 1.0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const responseJson = pm.response.json();",
+									"",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"presentation_exchange_id\", responseJson.presentation_exchange_id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{api-key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{issuer_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"connection_id\":\"{{connection_id}}\",\n    \"proof_request\": {\n        \"non_revoked\":{\n            \"from\":{{$timestamp}},\n            \"to\":{{$timestamp}}\n        },\n        \"requested_attributes\": {\n            \"identidade\": {\n                \"names\": [\n                    \"nome\",\n                    \"email\"\n                ],\n                \"restrictions\": [\n                    {\n                        \"cred_def_id\": \"{{cred_def_id}}\"\n                    }\n                ]\n            }\n        },\n        \"requested_predicates\": {},\n        \"name\": \"Proof request test\",\n        \"nonce\": \"1\",\n        \"version\": \"1.0\"\n    },\n    \"auto_remove\": false,\n    \"comment\": \"Teste\",\n    \"trace\": false\n}\n ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/present-proof/send-request",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"present-proof",
+								"send-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar prova 1.0 revogável",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"pm.test(\"Set a variable: token\", () => {",
+									"    pm.environment.set(\"presentation_exchange_id\", responseJson.pres_ex_id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{api-key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{issuer_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"connection_id\":\"{{credential_offer_connection_id}}\",\n    \"proof_request\": {\n        \"non_revoked\":{\n            \"from\":{{$timestamp}},\n            \"to\":{{$timestamp}}\n        },\n        \"requested_attributes\": {\n            \"identidade\": {\n                \"names\": [\n                    \"nome\",\n                    \"email\"\n                ],\n                \"restrictions\": [\n                    {\n                        \"cred_def_id\": \"{{credencial_revogavel}}\"\n                    }\n                ]\n            }\n        },\n        \"requested_predicates\": {},\n        \"name\": \"Proof request\",\n        \"nonce\": \"1\",\n        \"version\": \"1.0\"\n    },\n    \"auto_remove\": false,\n    \"comment\": \"Teste\",\n    \"trace\": false\n}\n ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/present-proof/send-request",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"present-proof",
+								"send-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Visualizar prova 2.0",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{api-key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/present-proof-2.0/records/{{presentation_exchange_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"present-proof-2.0",
+								"records",
+								"{{presentation_exchange_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Visualizar prova 1.0",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "ApiKey",
+								"value": "{{api-key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/present-proof/records/{{presentation_exchange_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"present-proof",
+								"records",
+								"{{presentation_exchange_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Visualizar prova 1.0 revogável",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "ApiKey",
+								"value": "{{api-key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/hub-issuer/agent/v2/present-proof/records/939e459a-2bbb-4323-b35b-29bd0d272d50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hub-issuer",
+								"agent",
+								"v2",
+								"present-proof",
+								"records",
+								"939e459a-2bbb-4323-b35b-29bd0d272d50"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "https://staging-id.cpqd.com.br/api/hub-issuer/agent-didcomm?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9pbnZpdGF0aW9uIiwgIkBpZCI6ICJmMzNiMTA0MS1kNzUxLTRlOTUtYjQ3MS1kODI1YjAzZjRiMGUiLCAibGFiZWwiOiAiU0VSUFJPIiwgImhhbmRzaGFrZV9wcm90b2N",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://staging-id.cpqd.com.br/api/hub-issuer/agent-didcomm?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9pbnZpdGF0aW9uIiwgIkBpZCI6ICJmMzNiMTA0MS1kNzUxLTRlOTUtYjQ3MS1kODI1YjAzZjRiMGUiLCAibGFiZWwiOiAiU0VSUFJPIiwgImhhbmRzaGFrZV9wcm90b2NvbHMiOiBbImh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wIl0sICJzZXJ2aWNlcyI6IFt7ImlkIjogIiNpbmxpbmUiLCAidHlwZSI6ICJkaWQtY29tbXVuaWNhdGlvbiIsICJyZWNpcGllbnRLZXlzIjogWyJkaWQ6a2V5Ono2TWt0eDlqQ2dMSmMzVGV3d0FDSERiUFJaMkFkQ0RtUm9Gc0cyZEhObXdmUXVlUSN6Nk1rdHg5akNnTEpjM1Rld3dBQ0hEYlBSWjJBZENEbVJvRnNHMmRITm13ZlF1ZVEiXSwgInNlcnZpY2VFbmRwb2ludCI6ICJodHRwczovL3N0YWdpbmctaWQuY3BxZC5jb20uYnIvYXBpL2h1Yi1pc3N1ZXIvYWdlbnQtZGlkY29tbSJ9XX0=",
+					"protocol": "https",
+					"host": [
+						"staging-id",
+						"cpqd",
+						"com",
+						"br"
+					],
+					"path": [
+						"api",
+						"hub-issuer",
+						"agent-didcomm"
+					],
+					"query": [
+						{
+							"key": "oob",
+							"value": "eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9pbnZpdGF0aW9uIiwgIkBpZCI6ICJmMzNiMTA0MS1kNzUxLTRlOTUtYjQ3MS1kODI1YjAzZjRiMGUiLCAibGFiZWwiOiAiU0VSUFJPIiwgImhhbmRzaGFrZV9wcm90b2NvbHMiOiBbImh0dHBzOi8vZGlkY29tbS5vcmcvY29ubmVjdGlvbnMvMS4wIl0sICJzZXJ2aWNlcyI6IFt7ImlkIjogIiNpbmxpbmUiLCAidHlwZSI6ICJkaWQtY29tbXVuaWNhdGlvbiIsICJyZWNpcGllbnRLZXlzIjogWyJkaWQ6a2V5Ono2TWt0eDlqQ2dMSmMzVGV3d0FDSERiUFJaMkFkQ0RtUm9Gc0cyZEhObXdmUXVlUSN6Nk1rdHg5akNnTEpjM1Rld3dBQ0hEYlBSWjJBZENEbVJvRnNHMmRITm13ZlF1ZVEiXSwgInNlcnZpY2VFbmRwb2ludCI6ICJodHRwczovL3N0YWdpbmctaWQuY3BxZC5jb20uYnIvYXBpL2h1Yi1pc3N1ZXIvYWdlbnQtZGlkY29tbSJ9XX0="
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get rev id",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "https://staging-id-besu.cpqd.com.br/api/hub-issuer/agent-didcomm?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9pbnZpdGF0aW9uIiwgIkBpZCI6ICJkNDdkNjA0MC02MDViLTQ1ODMtOWRmMi02NjBkN2M1OWE3ZjkiLCAibGFiZWwiOiAibGFiZWwgZm9yIHRoZSBjb25uZWN0aW",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://staging-id-besu.cpqd.com.br/api/hub-issuer/agent-didcomm?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9pbnZpdGF0aW9uIiwgIkBpZCI6ICJkNDdkNjA0MC02MDViLTQ1ODMtOWRmMi02NjBkN2M1OWE3ZjkiLCAibGFiZWwiOiAibGFiZWwgZm9yIHRoZSBjb25uZWN0aW9uIGludml0YXRpb24iLCAiaGFuZHNoYWtlX3Byb3RvY29scyI6IFsiaHR0cHM6Ly9kaWRjb21tLm9yZy9jb25uZWN0aW9ucy8xLjAiXSwgImFjY2VwdCI6IFsiZGlkY29tbS9haXAxIiwgImRpZGNvbW0vYWlwMjtlbnY9cmZjMTkiXSwgInNlcnZpY2VzIjogW3siaWQiOiAiI2lubGluZSIsICJ0eXBlIjogImRpZC1jb21tdW5pY2F0aW9uIiwgInJlY2lwaWVudEtleXMiOiBbImRpZDprZXk6ejZNa2gzc0JuR3VISlpIem5YUkFhU3RUS0N5TEhtZ3d1YWVieWlvTW9HTUZQdWl4I3o2TWtoM3NCbkd1SEpaSHpuWFJBYVN0VEtDeUxIbWd3dWFlYnlpb01vR01GUHVpeCJdLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vc3RhZ2luZy1pZC1iZXN1LmNwcWQuY29tLmJyL2FwaS9odWItaXNzdWVyL2FnZW50LWRpZGNvbW0ifV19",
+					"protocol": "https",
+					"host": [
+						"staging-id-besu",
+						"cpqd",
+						"com",
+						"br"
+					],
+					"path": [
+						"api",
+						"hub-issuer",
+						"agent-didcomm"
+					],
+					"query": [
+						{
+							"key": "oob",
+							"value": "eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9pbnZpdGF0aW9uIiwgIkBpZCI6ICJkNDdkNjA0MC02MDViLTQ1ODMtOWRmMi02NjBkN2M1OWE3ZjkiLCAibGFiZWwiOiAibGFiZWwgZm9yIHRoZSBjb25uZWN0aW9uIGludml0YXRpb24iLCAiaGFuZHNoYWtlX3Byb3RvY29scyI6IFsiaHR0cHM6Ly9kaWRjb21tLm9yZy9jb25uZWN0aW9ucy8xLjAiXSwgImFjY2VwdCI6IFsiZGlkY29tbS9haXAxIiwgImRpZGNvbW0vYWlwMjtlbnY9cmZjMTkiXSwgInNlcnZpY2VzIjogW3siaWQiOiAiI2lubGluZSIsICJ0eXBlIjogImRpZC1jb21tdW5pY2F0aW9uIiwgInJlY2lwaWVudEtleXMiOiBbImRpZDprZXk6ejZNa2gzc0JuR3VISlpIem5YUkFhU3RUS0N5TEhtZ3d1YWVieWlvTW9HTUZQdWl4I3o2TWtoM3NCbkd1SEpaSHpuWFJBYVN0VEtDeUxIbWd3dWFlYnlpb01vR01GUHVpeCJdLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vc3RhZ2luZy1pZC1iZXN1LmNwcWQuY29tLmJyL2FwaS9odWItaXNzdWVyL2FnZW50LWRpZGNvbW0ifV19"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
