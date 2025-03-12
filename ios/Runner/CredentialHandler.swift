@@ -19,13 +19,27 @@ extension Data {
 }
 
 extension CredentialHandler: AgentDelegate {
+    
     func onCredentialStateChanged(credentialRecord: CredentialExchangeRecord) {
+        
         if credentialRecord.state == .OfferReceived {
             credentialRecordId = credentialRecord.id
             processCredentialOffer()
         } else if credentialRecord.state == .Done {
             showSimpleAlert(message: "Credential received")
         }
+    }
+    func onConnectionStateChanged(connectionRecord: ConnectionRecord) {
+        
+    }
+    func onMediationStateChanged(mediationRecord: MediationRecord){
+        
+    }
+    func onOutOfBandStateChanged(outOfBandRecord: OutOfBandRecord){
+        
+    }
+    func onProblemReportReceived(message: BaseProblemReportMessage){
+        
     }
 
     func onProofStateChanged(proofRecord: ProofExchangeRecord) {
