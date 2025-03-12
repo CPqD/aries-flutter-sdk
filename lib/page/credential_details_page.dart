@@ -22,6 +22,7 @@ class CredentialDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildDetailRow('ID:', credential.id),
+                  buildDetailRow('Created At:', credential.createdAt.toString()),
                   buildDetailRow('Revocation ID:', credential.revocationId),
                   buildDetailRow('Link Secret ID:', credential.linkSecretId),
                   buildDetailRow('Schema ID:', credential.schemaId),

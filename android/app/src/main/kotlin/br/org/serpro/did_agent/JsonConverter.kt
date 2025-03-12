@@ -41,6 +41,8 @@ class JsonConverter {
         fun toMap(credential: CredentialRecord): Map<String, Any?> {
             return mapOf(
                 "id" to credential.id,
+                "createdAt" to credential.createdAt.toString(),
+                "updatedAt" to credential.updatedAt.toString(),
                 "revocationId" to credential.credentialRevocationId,
                 "linkSecretId" to credential.linkSecretId,
                 "credential" to credential.credential,

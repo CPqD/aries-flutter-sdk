@@ -1,10 +1,11 @@
 import 'dart:convert';
 
-import 'package:did_agent/agent/enums/aries_method.dart';
 import 'package:did_agent/agent/aries_result.dart';
+import 'package:did_agent/agent/enums/aries_method.dart';
 import 'package:did_agent/agent/models/connection_record.dart';
 import 'package:did_agent/agent/models/credential_record.dart';
 import 'package:did_agent/page/home.dart';
+import 'package:did_agent/page/settings_page.dart';
 import 'package:flutter/services.dart';
 
 Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);

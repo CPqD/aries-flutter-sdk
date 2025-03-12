@@ -2,6 +2,8 @@ import 'dart:convert';
 
 class CredentialRecord {
   final String id;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final String revocationId;
   final String linkSecretId;
   final String credential;
@@ -16,6 +18,8 @@ class CredentialRecord {
 
   CredentialRecord({
     required this.id,
+    required this.createdAt,
+    required this.updatedAt,
     required this.revocationId,
     required this.linkSecretId,
     required this.credential,
@@ -31,6 +35,8 @@ class CredentialRecord {
   factory CredentialRecord.fromMap(Map<String, dynamic> map) {
     return CredentialRecord(
       id: map["id"].toString(),
+      createdAt: DateTime.tryParse(map["createdAt"].toString()),
+      updatedAt: DateTime.tryParse(map["updatedAt"].toString()),
       revocationId: map["revocationId"].toString(),
       linkSecretId: map["linkSecretId"].toString(),
       credential: map["credential"].toString(),
@@ -47,7 +53,8 @@ class CredentialRecord {
   String getSubtitle() {
     return 'revocationId: $revocationId\n'
         'schemaName: $schemaName\n'
-        'schemaVersion: $schemaVersion';
+        'schemaVersion: $schemaVersion\n'
+        '${createdAt?.toLocal()}';
   }
 
   Map<String, dynamic> getValues() {
@@ -81,6 +88,8 @@ class CredentialRecord {
   String toString() {
     return 'CredentialRecord{'
         'id: $id, '
+        'createdAt: $createdAt, '
+        'updatedAt: $updatedAt, '
         'revocationId: $revocationId, '
         'linkSecretId: $linkSecretId, '
         'schemaId: $schemaId, '

@@ -379,6 +379,7 @@ class MainActivity: FlutterFragmentActivity() {
             try {
                 agent!!.shutdown()
                 agent = null;
+                subscribed = false;
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
