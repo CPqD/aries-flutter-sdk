@@ -1,3 +1,4 @@
+import 'package:did_agent/util/aries_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:did_agent/global.dart';
 
@@ -17,24 +18,29 @@ class NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final notifications = getNotifications();
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Notifications'),
       ),
-      body: notifications.isEmpty
-          ? Center(
-              child: Text('No notifications available.'),
-            )
-          : ListView.builder(
+      body: FutureBuilder<List<AriesNotification>>(
+        future: getNotifications(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No notifications available.'));
+          } else {
+            final notifications = snapshot.data!;
+            return ListView.builder(
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final notification = notifications[index];
                 return Card(
                   child: ListTile(
                     title: Text(notification.title),
-                    subtitle: Text(notification.text),
+                    subtitle: Text(notification.title),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -51,7 +57,10 @@ class NotificationsPageState extends State<NotificationsPage> {
                   ),
                 );
               },
-            ),
+            );
+          }
+        },
+      ),
     );
   }
 }

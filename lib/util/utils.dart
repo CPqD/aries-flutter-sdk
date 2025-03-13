@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/enums/aries_method.dart';
 import 'package:did_agent/agent/models/connection_record.dart';
+import 'package:did_agent/agent/models/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential_record.dart';
 import 'package:did_agent/page/home.dart';
 import 'package:flutter/services.dart';
@@ -51,6 +52,30 @@ Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
       success: true,
       error: result.error,
       value: originalList.map((map) => CredentialRecord.fromMap(map)).toList(),
+    );
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString(), value: []);
+  }
+}
+
+Future<AriesResult<List<CredentialExchangeRecord>>> getCredentialsOffers() async {
+  final result = await AriesResult.invoke(AriesMethod.getCredentialsOffers);
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error, value: []);
+  }
+
+  try {
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    final originalList = List<Map<String, dynamic>>.from(jsonList);
+
+    return AriesResult(
+      success: true,
+      error: result.error,
+      value: originalList.map((map) => CredentialExchangeRecord.fromMap(map)).toList(),
     );
   } catch (e) {
     print('failed to decode = ${e.toString()}\n\n');
@@ -119,4 +144,26 @@ Future<dynamic> receiveFromNative(MethodCall call) async {
 
 configureChannelNative() {
   channelWallet.setMethodCallHandler(receiveFromNative);
+}
+
+void logPrint(Object object) async {
+  int defaultPrintLength = 1020;
+  if (object == null || object.toString().length <= defaultPrintLength) {
+    print(object);
+  } else {
+    String log = object.toString();
+    int start = 0;
+    int endIndex = defaultPrintLength;
+    int logLength = log.length;
+    int tmpLogLength = log.length;
+    while (endIndex < logLength) {
+      print(log.substring(start, endIndex));
+      endIndex += defaultPrintLength;
+      start += defaultPrintLength;
+      tmpLogLength -= defaultPrintLength;
+    }
+    if (tmpLogLength > 0) {
+      print(log.substring(start, logLength));
+    }
+  }
 }

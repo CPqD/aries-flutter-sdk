@@ -1,8 +1,5 @@
 import 'package:did_agent/agent/enums/credential_state.dart';
 import 'package:did_agent/global.dart';
-import 'package:did_agent/util/aries_notification.dart';
-import 'package:did_agent/util/dialogs.dart';
-import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -117,74 +114,18 @@ class HomePageState extends State<HomePage> {
   }
 
   void receivedCredential(String credentialId, String credentialState) {
-    print('receivedCredential');
+    print('receivedCredential - state: $credentialState');
 
     if (CredentialState.offerReceived.equals(credentialState)) {
-      final notification = AriesNotification(
-        id: credentialId,
-        title: 'Oferta de Credential Recebida',
-        text: 'Você deseja aceitar a oferta de credencial?',
-        type: NotificationType.credentialOffer,
-        receivedAt: DateTime.now(),
-        onAccept: () async {
-          final acceptOfferResult = await acceptCredentialOffer(credentialId);
-
-          if (acceptOfferResult.success) {
-            print('Credential Accepted: $credentialId');
-          }
-
-          acceptCredentialDialog(acceptOfferResult, context);
-        },
-        onRefuse: () async {
-          final declineOfferResult = await declineCredentialOffer(credentialId);
-
-          if (declineOfferResult.success) {
-            print('Credential Refused: $credentialId');
-          }
-
-          declineCredentialDialog(declineOfferResult, context);
-        },
-      );
-
-      addNotification(notification);
-    } else {
-      print('credentialState: $credentialState');
+      updateNotifications();
     }
   }
 
   void receivedProof(String proofId, String proofState) {
-    print('receivedProof');
+    print('receivedProof  - state: $proofState');
 
     if (CredentialState.requestReceived.equals(proofState)) {
-      final notification = AriesNotification(
-        id: proofId,
-        title: 'Oferta de Prova Recebida',
-        text: 'Você deseja aceitar a oferta de prova?',
-        type: NotificationType.credentialOffer,
-        receivedAt: DateTime.now(),
-        onAccept: () async {
-          final acceptOfferResult = await acceptProofOffer(proofId);
-
-          if (acceptOfferResult.success) {
-            print('Proof Accepted: $proofId');
-          }
-
-          acceptProofDialog(acceptOfferResult, context);
-        },
-        onRefuse: () async {
-          final declineOfferResult = await declineProofOffer(proofId);
-
-          if (declineOfferResult.success) {
-            print('Proof Refused: $proofId');
-          }
-
-          declineProofDialog(declineOfferResult, context);
-        },
-      );
-
-      addNotification(notification);
-    } else {
-      print('proofState: $proofState');
+      updateNotifications();
     }
   }
 }
