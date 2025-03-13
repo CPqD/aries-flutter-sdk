@@ -1,3 +1,4 @@
+import 'package:did_agent/global.dart';
 import 'package:did_agent/page/connections_page.dart';
 import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
@@ -27,13 +28,15 @@ class SettingsPage extends StatelessWidget {
                 final initResult = await init();
                 print(initResult);
 
-                if (!initResult.success) {
-                  initResultDialog(initResult, context);
-                } else {
+                if (initResult.success) {
                   final openResult = await openWallet();
                   print(openResult);
 
+                  updateNotifications();
+
                   openWalletResultDialog(openResult, context);
+                } else {
+                  initResultDialog(initResult, context);
                 }
               },
               child: Text('Open Wallet'),
@@ -55,6 +58,21 @@ class SettingsPage extends StatelessWidget {
                 );
               },
               child: Text('Conexões'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final result = await getCredentialsOffers();
+                logPrint(
+                    'last result: ${result.value?[result.value!.length - 1].toString()}');
+                logPrint('result.value.length: ${(result.value ?? []).length}');
+
+                if ((result.value ?? []).isNotEmpty) {
+                  final first = result.value![0];
+
+                  logPrint('first CredentialExchangeRecord: ${first}');
+                }
+              },
+              child: Text('CredentialExchangeRecords'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

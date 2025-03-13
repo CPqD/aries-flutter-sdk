@@ -9,7 +9,9 @@ import org.hyperledger.ariesframework.connection.models.didauth.DidDoc
 import org.hyperledger.ariesframework.connection.models.didauth.DidDocService
 import org.hyperledger.ariesframework.connection.models.didauth.publicKey.PublicKey
 import org.hyperledger.ariesframework.connection.repository.ConnectionRecord
+import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
 import org.hyperledger.ariesframework.oob.messages.OutOfBandInvitation
+import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
 class JsonConverter {
     companion object {
@@ -53,6 +55,30 @@ class JsonConverter {
                 "issuerId" to credential.issuerId,
                 "definitionId" to credential.credentialDefinitionId,
                 "revocationRegistryId" to credential.revocationRegistryId
+            )
+        }
+
+        fun toMap(credentialExchangeRecord: CredentialExchangeRecord): Map<String, Any?> {
+            return mapOf(
+                "id" to credentialExchangeRecord.id,
+                "createdAt" to credentialExchangeRecord.createdAt.toString(),
+                "updatedAt" to credentialExchangeRecord.updatedAt.toString(),
+                "connectionId" to credentialExchangeRecord.connectionId,
+                "threadId" to credentialExchangeRecord.threadId,
+                "state" to credentialExchangeRecord.state,
+                "protocolVersion" to credentialExchangeRecord.protocolVersion,
+            )
+        }
+
+        fun toMap(didCommMessage: DidCommMessageRecord): Map<String, Any?> {
+            return mapOf(
+                "id" to didCommMessage.id,
+                "tags" to didCommMessage.getTags(),
+                "createdAt" to didCommMessage.createdAt.toString(),
+                "updatedAt" to didCommMessage.updatedAt.toString(),
+                "message" to didCommMessage.message,
+                "role" to didCommMessage.role,
+                "associatedRecordId" to didCommMessage.associatedRecordId,
             )
         }
 
