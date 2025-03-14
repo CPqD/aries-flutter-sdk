@@ -46,6 +46,7 @@ class NotificationsPageState extends State<NotificationsPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(notification.title),
+                            Text(notification.receivedAt.toLocal().toString()),
                             SizedBox(height: 8),
                             Center(
                               child: ElevatedButton(

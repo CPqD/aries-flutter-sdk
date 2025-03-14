@@ -71,7 +71,7 @@ class NotificationsDetailPage extends StatelessWidget {
                                   isAccept: true);
                             }
                           },
-                          child: Text('Accept'),
+                          child: Text('Aceitar'),
                         ),
                         ElevatedButton(
                           onPressed: () async {
@@ -84,7 +84,7 @@ class NotificationsDetailPage extends StatelessWidget {
                                   isAccept: false);
                             }
                           },
-                          child: Text('Refuse'),
+                          child: Text('Recusar'),
                         ),
                       ],
                     ),

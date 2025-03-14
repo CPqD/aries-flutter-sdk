@@ -1,5 +1,7 @@
 import 'package:did_agent/agent/enums/credential_state.dart';
 import 'package:did_agent/global.dart';
+import 'package:did_agent/util/dialogs.dart';
+import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
