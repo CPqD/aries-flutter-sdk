@@ -5,6 +5,8 @@ import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
 import 'notifications_page.dart';
 import 'settings_page.dart';
 
@@ -20,18 +22,35 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  int _selectedIndex = 1;
+  int _selectedIndex = 2;
   int _notificationCount = 0;
 
   static final List<Widget> _pages = <Widget>[
     NotificationsPage(),
+    Container(),
     SettingsPage(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  void _onItemTapped(int index) async {
+    if (index == 1) {
+      String qrCode = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666',
+        'Cancel',
+        true,
+        ScanMode.QR,
+      );
+      print('QR Code: $qrCode');
+      if (qrCode != '-1') {
+        final invitation = await receiveInvitation(qrCode);
+        print(invitation);
+
+        invitationResultDialog(invitation, context);
+      }
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   void setNotificationCount(int notificationCount) {
@@ -80,6 +99,10 @@ class HomePageState extends State<HomePage> {
               ],
             ),
             label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code),
+            label: 'Ler QR Code',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
