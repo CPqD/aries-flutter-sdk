@@ -1,7 +1,8 @@
-import 'package:did_agent/page/notification_details_page.dart';
+import 'package:did_agent/global.dart';
+import 'package:did_agent/page/credential_notification_page.dart';
+import 'package:did_agent/page/proof_notification_page.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:flutter/material.dart';
-import 'package:did_agent/global.dart';
 
 final notificationsKey = GlobalKey<NotificationsPageState>();
 
@@ -54,8 +55,18 @@ class NotificationsPageState extends State<NotificationsPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => NotificationsDetailPage(
-                                          notification: notification),
+                                      builder: (context) {
+                                        if (notification.type ==
+                                            NotificationType.proofOffer) {
+                                          return ProofNotificationPage(
+                                            notification: notification,
+                                          );
+                                        }
+
+                                        return CredentialNotificationPage(
+                                          notification: notification,
+                                        );
+                                      },
                                     ),
                                   );
                                 },

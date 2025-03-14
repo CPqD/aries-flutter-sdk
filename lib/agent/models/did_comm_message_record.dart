@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:did_agent/agent/enums/did_comm.dart';
 import 'package:did_agent/agent/models/credential_preview.dart';
+import 'package:did_agent/agent/models/proof_preview.dart';
 
 class DidCommMessageRecord {
   final String id;
@@ -43,6 +44,32 @@ class DidCommMessageRecord {
       print("Failed to get CredentialPreview: ${e.toString()}");
 
       return CredentialPreview(attributes: [], type: '');
+    }
+  }
+
+  ProofPreview getProofPreview() {
+    try {
+      final messageMap = jsonDecode(message);
+      final presentations =
+          List<Map<String, dynamic>>.from(messageMap["request_presentations~attach"]);
+
+      final requestPresentation = presentations.isEmpty ? {} : presentations[0];
+
+      String encodedPreview = requestPresentation['data']['base64'];
+
+      String decodedPreview = utf8.decode(base64Decode(encodedPreview));
+
+      final preview = jsonDecode(decodedPreview);
+
+      return ProofPreview.fromMap(preview);
+    } catch (e) {
+      print("Failed to get ProofPreview: ${e.toString()}");
+
+      return ProofPreview(
+        nonRevoked: {},
+        requestedPredicates: {},
+        requestedAttributes: [],
+      );
     }
   }
 

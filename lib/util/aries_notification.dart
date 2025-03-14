@@ -16,7 +16,6 @@ enum NotificationType {
 final class AriesNotification {
   final String id;
   final String title;
-  final String text;
   final NotificationType type;
   final DateTime receivedAt;
   final Future<AriesResult> Function() onAccept;
@@ -25,7 +24,6 @@ final class AriesNotification {
   AriesNotification({
     required this.id,
     required this.title,
-    required this.text,
     required this.type,
     required this.receivedAt,
     required this.onAccept,
@@ -36,7 +34,6 @@ final class AriesNotification {
     return AriesNotification(
       id: credOffer.id,
       title: 'Oferta de Credential Recebida',
-      text: 'Deseja aceitar essa credencial?',
       type: NotificationType.credentialOffer,
       receivedAt: credOffer.createdAt ?? DateTime.now(),
       onAccept: () async {
@@ -63,8 +60,7 @@ final class AriesNotification {
   factory AriesNotification.fromProofOffer(ProofExchangeRecord proofOffer) {
     return AriesNotification(
       id: proofOffer.id,
-      title: 'Oferta de Prova Recebida',
-      text: 'Você autoriza a realização dessa prova?',
+      title: 'Pedido de Prova Recebido',
       type: NotificationType.proofOffer,
       receivedAt: proofOffer.createdAt ?? DateTime.now(),
       onAccept: () async {

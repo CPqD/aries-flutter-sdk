@@ -1,14 +1,14 @@
-class CredentialAttributes {
+class CredentialAttribute {
   final String name;
   final String value;
 
-  CredentialAttributes({
+  CredentialAttribute({
     required this.name,
     required this.value,
   });
 
-  factory CredentialAttributes.fromMap(Map<String, dynamic> map) {
-    return CredentialAttributes(
+  factory CredentialAttribute.fromMap(Map<String, dynamic> map) {
+    return CredentialAttribute(
       name: map["name"].toString(),
       value: map["value"].toString(),
     );

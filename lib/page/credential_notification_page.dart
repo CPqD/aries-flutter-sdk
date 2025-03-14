@@ -5,10 +5,10 @@ import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
-class NotificationsDetailPage extends StatelessWidget {
+class CredentialNotificationPage extends StatelessWidget {
   final AriesNotification notification;
 
-  const NotificationsDetailPage({super.key, required this.notification});
+  const CredentialNotificationPage({super.key, required this.notification});
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +29,17 @@ class NotificationsDetailPage extends StatelessWidget {
               return Center(child: Text('No message available.'));
             } else {
               final DidCommMessageRecord message = snapshot.data!.value;
-              final attributes = message.getCredentialPreview(removeCredRevUuid: true).attributes;
+              final attributes =
+                  message.getCredentialPreview(removeCredRevUuid: true).attributes;
+
+              print('message.getProofPreview: ${message.getProofPreview()}');
 
               return SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      notification.text,
+                      'Deseja aceitar essa credencial?',
                       style: TextStyle(fontSize: 18),
                     ),
                     SizedBox(height: 16),
@@ -52,10 +55,6 @@ class NotificationsDetailPage extends StatelessWidget {
                         );
                       },
                     ),
-                    Text(
-                      'Recebida em: ${notification.receivedAt.toLocal()}',
-                      style: TextStyle(fontSize: 16),
-                    ),
                     SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -67,8 +66,7 @@ class NotificationsDetailPage extends StatelessWidget {
                             if (context.mounted) {
                               Navigator.pop(context);
 
-                              openNotificationResultDialog(result, context,
-                                  isAccept: true);
+                              openCredentialResultDialog(result, context, isAccept: true);
                             }
                           },
                           child: Text('Aceitar'),
@@ -80,7 +78,7 @@ class NotificationsDetailPage extends StatelessWidget {
                             if (context.mounted) {
                               Navigator.pop(context);
 
-                              openNotificationResultDialog(result, context,
+                              openCredentialResultDialog(result, context,
                                   isAccept: false);
                             }
                           },
@@ -126,24 +124,12 @@ class NotificationsDetailPage extends StatelessWidget {
     );
   }
 
-  void openNotificationResultDialog(AriesResult result, BuildContext context,
+  void openCredentialResultDialog(AriesResult result, BuildContext context,
       {required bool isAccept}) {
-    switch (notification.type) {
-      case NotificationType.credentialOffer:
-        if (isAccept) {
-          acceptCredentialDialog(result, context);
-        } else {
-          declineCredentialDialog(result, context);
-        }
-        break;
-
-      case NotificationType.proofOffer:
-        if (isAccept) {
-          acceptProofDialog(result, context);
-        } else {
-          declineProofDialog(result, context);
-        }
-        break;
+    if (isAccept) {
+      acceptCredentialDialog(result, context);
+    } else {
+      declineCredentialDialog(result, context);
     }
   }
 }

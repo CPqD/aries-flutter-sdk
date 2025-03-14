@@ -2,7 +2,7 @@ import 'package:did_agent/agent/models/credential_attributes.dart';
 
 class CredentialPreview {
   final String type;
-  final List<CredentialAttributes> attributes;
+  final List<CredentialAttribute> attributes;
 
   CredentialPreview({
     required this.type,
@@ -12,7 +12,7 @@ class CredentialPreview {
   factory CredentialPreview.fromMap(Map<String, dynamic> map,
       {bool removeCredRevUuid = false}) {
     var attributes = List<Map<String, dynamic>>.from(map["attributes"])
-        .map((attribute) => CredentialAttributes.fromMap(attribute));
+        .map((attribute) => CredentialAttribute.fromMap(attribute));
 
     if (removeCredRevUuid) {
       attributes = attributes.where((attribute) => attribute.name != "cred_rev_uuid");
