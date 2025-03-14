@@ -9,12 +9,18 @@ class CredentialPreview {
     required this.attributes,
   });
 
-  factory CredentialPreview.fromMap(Map<String, dynamic> map) {
+  factory CredentialPreview.fromMap(Map<String, dynamic> map,
+      {bool removeCredRevUuid = false}) {
+    var attributes = List<Map<String, dynamic>>.from(map["attributes"])
+        .map((attribute) => CredentialAttributes.fromMap(attribute));
+
+    if (removeCredRevUuid) {
+      attributes = attributes.where((attribute) => attribute.name != "cred_rev_uuid");
+    }
+
     return CredentialPreview(
       type: map["@type"].toString(),
-      attributes: List<Map<String, dynamic>>.from(map["attributes"])
-          .map((attribute) => CredentialAttributes.fromMap(attribute))
-          .toList(),
+      attributes: attributes.toList(),
     );
   }
 

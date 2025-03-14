@@ -1,3 +1,4 @@
+import 'package:did_agent/page/notification_details_page.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:did_agent/global.dart';
@@ -38,22 +39,39 @@ class NotificationsPageState extends State<NotificationsPage> {
               itemBuilder: (context, index) {
                 final notification = notifications[index];
                 return Card(
-                  child: ListTile(
-                    title: Text(notification.title),
-                    subtitle: Text(notification.title),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.check),
-                          onPressed: notification.callOnAccept,
+                  child: Stack(
+                    children: [
+                      ListTile(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(notification.title),
+                            SizedBox(height: 8),
+                            Center(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => NotificationsDetailPage(
+                                          notification: notification),
+                                    ),
+                                  );
+                                },
+                                child: Text('Details'),
+                              ),
+                            ),
+                          ],
                         ),
-                        IconButton(
+                      ),
+                      Positioned(
+                        right: 0,
+                        child: IconButton(
                           icon: Icon(Icons.close),
                           onPressed: notification.callOnRefuse,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },

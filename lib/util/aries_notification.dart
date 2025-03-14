@@ -1,7 +1,6 @@
+import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/models/credential_exchange_record.dart';
 import 'package:did_agent/global.dart';
-import 'package:did_agent/page/notifications_page.dart';
-import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
 
 enum NotificationType {
@@ -16,48 +15,46 @@ enum NotificationType {
 final class AriesNotification {
   final String id;
   final String title;
+  final String text;
   final NotificationType type;
   final DateTime receivedAt;
-  final Function onAccept;
-  final Function onRefuse;
+  final Future<AriesResult> Function() onAccept;
+  final Future<AriesResult> Function() onRefuse;
 
   AriesNotification({
     required this.id,
     required this.title,
+    required this.text,
     required this.type,
     required this.receivedAt,
     required this.onAccept,
     required this.onRefuse,
   });
 
-  factory AriesNotification.fromCredentialOffer(
-      CredentialExchangeRecord credentialOffer) {
+  factory AriesNotification.fromCredentialOffer(CredentialExchangeRecord credOffer) {
     return AriesNotification(
-      id: credentialOffer.id,
+      id: credOffer.id,
       title: 'Oferta de Credential Recebida',
+      text: 'Deseja aceitar essa credencial?',
       type: NotificationType.credentialOffer,
       receivedAt: DateTime.now(),
       onAccept: () async {
-        final acceptOfferResult = await acceptCredentialOffer(credentialOffer.id);
+        final acceptOfferResult = await acceptCredentialOffer(credOffer.id);
 
         if (acceptOfferResult.success) {
-          print('Credential Accepted: ${credentialOffer.id}');
+          print('Credential Accepted: ${credOffer.id}');
         }
 
-        if (notificationsKey.currentContext != null) {
-          acceptCredentialDialog(acceptOfferResult, notificationsKey.currentContext!);
-        }
+        return acceptOfferResult;
       },
       onRefuse: () async {
-        final declineOfferResult = await declineCredentialOffer(credentialOffer.id);
+        final declineOfferResult = await declineCredentialOffer(credOffer.id);
 
         if (declineOfferResult.success) {
-          print('Credential Refused: ${credentialOffer.id}');
+          print('Credential Refused: ${credOffer.id}');
         }
 
-        if (notificationsKey.currentContext != null) {
-          declineCredentialDialog(declineOfferResult, notificationsKey.currentContext!);
-        }
+        return declineOfferResult;
       },
     );
   }
@@ -66,6 +63,7 @@ final class AriesNotification {
     return AriesNotification(
       id: proofOffer.id,
       title: 'Oferta de Prova Recebida',
+      text: 'Você autoriza a realização dessa prova?',
       type: NotificationType.proofOffer,
       receivedAt: DateTime.now(),
       onAccept: () async {
@@ -75,9 +73,7 @@ final class AriesNotification {
           print('Proof Accepted: ${proofOffer.id}');
         }
 
-        if (notificationsKey.currentContext != null) {
-          acceptProofDialog(acceptOfferResult, notificationsKey.currentContext!);
-        }
+        return acceptOfferResult;
       },
       onRefuse: () async {
         final declineOfferResult = await declineProofOffer(proofOffer.id);
@@ -86,20 +82,29 @@ final class AriesNotification {
           print('Proof Refused: ${proofOffer.id}');
         }
 
-        if (notificationsKey.currentContext != null) {
-          declineProofDialog(declineOfferResult, notificationsKey.currentContext!);
-        }
+        return declineOfferResult;
       },
     );
   }
 
-  Future<void> callOnAccept() async {
-    await onAccept.call();
-    removeNotification(id);
+  Future<AriesResult> callOnAccept() async {
+    try {
+      return await onAccept.call();
+    } catch (e) {
+      return AriesResult(
+          success: false, error: 'Notification Accept failed: $e', value: null);
+    } finally {
+      removeNotification(id);
+    }
   }
 
-  Future<void> callOnRefuse() async {
-    await onRefuse.call();
-    removeNotification(id);
+  Future<AriesResult> callOnRefuse() async {
+    try {
+      removeNotification(id);
+      return await onRefuse.call();
+    } catch (e) {
+      return AriesResult(
+          success: false, error: 'Notification Refuse failed: $e', value: null);
+    }
   }
 }

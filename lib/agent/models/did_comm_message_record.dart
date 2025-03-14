@@ -5,7 +5,7 @@ import 'package:did_agent/agent/models/credential_preview.dart';
 
 class DidCommMessageRecord {
   final String id;
-  final Map<String, String>? tags;
+  final Map<String, dynamic>? tags;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String message;
@@ -34,10 +34,11 @@ class DidCommMessageRecord {
     );
   }
 
-  CredentialPreview getCredentialPreview() {
+  CredentialPreview getCredentialPreview({bool removeCredRevUuid = false}) {
     try {
       final messageMap = jsonDecode(message);
-      return CredentialPreview.fromMap(messageMap["credential_preview"]);
+      return CredentialPreview.fromMap(messageMap["credential_preview"],
+          removeCredRevUuid: removeCredRevUuid);
     } catch (e) {
       print("Failed to get CredentialPreview: ${e.toString()}");
 
