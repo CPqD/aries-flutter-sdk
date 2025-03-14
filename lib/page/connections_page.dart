@@ -8,7 +8,7 @@ class ConnectionsPage extends StatefulWidget {
   const ConnectionsPage({super.key});
 
   @override
-  _ConnectionsPageState createState() => _ConnectionsPageState();
+  State<ConnectionsPage> createState() => _ConnectionsPageState();
 }
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
@@ -24,7 +24,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connections Page'),
+        title: Text('Conexões'),
       ),
       body: FutureBuilder<AriesResult<List<ConnectionRecord>>>(
         future: _connectionsFuture,
@@ -34,12 +34,11 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           }
 
           if (snapshot.hasError || !snapshot.hasData || snapshot.data!.success == false) {
-            return Center(
-                child: Text('Error: ${snapshot.error ?? snapshot.data?.error}'));
+            return Center(child: Text('Erro: ${snapshot.error ?? snapshot.data?.error}'));
           }
 
           if (snapshot.data!.value!.isEmpty) {
-            return Center(child: Text('No connections found.'));
+            return Center(child: Text('Nenhuma conexão encontrada.'));
           }
 
           final connections = snapshot.data!.value as List<ConnectionRecord>;
@@ -53,7 +52,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
               return ListTile(
                   title: Text(connection.id),
-                  subtitle: Text('${connection.theirLabel}\n${connection.state.value}\n${connection.createdAt?.toLocal()}'),
+                  subtitle: Text(
+                      '${connection.theirLabel}\n${connection.state.value}\n${connection.createdAt?.toLocal()}'),
                   onTap: () async {
                     final result = await Navigator.push(
                       context,

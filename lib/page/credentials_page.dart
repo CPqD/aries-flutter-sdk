@@ -8,7 +8,7 @@ class CredentialsPage extends StatefulWidget {
   const CredentialsPage({super.key});
 
   @override
-  _CredentialsPageState createState() => _CredentialsPageState();
+  State<CredentialsPage> createState() => _CredentialsPageState();
 }
 
 class _CredentialsPageState extends State<CredentialsPage> {
@@ -24,7 +24,7 @@ class _CredentialsPageState extends State<CredentialsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Credentials Page'),
+        title: Text('Credenciais'),
       ),
       body: FutureBuilder<AriesResult<List<CredentialRecord>>>(
         future: _credentialsFuture,
@@ -34,12 +34,15 @@ class _CredentialsPageState extends State<CredentialsPage> {
           }
 
           if (snapshot.hasError || !snapshot.hasData || snapshot.data!.success == false) {
-            return Center(
-                child: Text('Error: ${snapshot.error ?? snapshot.data?.error}'));
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child:
+                  Center(child: Text('Erro: ${snapshot.error ?? snapshot.data?.error}')),
+            );
           }
 
           if (snapshot.data!.value!.isEmpty) {
-            return Center(child: Text('No credentials found.'));
+            return Center(child: Text('Nenhuma credencial encontrada.'));
           }
 
           final credentials = snapshot.data!.value as List<CredentialRecord>;

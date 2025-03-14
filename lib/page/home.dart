@@ -34,8 +34,8 @@ class HomePageState extends State<HomePage> {
     if (index == 1) {
       String qrCode = await FlutterBarcodeScanner.scanBarcode(
         '#ff6666',
-        'Cancel',
-        true,
+        'Cancelar',
+        false,
         ScanMode.QR,
       );
       print('QR Code: $qrCode');
@@ -97,7 +97,7 @@ class HomePageState extends State<HomePage> {
                   ),
               ],
             ),
-            label: 'Notifications',
+            label: 'Notificações',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code),
@@ -105,7 +105,7 @@ class HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Settings',
+            label: 'Configurações',
           ),
         ],
         currentIndex: _selectedIndex,

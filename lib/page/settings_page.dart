@@ -15,32 +15,12 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: Text("Configurações"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            ElevatedButton(
-              onPressed: () async {
-                configureChannelNative();
-
-                final initResult = await init();
-                print(initResult);
-
-                if (initResult.success) {
-                  final openResult = await openWallet();
-                  print(openResult);
-
-                  updateNotifications();
-
-                  openWalletResultDialog(openResult, context);
-                } else {
-                  initResultDialog(initResult, context);
-                }
-              },
-              child: Text('Open Wallet'),
-            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -63,7 +43,7 @@ class SettingsPage extends StatelessWidget {
               onPressed: () async {
                 updateNotifications();
               },
-              child: Text('update notifications'),
+              child: Text('Atualizar notificações'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -86,24 +66,6 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final subscribeResult = await subscribe();
-                print(subscribeResult);
-
-                subscribeResultDialog(subscribeResult, context);
-              },
-              child: Text('Subscribe'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final result = await shutdown();
-                print(result);
-
-                shutdownResultDialog(result, context);
-              },
-              child: Text('Desligar Agente'),
             ),
           ],
         ),

@@ -11,7 +11,7 @@ class ConnectionDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connection Details'),
+        title: Text('Detalhes da conexão'),
       ),
       body: Column(
         children: [
@@ -60,7 +60,7 @@ class ConnectionDetailsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('History'),
+                    child: Text('Histórico'),
                   ),
                 ),
                 SizedBox(width: 16), // Add some space between the buttons
@@ -74,7 +74,7 @@ class ConnectionDetailsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('Delete'),
+                    child: Text('Deletar'),
                   ),
                 ),
               ],
@@ -90,20 +90,20 @@ class ConnectionDetailsPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Delete'),
-          content: Text('Are you sure you want to delete this connection?'),
+          title: Text('Confirmar Exclusão'),
+          content: Text('Tem certeza de que deseja excluir esta conexão?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false); // Return false
               },
-              child: Text('Cancel'),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(true); // Return true
               },
-              child: Text('Delete'),
+              child: Text('Deletar'),
             ),
           ],
         );
@@ -112,7 +112,7 @@ class ConnectionDetailsPage extends StatelessWidget {
 
     if (confirmDelete == true) {
       final deleteResult = await removeConnection(connection.id);
-      print('Delete Result: ${deleteResult}');
+      print('Delete Result: $deleteResult');
 
       if (deleteResult.success) {
         Navigator.pop(context, true);
@@ -127,7 +127,7 @@ class ConnectionDetailsPage extends StatelessWidget {
         text: TextSpan(
           children: [
             TextSpan(
-              text: '$fieldName',
+              text: fieldName,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,

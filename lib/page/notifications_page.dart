@@ -22,7 +22,7 @@ class NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications'),
+        title: Text('Notificações'),
       ),
       body: FutureBuilder<List<AriesNotification>>(
         future: getNotifications(),
@@ -30,9 +30,9 @@ class NotificationsPageState extends State<NotificationsPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Erro: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No notifications available.'));
+            return Center(child: Text('Nenhuma notificação disponível.'));
           } else {
             final notifications = snapshot.data!;
             return ListView.builder(
@@ -70,7 +70,7 @@ class NotificationsPageState extends State<NotificationsPage> {
                                     ),
                                   );
                                 },
-                                child: Text('Details'),
+                                child: Text('Detalhes'),
                               ),
                             ),
                           ],
