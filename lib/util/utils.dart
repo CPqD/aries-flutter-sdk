@@ -6,6 +6,7 @@ import 'package:did_agent/agent/models/connection_record.dart';
 import 'package:did_agent/agent/models/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/models/proof_exchange_record.dart';
 import 'package:did_agent/page/home.dart';
 import 'package:flutter/services.dart';
 
@@ -77,6 +78,30 @@ Future<AriesResult<List<CredentialExchangeRecord>>> getCredentialsOffers() async
       success: true,
       error: result.error,
       value: originalList.map((map) => CredentialExchangeRecord.fromMap(map)).toList(),
+    );
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString(), value: []);
+  }
+}
+
+Future<AriesResult<List<ProofExchangeRecord>>> getProofOffers() async {
+  final result = await AriesResult.invoke(AriesMethod.getProofOffers);
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error, value: []);
+  }
+
+  try {
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    final originalList = List<Map<String, dynamic>>.from(jsonList);
+
+    return AriesResult(
+      success: true,
+      error: result.error,
+      value: originalList.map((map) => ProofExchangeRecord.fromMap(map)).toList(),
     );
   } catch (e) {
     print('failed to decode = ${e.toString()}\n\n');

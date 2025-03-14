@@ -5,7 +5,7 @@ import 'package:did_agent/util/utils.dart';
 
 List<AriesNotification> _notifications = [];
 
-void updateNotifications() async {
+Future<void> updateNotifications() async {
   try {
     List<AriesNotification> updatedNotifications = [];
 
@@ -16,6 +16,16 @@ void updateNotifications() async {
         updatedNotifications.add(AriesNotification.fromCredentialOffer(credentialOffer));
       });
     }
+
+    final getProofOffersResult = await getProofOffers();
+
+    if (getProofOffersResult.success && getProofOffersResult.value != null) {
+      getProofOffersResult.value?.forEach((proofOffer) {
+        updatedNotifications.add(AriesNotification.fromProofOffer(proofOffer));
+      });
+    }
+
+    updatedNotifications.sort((a, b) => b.receivedAt.compareTo(a.receivedAt));
 
     _notifications = updatedNotifications;
 

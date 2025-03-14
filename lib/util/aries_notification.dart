@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/models/credential_exchange_record.dart';
+import 'package:did_agent/agent/models/proof_exchange_record.dart';
 import 'package:did_agent/global.dart';
 import 'package:did_agent/util/utils.dart';
 
@@ -37,7 +38,7 @@ final class AriesNotification {
       title: 'Oferta de Credential Recebida',
       text: 'Deseja aceitar essa credencial?',
       type: NotificationType.credentialOffer,
-      receivedAt: DateTime.now(),
+      receivedAt: credOffer.createdAt ?? DateTime.now(),
       onAccept: () async {
         final acceptOfferResult = await acceptCredentialOffer(credOffer.id);
 
@@ -59,13 +60,13 @@ final class AriesNotification {
     );
   }
 
-  factory AriesNotification.fromProofOffer(CredentialExchangeRecord proofOffer) {
+  factory AriesNotification.fromProofOffer(ProofExchangeRecord proofOffer) {
     return AriesNotification(
       id: proofOffer.id,
       title: 'Oferta de Prova Recebida',
       text: 'Você autoriza a realização dessa prova?',
       type: NotificationType.proofOffer,
-      receivedAt: DateTime.now(),
+      receivedAt: proofOffer.createdAt ?? DateTime.now(),
       onAccept: () async {
         final acceptOfferResult = await acceptProofOffer(proofOffer.id);
 

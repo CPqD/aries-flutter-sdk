@@ -61,18 +61,9 @@ class SettingsPage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                final result = await getCredentialsOffers();
-                logPrint(
-                    'last result: ${result.value?[result.value!.length - 1].toString()}');
-                logPrint('result.value.length: ${(result.value ?? []).length}');
-
-                if ((result.value ?? []).isNotEmpty) {
-                  final first = result.value![0];
-
-                  logPrint('first CredentialExchangeRecord: ${first}');
-                }
+                updateNotifications();
               },
-              child: Text('CredentialExchangeRecords'),
+              child: Text('update notifications'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
