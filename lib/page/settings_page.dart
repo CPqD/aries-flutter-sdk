@@ -1,4 +1,3 @@
-import 'package:did_agent/global.dart';
 import 'package:did_agent/page/connections_page.dart';
 import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
@@ -38,12 +37,6 @@ class SettingsPage extends StatelessWidget {
                 );
               },
               child: Text('Conexões'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                updateNotifications();
-              },
-              child: Text('Atualizar notificações'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

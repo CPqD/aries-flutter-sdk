@@ -1,3 +1,4 @@
+import 'package:did_agent/global.dart';
 import 'package:flutter/material.dart';
 
 import 'package:did_agent/util/utils.dart';
@@ -37,6 +38,9 @@ class _SplashPageState extends State<SplashPage> {
       if (openResult.success || openResult.error == "Wallet is already open") {
         final subscribeResult = await subscribe();
         print(subscribeResult);
+
+        updateNotifications();
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage(title: 'Aries Flutter Demo')),
