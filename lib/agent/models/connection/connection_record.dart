@@ -1,5 +1,5 @@
 import 'package:did_agent/agent/enums/connection.dart';
-import 'package:did_agent/agent/models/connection_invitation_message.dart';
+import 'package:did_agent/agent/models/connection/connection_invitation_message.dart';
 import 'package:did_agent/agent/models/did_doc.dart';
 
 class ConnectionRecord {

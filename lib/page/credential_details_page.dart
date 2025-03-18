@@ -1,4 +1,4 @@
-import 'package:did_agent/agent/models/credential_record.dart';
+import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 

@@ -9,6 +9,7 @@ enum AriesMethod {
   getCredentialsOffers('getCredentialsOffers'),
   getDidCommMessage('getDidCommMessage'),
   getProofOffers('getProofOffers'),
+  getProofOfferDetails('getProofOfferDetails'),
   invitation('receiveInvitation'),
   openWallet('openwallet'),
   removeConnection('removeConnection'),

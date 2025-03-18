@@ -11,6 +11,8 @@ import org.hyperledger.ariesframework.connection.models.didauth.publicKey.Public
 import org.hyperledger.ariesframework.connection.repository.ConnectionRecord
 import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
 import org.hyperledger.ariesframework.oob.messages.OutOfBandInvitation
+import org.hyperledger.ariesframework.proofs.models.RequestedAttribute
+import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
@@ -99,6 +101,24 @@ class JsonConverter {
             )
         }
 
+        fun toMap(requestedAttribute: RequestedAttribute): Map<String, Any?> {
+            return mapOf(
+                "credentialId" to requestedAttribute.credentialId,
+                "schemaId" to requestedAttribute.credentialInfo?.schemaId,
+                "credentialDefinitionId" to requestedAttribute.credentialInfo?.credentialDefinitionId,
+                "revoked" to requestedAttribute.revoked,
+            )
+        }
+
+        fun toMap(requestedPredicate: RequestedPredicate): Map<String, Any?> {
+            return mapOf(
+                "credentialId" to requestedPredicate.credentialId,
+                "schemaId" to requestedPredicate.credentialInfo?.schemaId,
+                "credentialDefinitionId" to requestedPredicate.credentialInfo?.credentialDefinitionId,
+                "revoked" to requestedPredicate.revoked,
+            )
+        }
+
         fun toMap(invitation: ConnectionInvitationMessage): Map<String, Any?> {
             return mapOf(
                 "id" to invitation.id,
@@ -165,6 +185,26 @@ class JsonConverter {
 
             for (publicKey in publicKeys) {
                 result.add(toMap(publicKey))
+            }
+
+            return result
+        }
+
+        fun toRequestedAttributesList(requestedAttributes: List<RequestedAttribute>): List<Map<String, Any?>> {
+            val result = mutableListOf<Map<String, Any?>>()
+
+            for (requestedAttribute in requestedAttributes) {
+                result.add(toMap(requestedAttribute))
+            }
+
+            return result
+        }
+
+        fun toRequestedPredicatesList(requestedPredicates: List<RequestedPredicate>): List<Map<String, Any?>> {
+            val result = mutableListOf<Map<String, Any?>>()
+
+            for (requestedPredicate in requestedPredicates) {
+                result.add(toMap(requestedPredicate))
             }
 
             return result

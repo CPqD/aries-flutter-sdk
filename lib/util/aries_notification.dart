@@ -1,6 +1,6 @@
 import 'package:did_agent/agent/aries_result.dart';
-import 'package:did_agent/agent/models/credential_exchange_record.dart';
-import 'package:did_agent/agent/models/proof_exchange_record.dart';
+import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
+import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 import 'package:did_agent/global.dart';
 import 'package:did_agent/util/utils.dart';
 

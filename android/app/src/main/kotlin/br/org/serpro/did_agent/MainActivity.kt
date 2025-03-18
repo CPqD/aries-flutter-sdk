@@ -25,6 +25,7 @@ import org.hyperledger.ariesframework.problemreports.messages.PresentationProble
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.proofs.models.ProofState
+import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import java.io.File
 import kotlin.Exception
 
@@ -99,6 +100,14 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel getProofOffers: " + e.toString(), null)
                     }
                 }
+                "getProofOfferDetails" -> {
+                    try {
+                        val proofRecordId = call.argument<String>("proofRecordId")
+                        getProofOfferDetails(proofRecordId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getProofOfferDetails: " + e.toString(), null)
+                    }
+                }
                 "receiveInvitation" -> {
                     try {
                         val invitationUrl = call.argument<String>("invitationUrl")
@@ -140,7 +149,9 @@ class MainActivity: FlutterFragmentActivity() {
                 "acceptProofOffer" -> {
                     try {
                         val proofRecordId = call.argument<String>("proofRecordId")
-                        acceptProofOffer(proofRecordId, result)
+                        val selectedCredentialsAttributes = call.argument<Map<String, String>>("selectedCredentialsAttributes")
+                        val selectedCredentialsPredicates = call.argument<Map<String, String>>("selectedCredentialsPredicates")
+                        acceptProofOffer(proofRecordId, selectedCredentialsAttributes, selectedCredentialsPredicates, result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel acceptProofOffer: "+e.toString(),null)
                     }
@@ -372,6 +383,80 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun getProofOfferDetails(proofRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "getProofOfferDetails called from Kotlin...")
+
+        validateAgent()
+        validateNotNull("ProofRecordId", proofRecordId)
+
+        val attributesList = mutableListOf<Map<String, Any?>>()
+        val predicatesList = mutableListOf<Map<String, Any?>>()
+
+        try {
+            val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
+
+            retrievedCredentials.requestedAttributes.keys.forEach { schemaName ->
+                var errorMsg = ""
+
+                val attributeArray = retrievedCredentials.requestedAttributes[schemaName]!!
+
+                if (attributeArray.isEmpty()) {
+                    errorMsg = "Não há nenhuma credencial do tipo '$schemaName'."
+                }
+
+                val nonRevoked = attributeArray.filter { attr -> attr.revoked != true }
+                if (nonRevoked.isEmpty()) {
+                    errorMsg = "Não há nenhuma credencial não revogada do tipo '$schemaName'."
+                }
+
+                attributesList.add(
+                    mapOf(
+                        "error" to errorMsg,
+                        "schemaName" to schemaName,
+                        "availableCredentials" to JsonConverter.toRequestedAttributesList(nonRevoked)
+                    )
+                )
+            }
+
+            retrievedCredentials.requestedPredicates.keys.forEach { predicateName ->
+                var errorMsg = ""
+
+                val predicateArray = retrievedCredentials.requestedPredicates[predicateName]!!
+
+                if (predicateArray.isEmpty()) {
+                    errorMsg = "Não há nenhuma credencial relacionada a '$predicateName'."
+                }
+
+                val nonRevoked = predicateArray.filter { pred -> pred.revoked != true }
+                if (nonRevoked.isEmpty()) {
+                    errorMsg = "Não há nenhuma credencial não revogada relacionada a '$predicateName'."
+                }
+
+                predicatesList.add(
+                    mapOf(
+                        "error" to errorMsg,
+                        "schemaName" to predicateName,
+                        "availableCredentials" to JsonConverter.toRequestedPredicatesList(nonRevoked)
+                    )
+                )
+            }
+
+            Log.d("MainActivity", "attributesList: ${attributesList.toString()}")
+            Log.d("MainActivity", "predicatesList: ${predicatesList.toString()}")
+
+            val jsonResult = mapOf(
+                "attributes" to JsonConverter.toJson(attributesList),
+                "predicates" to JsonConverter.toJson(predicatesList)
+            )
+
+            result.success(mapOf("error" to "", "result" to jsonResult))
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get proofOffer: ${e.message}")
+            result.error("1", "Cannot get getProofOfferDetails: ${e.message}", null)
+            return
+        }
+    }
+
     private fun getDidCommMessage(associatedRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "getDidCommMessage called from Kotlin...")
 
@@ -544,23 +629,45 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun acceptProofOffer(proofRecordId: String?, result: MethodChannel.Result) {
+    private fun acceptProofOffer(proofRecordId: String?, selectedCredentialsAttributes: Map<String, String>?, selectedCredentialsPredicates: Map<String, String>?, result: MethodChannel.Result) {
         Log.d("MainActivity", "acceptProofOffer: $proofRecordId")
-        
-        if (proofRecordId == null) {
-            result.error("1", "ProofRecordId is null", null)
-            return
-        }
 
-        if (agent == null) {
-            result.error("1", "Agent is null", null)
-            return
-        }
+        validateNotNull("ProofRecordId", proofRecordId)
+        validateNotNull("SelectedCredentialsAttributes", selectedCredentialsAttributes)
+        validateNotNull("SelectedCredentialsPredicates", selectedCredentialsPredicates)
+        validateAgent()
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val retrievedCredentials = agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId)
-                val requestedCredentials = agent!!.proofService.autoSelectCredentialsForProofRequest(retrievedCredentials)
+                val retrievedCredentials = agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!)
+                val requestedCredentials = RequestedCredentials()
+
+                retrievedCredentials.requestedAttributes.keys.forEach { attributeName ->
+                    val attributeArray = retrievedCredentials.requestedAttributes[attributeName]!!
+
+                    val validAttributes = attributeArray.filter { attr ->
+                        attr.revoked != true && selectedCredentialsAttributes!![attributeName]?.equals(attr.credentialId) == true
+                    }
+
+                    if (validAttributes.isEmpty()) {
+                        throw Exception("Cannot find valid credentials for attribute '$attributeName'.")
+                    }
+                    requestedCredentials.requestedAttributes[attributeName] = validAttributes[0]
+                }
+
+                retrievedCredentials.requestedPredicates.keys.forEach { predicateName ->
+                    val predicateArray = retrievedCredentials.requestedPredicates[predicateName]!!
+
+                    val validPredicates = predicateArray.filter { pred ->
+                        pred.revoked != true  && selectedCredentialsPredicates!![predicateName]?.equals(pred.credentialId) == true
+                    }
+
+                    if (validPredicates.isEmpty()) {
+                        throw Exception("Cannot find non-revoked credentials for predicate '$predicateName'.")
+                    }
+                    requestedCredentials.requestedPredicates[predicateName] = validPredicates[0]
+                }
+
                 agent!!.proofs.acceptRequest(proofRecordId, requestedCredentials)
 
                 result.success(mapOf("error" to "", "result" to true))

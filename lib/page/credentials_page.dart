@@ -1,7 +1,8 @@
 import 'package:did_agent/agent/aries_result.dart';
-import 'package:flutter/material.dart';
+import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/util/utils.dart';
-import 'package:did_agent/agent/models/credential_record.dart';
+import 'package:flutter/material.dart';
+
 import 'credential_details_page.dart';
 
 class CredentialsPage extends StatefulWidget {
