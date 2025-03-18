@@ -1,17 +1,20 @@
 enum AriesMethod {
   init('init'),
-  openWallet('openwallet'),
-  getConnections('getConnections'),
-  getCredentials('getCredentials'),
-  invitation('receiveInvitation'),
-  subscribe('subscribe'),
-  shutdown('shutdown'),
   acceptCredentialOffer('acceptCredentialOffer'),
   acceptProofOffer('acceptProofOffer'),
   declineCredentialOffer('declineCredentialOffer'),
   declineProofOffer('declineProofOffer'),
+  getConnections('getConnections'),
+  getCredentials('getCredentials'),
+  getCredentialsOffers('getCredentialsOffers'),
+  getDidCommMessage('getDidCommMessage'),
+  getProofOffers('getProofOffers'),
+  invitation('receiveInvitation'),
+  openWallet('openwallet'),
   removeConnection('removeConnection'),
-  removeCredential('removeCredential');
+  removeCredential('removeCredential'),
+  subscribe('subscribe'),
+  shutdown('shutdown');
 
   final String value;
 

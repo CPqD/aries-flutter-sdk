@@ -24,6 +24,7 @@ import org.hyperledger.ariesframework.problemreports.messages.MediationProblemRe
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import org.hyperledger.ariesframework.credentials.models.CredentialState
+import org.hyperledger.ariesframework.proofs.models.ProofState
 import java.io.File
 import kotlin.Exception
 
@@ -89,6 +90,13 @@ class MainActivity: FlutterFragmentActivity() {
                         getDidCommMessage(associatedRecordId, result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getDidCommMessage: " + e.toString(), null)
+                    }
+                }
+                "getProofOffers" -> {
+                    try {
+                        getProofOffers(result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getProofOffers: " + e.toString(), null)
                     }
                 }
                 "receiveInvitation" -> {
@@ -323,8 +331,6 @@ class MainActivity: FlutterFragmentActivity() {
                 return
             }
 
-            Log.d("MainActivity", "getConnections -> connections is not Null Or Empty")
-
             for (credentialExchangeRecord in credentialsReceived) {
                 credentialsOffersList.add(JsonConverter.toMap(credentialExchangeRecord))
             }
@@ -338,8 +344,36 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun getProofOffers(result: MethodChannel.Result) {
+        Log.d("MainActivity", "getProofOffers called from Kotlin...")
+
+        validateAgent()
+
+        try {
+            val proofsReceived = runBlocking {  agent!!.proofRepository.findByQuery("{\"state\": \"${ProofState.RequestReceived}\"}") }
+
+            val proofOffersList = mutableListOf<Map<String, Any?>>()
+
+            if (proofsReceived.isEmpty()) {
+                result.success(mapOf("error" to "", "result" to JsonConverter.toJson(proofOffersList)))
+                return
+            }
+
+            for (proofExchangeRecord in proofsReceived) {
+                proofOffersList.add(JsonConverter.toMap(proofExchangeRecord))
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(proofOffersList)))
+
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get proofOffers: ${e.message}")
+            result.error("1", "Cannot get proofOffers: ${e.message}", null)
+            return
+        }
+    }
+
     private fun getDidCommMessage(associatedRecordId: String?, result: MethodChannel.Result) {
-        Log.d("MainActivity", "getDidCommMessages called from Kotlin...")
+        Log.d("MainActivity", "getDidCommMessage called from Kotlin...")
 
         validateAgent()
         validateNotNull("AssociatedRecordId", associatedRecordId)

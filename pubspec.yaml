@@ -43,7 +43,11 @@ dependencies:
 
   path_provider:
 
-  dio: ^5.8.0+1
+  flutter_barcode_scanner:
+    git:
+      url: https://github.com/itsAyyazdev/flutter_barcode_scanner.git
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

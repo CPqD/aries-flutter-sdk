@@ -11,7 +11,7 @@ class CredentialDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Credential Details'),
+        title: Text('Detalhes da Credencial'),
       ),
       body: Column(
         children: [
@@ -22,6 +22,7 @@ class CredentialDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildDetailRow('ID:', credential.id),
+                  buildDetailRow('Created At:', credential.createdAt.toString()),
                   buildDetailRow('Revocation ID:', credential.revocationId),
                   buildDetailRow('Link Secret ID:', credential.linkSecretId),
                   buildDetailRow('Schema ID:', credential.schemaId),
@@ -49,12 +50,12 @@ class CredentialDetailsPage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.grey,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('Share Values'),
+                    child: Text('Compartilhar Dados'),
                   ),
                 ),
                 SizedBox(width: 16), // Add some space between the buttons
@@ -68,7 +69,7 @@ class CredentialDetailsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: Text('Delete'),
+                    child: Text('Deletar'),
                   ),
                 ),
               ],
@@ -84,20 +85,20 @@ class CredentialDetailsPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Delete'),
-          content: Text('Are you sure you want to delete this credential?'),
+          title: Text('Confirmar exclusão'),
+          content: Text('Tem certeza de que deseja excluir esta credencial?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false); // Return false
               },
-              child: Text('Cancel'),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(true); // Return true
               },
-              child: Text('Delete'),
+              child: Text('Deletar'),
             ),
           ],
         );
@@ -106,7 +107,7 @@ class CredentialDetailsPage extends StatelessWidget {
 
     if (confirmDelete == true) {
       final deleteResult = await removeCredential(credential.id);
-      print('Delete Result: ${deleteResult}');
+      print('Delete Result: $deleteResult');
 
       if (deleteResult.success) {
         Navigator.pop(context, true);
@@ -121,7 +122,7 @@ class CredentialDetailsPage extends StatelessWidget {
         text: TextSpan(
           children: [
             TextSpan(
-              text: '$fieldName',
+              text: fieldName,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,

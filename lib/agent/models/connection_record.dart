@@ -4,6 +4,8 @@ import 'package:did_agent/agent/models/did_doc.dart';
 
 class ConnectionRecord {
   final String id;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final ConnectionState state;
   final ConnectionRole role;
   final String did;
@@ -24,6 +26,8 @@ class ConnectionRecord {
 
   ConnectionRecord({
     required this.id,
+    required this.createdAt,
+    required this.updatedAt,
     required this.state,
     required this.role,
     required this.did,
@@ -48,6 +52,8 @@ class ConnectionRecord {
 
     return ConnectionRecord(
       id: map["id"].toString(),
+      createdAt: DateTime.tryParse(map["createdAt"].toString()),
+      updatedAt: DateTime.tryParse(map["updatedAt"].toString()),
       state: ConnectionState.from(map["state"].toString()),
       role: ConnectionRole.from(map["role"].toString()),
       did: map["did"].toString(),
@@ -79,6 +85,8 @@ class ConnectionRecord {
   String toString() {
     return 'ConnectionRecord{'
         'id: $id, '
+        'createdAt: $createdAt, '
+        'updatedAt: $updatedAt, '
         'state: $state, '
         'role: $role, '
         'did: $did, '

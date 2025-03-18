@@ -11,6 +11,7 @@ import org.hyperledger.ariesframework.connection.models.didauth.publicKey.Public
 import org.hyperledger.ariesframework.connection.repository.ConnectionRecord
 import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
 import org.hyperledger.ariesframework.oob.messages.OutOfBandInvitation
+import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
 class JsonConverter {
@@ -117,9 +118,17 @@ class JsonConverter {
                 "goalCode" to outOfBandInvitation.goalCode,
                 "goal" to outOfBandInvitation.goal,
                 "accept" to outOfBandInvitation.accept,
-//                "handshakeProtocols" to outOfBandInvitation.handshakeProtocols,
-//                "requests" to outOfBandInvitation.requests,
-//                "services" to outOfBandInvitation.services,
+            )
+        }
+
+        fun toMap(proofExchangeRecord: ProofExchangeRecord): Map<String, Any?> {
+            return mapOf(
+                "id" to proofExchangeRecord.id,
+                "createdAt" to proofExchangeRecord.createdAt.toString(),
+                "updatedAt" to proofExchangeRecord.updatedAt.toString(),
+                "connectionId" to proofExchangeRecord.connectionId,
+                "threadId" to proofExchangeRecord.threadId,
+                "state" to proofExchangeRecord.state,
             )
         }
 
