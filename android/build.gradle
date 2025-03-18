@@ -33,9 +33,19 @@ allprojects {
                 password = getExtraString("githubToken")
             }
         }
-        maven {
-            setUrl("https://nexus.aic.serpro.gov.br/repository/snapshots/")
+//        maven {
+//            setUrl("https://nexus.aic.serpro.gov.br/repository/snapshots/")
+//        }
+
+//        maven{
+//            //setUrl("file:///Users/cbbathaglini/.gradle/caches/modules-2/files-2.1/org.hyperledger/aries-framework-kotlin/0.49.1-SNAPSHOT")
+//            url 'file:///Users/cbbathaglini/.gradle/caches/modules-2/files-2.1'
+//        }
+
+        flatDir {
+            dirs '/Users/cbbathaglini/.gradle/caches/modules-2/files-2.1/org.hyperledger/aries-framework-kotlin/0.49.1-SNAPSHOT' // Path where .aar is stored
         }
+
         maven { url 'https://jitpack.io' }
     }
 }

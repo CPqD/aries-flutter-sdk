@@ -23,6 +23,7 @@ import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemR
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
+import org.hyperledger.ariesframework.credentials.models.CredentialState
 import java.io.File
 import kotlin.Exception
 
@@ -73,6 +74,21 @@ class MainActivity: FlutterFragmentActivity() {
                         getConnections(result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getConnections: " + e.toString(), null)
+                    }
+                }
+                "getCredentialsOffers" -> {
+                    try {
+                        getCredentialsOffers(result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getCredentialsOffers: " + e.toString(), null)
+                    }
+                }
+                "getDidCommMessage" -> {
+                    try {
+                        val associatedRecordId = call.argument<String>("associatedRecordId")
+                        getDidCommMessage(associatedRecordId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getDidCommMessage: " + e.toString(), null)
                     }
                 }
                 "receiveInvitation" -> {
@@ -238,8 +254,6 @@ class MainActivity: FlutterFragmentActivity() {
             val credentialsList = mutableListOf<Map<String, Any?>>()
 
             if (credentials.isNullOrEmpty()) {
-                Log.d("MainActivity", "getCredentials -> credentials.isNullOrEmpty")
-
                 result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsList)))
 
                 return
@@ -292,6 +306,66 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun getCredentialsOffers(result: MethodChannel.Result) {
+        Log.d("MainActivity", "getCredentialsOffers called from Kotlin...")
+
+        validateAgent()
+
+        try {
+            val credentialsReceived = runBlocking {  agent!!.credentialExchangeRepository.findByQuery("{\"state\": \"${CredentialState.OfferReceived}\"}") }
+
+            Log.d("MainActivity", "credentialsReceived size: ${credentialsReceived.size}")
+
+            val credentialsOffersList = mutableListOf<Map<String, Any?>>()
+
+            if (credentialsReceived.isEmpty()) {
+                result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsOffersList)))
+                return
+            }
+
+            Log.d("MainActivity", "getConnections -> connections is not Null Or Empty")
+
+            for (credentialExchangeRecord in credentialsReceived) {
+                credentialsOffersList.add(JsonConverter.toMap(credentialExchangeRecord))
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsOffersList)))
+
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get credentialsOffers: ${e.message}")
+            result.error("1", "Cannot get credentialsOffers: ${e.message}", null)
+            return
+        }
+    }
+
+    private fun getDidCommMessage(associatedRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "getDidCommMessages called from Kotlin...")
+
+        validateAgent()
+        validateNotNull("AssociatedRecordId", associatedRecordId)
+
+        try {
+            val didCommMessage = runBlocking {  agent?.didCommMessageRepository?.getSingleByQuery("{\"associatedRecordId\": \"$associatedRecordId\"}") }
+
+            Log.d("MainActivity", "didCommMessage: ${didCommMessage.toString()}")
+
+            if (didCommMessage == null) {
+                result.error("1", "didCommMessage not found", null)
+                return
+            }
+
+            val didCommMessageMap = JsonConverter.toMap(didCommMessage)
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(didCommMessageMap)))
+
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get didCommMessage: ${e.message}")
+            result.error("1", "Cannot get didCommMessage: ${e.message}", null)
+            return
+        }
+    }
+
+
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
 
@@ -330,6 +404,7 @@ class MainActivity: FlutterFragmentActivity() {
             agent!!.eventBus.subscribe<AgentEvents.ProofEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
                     Log.d("MainActivity", "Proof ${it.record.state}: ${it.record.id}")
+
                     sendProofToFlutter(it.record.id, it.record.state.toString())
                 }
             }
@@ -381,6 +456,7 @@ class MainActivity: FlutterFragmentActivity() {
             try {
                 agent!!.shutdown()
                 agent = null;
+                subscribed = false;
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
