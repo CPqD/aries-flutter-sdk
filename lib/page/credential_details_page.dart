@@ -1,6 +1,7 @@
 import 'package:did_agent/agent/models/credential_record.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class CredentialDetailsPage extends StatelessWidget {
   final CredentialRecord credential;
@@ -47,10 +48,27 @@ class CredentialDetailsPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       print('Share');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                            appBar: AppBar(
+                              title: Text("Compartilhar Dados"),
+                            ),
+                            body: Center(
+                              child: QrImageView(
+                                data: credential.getValues().toString(),
+                                version: QrVersions.auto,
+                                size: MediaQuery.of(context).size.width - 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.grey,
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -58,7 +76,7 @@ class CredentialDetailsPage extends StatelessWidget {
                     child: Text('Compartilhar Dados'),
                   ),
                 ),
-                SizedBox(width: 16), // Add some space between the buttons
+                SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _confirmDelete(context),

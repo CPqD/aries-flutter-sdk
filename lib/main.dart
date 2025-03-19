@@ -6,13 +6,14 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  final title = "Aries Flutter Demo";
+
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aries Flutter Demo',
+      title: title,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

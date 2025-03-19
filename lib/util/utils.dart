@@ -7,7 +7,7 @@ import 'package:did_agent/agent/models/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
 import 'package:did_agent/agent/models/proof_exchange_record.dart';
-import 'package:did_agent/page/home.dart';
+import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
 
 Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);

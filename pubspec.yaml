@@ -41,12 +41,15 @@ dependencies:
 
   web_socket_client: ^0.1.5
 
-  path_provider:
+  path_provider: ^2.1.5
 
   flutter_barcode_scanner:
     git:
       url: https://github.com/itsAyyazdev/flutter_barcode_scanner.git
 
+  qr_flutter: ^4.1.0
+
+  # mobile_scanner: ^6.0.7
 
 dev_dependencies:
   flutter_test:

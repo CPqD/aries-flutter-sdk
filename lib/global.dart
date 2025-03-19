@@ -1,4 +1,4 @@
-import 'package:did_agent/page/home.dart';
+import 'package:did_agent/page/home_page.dart';
 import 'package:did_agent/page/notifications_page.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:did_agent/util/utils.dart';
