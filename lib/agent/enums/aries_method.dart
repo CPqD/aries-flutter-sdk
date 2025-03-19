@@ -6,6 +6,7 @@ enum AriesMethod {
   declineProofOffer('declineProofOffer'),
   getConnections('getConnections'),
   getCredentials('getCredentials'),
+  getCredential('getCredential'),
   getCredentialsOffers('getCredentialsOffers'),
   getDidCommMessage('getDidCommMessage'),
   getProofOffers('getProofOffers'),

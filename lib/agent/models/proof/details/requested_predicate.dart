@@ -20,6 +20,14 @@ class RequestedPredicate {
     );
   }
 
+  static List<RequestedPredicate> fromList(List<Map<String, dynamic>> list) {
+    return list.map((e) => RequestedPredicate.fromMap(e)).toList();
+  }
+
+  String getListedName() {
+    return 'Credencial $credentialId';
+  }
+
   @override
   String toString() {
     return 'RequestedPredicate{'

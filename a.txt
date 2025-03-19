@@ -1,0 +1,423 @@
+140 - Listar as conexões entre o agente e o mediador
+141 - Excluir conexão
+142 - Listar notificações de usuário
+143 - Excluir notificações do usuário
+146 - Filtros e categorias
+147 - Validação de credenciais
+148 - Interface simples para compartilhamento de credenciais
+149 - Opção de seleção granular de dados
+
+
+
+
+
+
+
+
+CredentialRecord{id: 9c11be42-6950-4f4e-b319-894ae84d469f, revocationId: 9, linkSecretId: 697d5465-f50f-4d4b-b6d1-a020285d6554, schemaId: MoKavRm3zoZBFHMvndmt51:2:identidadev2:1.0, schemaName: identidadev2, schemaVersion: 1.0, schemaIssuerId: MoKavRm3zoZBFHMvndmt51, issuerId: MoKavRm3zoZBFHMvndmt51, definitionId: MoKavRm3zoZBFHMvndmt51:3:CL:5278:default, revocationRegistryId: MoKavRm3zoZBFHMvndmt51:4:MoKavRm3zoZBFHMvndmt51:3:CL:5278:default:CL_ACCUM:df549e18-06a8-4864-aa03-12c83a96669b}
+
+
+
+
+
+localhost,alertmanager,prometheus,grafana,grafana-renderer,api.appgovbr-p2,gestao-wallet.appgovbr-p2,gestao-wallet.appgovbr-d,gestao-wallet.appgovbr-h,jaeger,elasticsearch,grafana-tempo.appgovbr-h,grafana-tempo.appgovbr-p2,grafana-tempo, grafana-analitico.appgovbr-mon,grafana-analitico,serpro.gov.br,notificator.appgovbr-p2,api.appgovbr-h
+
+
+
+
+
+
+ ConnectionRecord{id: 24369551-1d8f-4567-bcf3-0f27e465ae1b, state: ConnectionState.complete, role: ConnectionRole.invitee, alias: null, did: UcHWnvY3f8cKWd1Qf4ZUvb, verkey: G3kmU9edoSM66GGvKHDQkDtDDMhpUNAwRojyQC9VoFAo, theirDid: BjG53BYii59mjHyHQ8epqA, theirLabel: SERPRO, autoAcceptConnection: true, imageUrl: null, multiUseInvitation: false, threadId: 24369551-1d8f-4567-bcf3-0f27e465ae1b, mediatorId: 28d67b65-7ba3-4878-9409-2bde7692624e, errorMessage: null}
+
+
+
+
+
+
+
+I/System.out( 5310): 13:54:16.792 [DefaultDispatcher-worker-2] DEBUG org.hyperledger.ariesframework.proofs.ProofCommand - Proof request json: {"non_revoked": {"from": 1740424337, "to": 1740424337}, "requested_attributes": {"identidade": {"names": ["nome", "email"], "restrictions": [{"cred_def_id": "MoKavRm3zoZBFHMvndmt51:3:CL:5275:default"}]}}, "requested_predicates": {}, "name": "Proof request", "nonce": "1", "version": "1.1"}
+
+E/MainActivity( 5310): retrievedCredentials.requestedAttributes: {
+    identidade=[
+        RequestedAttribute(
+            credentialId=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=null
+        ), 
+        RequestedAttribute(
+            credentialId=83f12fd8-6b60-4182-886d-9d92b2497d22, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=83f12fd8-6b60-4182-886d-9d92b2497d22, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=null
+        )
+    ]
+}
+
+E/MainActivity( 5310): retrievedCredentials.requestedPredicates: {}
+
+E/MainActivity( 5310): requestedCredentials: RequestedCredentials(
+    requestedAttributes={
+        identidade=RequestedAttribute(
+            credentialId=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=null
+        )
+    }, 
+    requestedPredicates={}, 
+    selfAttestedAttributes={}
+)
+
+
+
+
+==
+
+Ao abrir notificacao de Proof Request:
+1 - Chamar `agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId)`, obtendo `retrievedCredentials`
+
+Fazer o codigo abaixo, para obter para cada atributo e predicate, todas as credenciais disponiveis.
+
+```
+retrievedCredentials.requestedAttributes.keys.forEach { attributeName ->
+    val attributeArray = retrievedCredentials.requestedAttributes[attributeName]!!
+
+    if (attributeArray.isEmpty()) {
+        throw Exception("Cannot find credentials for attribute '$attributeName'.")
+    }
+    val nonRevokedAttributes = attributeArray.filter { attr ->
+        attr.revoked != true
+    }
+    if (nonRevokedAttributes.isEmpty()) {
+        throw Exception("Cannot find non-revoked credentials for attribute '$attributeName'.")
+    }
+    requestedCredentials.requestedAttributes[attributeName] = attributeArray[0]
+}
+
+retrievedCredentials.requestedPredicates.keys.forEach { predicateName ->
+    val predicateArray = retrievedCredentials.requestedPredicates[predicateName]!!
+
+    if (predicateArray.isEmpty()) {
+        throw Exception("Cannot find credentials for predicate '$predicateName'.")
+    }
+    val nonRevokedPredicates = predicateArray.filter { pred ->
+        pred.revoked != true
+    }
+    if (nonRevokedPredicates.isEmpty()) {
+        throw Exception("Cannot find non-revoked credentials for predicate '$predicateName'.")
+    }
+    requestedCredentials.requestedPredicates[predicateName] = nonRevokedPredicates[0]
+}
+```
+
+
+Mostrar na resposta, todos os atributos solicitados e as credenciais disponiveis para cada.
+
+Se para algum atributo nao tiver credencial disponivel, mostrar esse erro na resposta (e so vai aparecer a opcao "Cancelar").
+
+
+2 - Usuario seleciona qual credencial vai usar para cada atributo e clica em "Confirmar"
+
+3 - Vai ser chamada a funcao acceptProof passando a credencial a ser usada para cada atributo
+
+
+---
+
+
+getProofOfferDetails -> receivedCred: {
+    error=, 
+    credDefName=, 
+    nonRevokedAttributes=[
+        RequestedAttribute(
+            credentialId=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=
+        ), 
+        RequestedAttribute(
+            credentialId=83f12fd8-6b60-4182-886d-9d92b2497d22, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=83f12fd8-6b60-4182-886d-9d92b2497d22, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=null
+        )
+    ], 
+    attributeArray=[
+        RequestedAttribute(
+            credentialId=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=2de260f3-7227-4ec6-9ad2-3eec74eb8ad5, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=null
+        ), 
+        RequestedAttribute(
+            credentialId=83f12fd8-6b60-4182-886d-9d92b2497d22, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=83f12fd8-6b60-4182-886d-9d92b2497d22, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null
+            ), 
+            revoked=null
+        )
+    ]
+}
+
+
+
+
+
+
+
+
+
+================================================================================================================
+================================================================================================================
+
+
+
+
+
+
+
+
+I/flutter (12448): invoke getDidCommMessage
+D/MainActivity(12448): getDidCommMessage called from Kotlin...
+D/MainActivity(12448): didCommMessage: 
+    DidCommMessageRecord(
+        id=bfd24ce0-51a3-488b-bc9a-46e9b072fa71, 
+        _tags={
+            role=Receiver, 
+            messageId=984b5979-24c1-475b-891d-646a198a6ca4, 
+            associatedRecordId=068b52d6-0920-46d3-86a4-ae03fe6b88ed, 
+            messageType=did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/request-presentation
+        }, 
+        createdAt=2025-03-19T16:29:02.463086Z, 
+        updatedAt=null, 
+        message={
+            "@id":"984b5979-24c1-475b-891d-646a198a6ca4",
+            "@type":"did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/request-presentation",
+            "comment":"Teste",
+            "request_presentations~attach":[
+                {
+                    "@id":"libindy-request-presentation-0",
+                    "mime-type":"application/json",
+                    "data":{
+                        "base64":"eyJub25fcmV2b2tlZCI6IHsiZnJvbSI6IDE3NDA0MjQzMzcsICJ0byI6IDE3NDA0MjQzMzd9LCAicmVxdWVzdGVkX2F0dHJpYnV0ZXMiOiB7ImlkZW50aWRhZGUiOiB7Im5hbWVzIjogWyJub21lIiwgImVtYWlsIl0sICJyZXN0cmljdGlvbnMiOiBbeyJjcmVkX2RlZl9pZCI6ICJNb0thdlJtM3pvWkJGSE12bmRtdDUxOjM6Q0w6NTI3NTpkZWZhdWx0In1dfX0sICJyZXF1ZXN0ZWRfcHJlZGljYXRlcyI6IHt9LCAibmFtZSI6ICJQcm9vZiByZXF1ZXN0IiwgIm5vbmNlIjogIjEiLCAidmVyc2lvbiI6ICIxLjEifQ=="
+                    }
+                }
+            ]
+        }, 
+        role=Receiver, 
+        associatedRecordId=068b52d6-0920-46d3-86a4-ae03fe6b88ed
+    )
+
+I/flutter (12448): invoke getProofOfferDetails
+D/MainActivity(12448): getProofOfferDetails called from Kotlin...
+
+D/MainActivity(12448): record: 
+    ProofExchangeRecord(
+        id=068b52d6-0920-46d3-86a4-ae03fe6b88ed, 
+        _tags={
+            state=RequestReceived, 
+            threadId=984b5979-24c1-475b-891d-646a198a6ca4, 
+            connectionId=89b168c6-3a15-454e-b135-0178ea1011c4
+        }, 
+        createdAt=2025-03-19T16:29:02.462859Z, 
+        updatedAt=null, 
+        connectionId=89b168c6-3a15-454e-b135-0178ea1011c4, 
+        threadId=984b5979-24c1-475b-891d-646a198a6ca4, 
+        isVerified=null, 
+        presentationId=null, 
+        state=RequestReceived, 
+        autoAcceptProof=null, 
+        errorMessage=null
+    )
+
+D/MainActivity(12448): proofRequestMessageJson: 
+    {
+        "@id":"984b5979-24c1-475b-891d-646a198a6ca4",
+        "@type":"did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/request-presentation",
+        "comment":"Teste",
+        "request_presentations~attach":[
+            {
+                "@id":"libindy-request-presentation-0",
+                "mime-type":"application/json",
+                "data":{
+                    "base64":"eyJub25fcmV2b2tlZCI6IHsiZnJvbSI6IDE3NDA0MjQzMzcsICJ0byI6IDE3NDA0MjQzMzd9LCAicmVxdWVzdGVkX2F0dHJpYnV0ZXMiOiB7ImlkZW50aWRhZGUiOiB7Im5hbWVzIjogWyJub21lIiwgImVtYWlsIl0sICJyZXN0cmljdGlvbnMiOiBbeyJjcmVkX2RlZl9pZCI6ICJNb0thdlJtM3pvWkJGSE12bmRtdDUxOjM6Q0w6NTI3NTpkZWZhdWx0In1dfX0sICJyZXF1ZXN0ZWRfcHJlZGljYXRlcyI6IHt9LCAibmFtZSI6ICJQcm9vZiByZXF1ZXN0IiwgIm5vbmNlIjogIjEiLCAidmVyc2lvbiI6ICIxLjEifQ=="
+                }
+            }
+        ]
+    }
+
+I/System.out(12448): 16:29:04.465 [main] DEBUG org.hyperledger.ariesframework.proofs.ProofCommand - Proof request json: {"non_revoked": {"from": 1740424337, "to": 1740424337}, "requested_attributes": {"identidade": {"names": ["nome", "email"], "restrictions": [{"cred_def_id": "MoKavRm3zoZBFHMvndmt51:3:CL:5275:default"}]}}, "requested_predicates": {}, "name": "Proof request", "nonce": "1", "version": "1.1"}
+
+D/MainActivity(12448): retrievedCredentials.requestedAttributes: {
+    identidade=[
+        RequestedAttribute(
+            credentialId=8af132cb-a217-42ab-81bb-ff158bfacd4d, 
+            timestamp=null, 
+            revealed=true, 
+            credentialInfo=IndyCredentialInfo(
+                referent=8af132cb-a217-42ab-81bb-ff158bfacd4d, 
+                attributes={}, 
+                schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                revocationRegistryId=null, 
+                credentialRevocationId=null), revoked=null
+            )
+        ]
+    }
+D/MainActivity(12448): retrievedCredentials.requestedPredicates: {}
+
+I/System.out(12448): 16:29:04.531 [main] DEBUG org.hyperledger.ariesframework.proofs.ProofService - Creating proof with requestedCredentials: 
+    {
+        "requested_attributes":{
+            "identidade":{
+                "cred_id":"8af132cb-a217-42ab-81bb-ff158bfacd4d",
+                "revealed":true,
+                "credentialInfo":{
+                    "referent":"8af132cb-a217-42ab-81bb-ff158bfacd4d",
+                    "attrs":{},
+                    "schema_id":"MoKavRm3zoZBFHMvndmt51:2:identidade:1.0",
+                    "cred_def_id":"MoKavRm3zoZBFHMvndmt51:3:CL:5275:default"
+                }
+            }
+        },
+        "requested_predicates":{},
+        "self_attested_attributes":{}
+    }
+D/MainActivity(12448): message: org.hyperledger.ariesframework.proofs.messages.PresentationMessage@6910e0a
+
+D/MainActivity(12448): proofRecord: 
+    ProofExchangeRecord(
+        id=068b52d6-0920-46d3-86a4-ae03fe6b88ed, 
+        _tags={
+            state=RequestReceived, 
+            threadId=984b5979-24c1-475b-891d-646a198a6ca4, 
+            connectionId=89b168c6-3a15-454e-b135-0178ea1011c4
+        }, 
+        createdAt=2025-03-19T16:29:02.462859Z, 
+        updatedAt=null, 
+        connectionId=89b168c6-3a15-454e-b135-0178ea1011c4, 
+        threadId=984b5979-24c1-475b-891d-646a198a6ca4, 
+        isVerified=null, 
+        presentationId=null, 
+        state=PresentationSent, 
+        autoAcceptProof=null, 
+        errorMessage=null
+    )
+
+D/MainActivity(12448): attributesList: 
+    [
+        {
+            error=, 
+            name=identidade, 
+            availableCredentials=[
+                {
+                    credentialId=8af132cb-a217-42ab-81bb-ff158bfacd4d, 
+                    schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                    credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                    revoked=null
+                }
+            ]
+        }
+    ]
+
+D/MainActivity(12448): predicatesList: []
+D/MainActivity(12448): Proof PresentationSent: 068b52d6-0920-46d3-86a4-ae03fe6b88ed
+
+I/flutter (12448): getProofOfferDetails: 
+    {
+        attributes: [
+            {
+                "error":"",
+                "name":"identidade",
+                "availableCredentials":[
+                    {
+                        "credentialId":"8af132cb-a217-42ab-81bb-ff158bfacd4d",
+                        "schemaId":"MoKavRm3zoZBFHMvndmt51:2:identidade:1.0",
+                        "credentialDefinitionId":"MoKavRm3zoZBFHMvndmt51:3:CL:5275:default"
+                    }
+                ]
+            }
+        ], 
+        predicates: []
+    }
+
+I/flutter (12448): invoke getCredential
+I/flutter (12448): getProofOfferDetails ariesResult: 
+    AriesResult{
+        success: true, 
+        error: , 
+        result: ProofOfferDetails{
+            attributes: [
+                ProofDetailsAttribute{
+                    error: , 
+                    name: identidade, 
+                    availableCredentials: [
+                        RequestedAttribute {
+                            credentialId: 8af132cb-a217-42ab-81bb-ff158bfacd4d, 
+                            schemaId: MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                            credentialDefinitionId: MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                            revoked: false
+                        }
+                    ]
+                }
+            ], 
+            predicates: []
+        }
+    }
+
+

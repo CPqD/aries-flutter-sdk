@@ -19,6 +19,9 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
   String? _errorMessage;
   bool _isLoading = true;
 
+  // Map to store selected credentials for each attribute or predicate
+  final Map<String, dynamic> _selectedCredentials = {};
+
   @override
   void initState() {
     super.initState();
@@ -77,12 +80,6 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
       );
     }
 
-    final preview = _proofDetails!.didCommMessageRecord.getProofPreview();
-
-    final subtitle = preview.requestedAttributes.length == 1
-        ? 'Você autoriza o compartilhamento de 1 credencial?'
-        : 'Você autoriza o compartilhamento de ${preview.requestedAttributes.length} credenciais?';
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.notification.title),
@@ -93,40 +90,108 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              subtitle,
-              style: TextStyle(fontSize: 16),
+              'Detalhes da Prova',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: preview.requestedAttributes.length,
-              itemBuilder: (context, index) {
-                final schemaAttribute = preview.requestedAttributes[index];
+            if (_proofDetails!.attributes.isNotEmpty)
+              ..._proofDetails!.attributes.map((attribute) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Campos de \"${schemaAttribute.schemaName}\" a serem compartilhados:',
+                      'Atributos de \"${attribute.name}\" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: schemaAttribute.attributeNames.length,
-                      itemBuilder: (context, attrIndex) {
-                        final attributeName = schemaAttribute.attributeNames[attrIndex];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Text(attributeName),
-                        );
-                      },
-                    ),
+                    if (attribute.error.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                          'Erro: ${attribute.error}',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    if (attribute.availableCredentials.length == 1)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                          'Credencial selecionada automaticamente: ${attribute.availableCredentials.first.getListedName()}',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    if (attribute.availableCredentials.length > 1)
+                      SizedBox(
+                        width: double.infinity,
+                        child: DropdownButton<dynamic>(
+                          value: _selectedCredentials[attribute.name],
+                          hint: Text('Selecione uma credencial'),
+                          isExpanded: true,
+                          items: attribute.availableCredentials.map((credential) {
+                            return DropdownMenuItem<dynamic>(
+                              value: credential,
+                              child: Text(credential.getListedName()),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCredentials[attribute.name] = value;
+                            });
+                          },
+                        ),
+                      ),
+                    SizedBox(height: 16),
                   ],
                 );
-              },
-            ),
-            SizedBox(height: 16),
+              }),
+            if (_proofDetails!.predicates.isNotEmpty)
+              ..._proofDetails!.predicates.map((predicate) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Predicados de \"${predicate.name}\" solicitados:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (predicate.error.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                          'Erro: ${predicate.error}',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    if (predicate.availableCredentials.length == 1)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text(
+                          'Credencial selecionada automaticamente: ${predicate.availableCredentials.first.getListedName()}',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    if (predicate.availableCredentials.length > 1)
+                      SizedBox(
+                        width: double.infinity,
+                        child: DropdownButton<dynamic>(
+                          value: _selectedCredentials[predicate.name],
+                          hint: Text('Selecione uma credencial'),
+                          isExpanded: true,
+                          items: predicate.availableCredentials.map((credential) {
+                            return DropdownMenuItem<dynamic>(
+                              value: credential,
+                              child: Text(credential.getListedName()),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCredentials[predicate.name] = value;
+                            });
+                          },
+                        ),
+                      ),
+                    SizedBox(height: 16),
+                  ],
+                );
+              }),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

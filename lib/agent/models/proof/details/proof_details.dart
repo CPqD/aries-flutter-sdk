@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details_predicate.dart';
@@ -17,14 +15,24 @@ class ProofOfferDetails {
 
   factory ProofOfferDetails.from(
       Map<String, dynamic> map, DidCommMessageRecord didCommMessageRecord) {
-    final attributesList = List<Map<String, dynamic>>.from(jsonDecode(map["attributes"]));
-    final predicatesList = List<Map<String, dynamic>>.from(jsonDecode(map["predicates"]));
-
     return ProofOfferDetails(
-      attributes: ProofDetailsAttribute.fromList(attributesList),
-      predicates: ProofDetailsPredicate.fromList(predicatesList),
+      attributes: ProofDetailsAttribute.fromJson(map["attributes"].toString()),
+      predicates: ProofDetailsPredicate.fromJson(map["predicates"].toString()),
       didCommMessageRecord: didCommMessageRecord,
     );
+  }
+
+  List<String> getAttributeNamesForSchema(String schemaName) {
+    final requestedAttributes =
+        didCommMessageRecord.getProofPreview().requestedAttributes;
+
+    for (final schemaAttributes in requestedAttributes) {
+      if (schemaAttributes.schemaName == schemaName) {
+        return schemaAttributes.attributeNames;
+      }
+    }
+
+    return [];
   }
 
   @override

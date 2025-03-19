@@ -3,8 +3,6 @@ package br.org.serpro.did_agent
 import com.google.gson.Gson
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
 import org.hyperledger.ariesframework.connection.messages.ConnectionInvitationMessage
-import org.hyperledger.ariesframework.connection.models.ConnectionState
-import org.hyperledger.ariesframework.connection.models.didauth.Authentication
 import org.hyperledger.ariesframework.connection.models.didauth.DidDoc
 import org.hyperledger.ariesframework.connection.models.didauth.DidDocService
 import org.hyperledger.ariesframework.connection.models.didauth.publicKey.PublicKey
