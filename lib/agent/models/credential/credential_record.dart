@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 class CredentialRecord {
-  final String id;
+  final String recordId;
+  final String credentialId;
+  final Map<String, dynamic> attributes;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String revocationId;
@@ -17,7 +19,9 @@ class CredentialRecord {
   String? revocationRegistryId;
 
   CredentialRecord({
-    required this.id,
+    required this.recordId,
+    required this.credentialId,
+    required this.attributes,
     required this.createdAt,
     required this.updatedAt,
     required this.revocationId,
@@ -34,7 +38,9 @@ class CredentialRecord {
 
   factory CredentialRecord.fromMap(Map<String, dynamic> map) {
     return CredentialRecord(
-      id: map["id"].toString(),
+      recordId: map["recordId"].toString(),
+      credentialId: map["credentialId"].toString(),
+      attributes: Map<String, dynamic>.from(map["attributes"] ?? {}),
       createdAt: DateTime.tryParse(map["createdAt"].toString()),
       updatedAt: DateTime.tryParse(map["updatedAt"].toString()),
       revocationId: map["revocationId"].toString(),
@@ -87,7 +93,9 @@ class CredentialRecord {
   @override
   String toString() {
     return 'CredentialRecord{'
-        'id: $id, '
+        'recordId: $recordId, '
+        'credentialId: $credentialId, '
+        'attributes: $attributes, '
         'createdAt: $createdAt, '
         'updatedAt: $updatedAt, '
         'revocationId: $revocationId, '

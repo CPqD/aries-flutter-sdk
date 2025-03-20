@@ -1,5 +1,7 @@
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
+import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
+import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
@@ -19,8 +21,8 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
   String? _errorMessage;
   bool _isLoading = true;
 
-  // Map to store selected credentials for each attribute or predicate
-  final Map<String, dynamic> _selectedCredentials = {};
+  Map<String, RequestedAttribute> _selectedAttributeCredentials = {};
+  Map<String, RequestedPredicate> _selectedPredicateCredentials = {};
 
   @override
   void initState() {
@@ -32,10 +34,43 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
     try {
       final proofOfferResult = await getProofOfferDetails(widget.notification.id);
 
+      print('proofOfferResult: ${proofOfferResult.value.toString()}');
+
       if (proofOfferResult.success) {
+        Map<String, RequestedAttribute> initialAttrCredentials = {};
+        Map<String, RequestedPredicate> initialPredCredentials = {};
+
+        final proofOfferDetails = proofOfferResult.value;
+
+        if (proofOfferDetails != null && proofOfferDetails.attributes.isNotEmpty) {
+          for (final proofDetailsAttr in proofOfferDetails.attributes) {
+            if (proofDetailsAttr.error.isNotEmpty ||
+                proofDetailsAttr.availableCredentials.isEmpty) {
+              continue;
+            }
+
+            initialAttrCredentials[proofDetailsAttr.name] =
+                proofDetailsAttr.availableCredentials.first;
+          }
+        }
+
+        if (proofOfferDetails != null && proofOfferDetails.predicates.isNotEmpty) {
+          for (final proofDetailsPred in proofOfferDetails.predicates) {
+            if (proofDetailsPred.error.isNotEmpty ||
+                proofDetailsPred.availableCredentials.isEmpty) {
+              continue;
+            }
+
+            initialPredCredentials[proofDetailsPred.name] =
+                proofDetailsPred.availableCredentials.first;
+          }
+        }
+
         setState(() {
           _proofDetails = proofOfferResult.value;
           _isLoading = false;
+          _selectedAttributeCredentials = initialAttrCredentials;
+          _selectedPredicateCredentials = initialPredCredentials;
         });
       } else {
         setState(() {
@@ -93,7 +128,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
               'Detalhes da Prova',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 32),
             if (_proofDetails!.attributes.isNotEmpty)
               ..._proofDetails!.attributes.map((attribute) {
                 return Column(
@@ -111,19 +146,11 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
-                    if (attribute.availableCredentials.length == 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          'Credencial selecionada automaticamente: ${attribute.availableCredentials.first.getListedName()}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    if (attribute.availableCredentials.length > 1)
+                    if (attribute.availableCredentials.isNotEmpty)
                       SizedBox(
                         width: double.infinity,
                         child: DropdownButton<dynamic>(
-                          value: _selectedCredentials[attribute.name],
+                          value: _selectedAttributeCredentials[attribute.name],
                           hint: Text('Selecione uma credencial'),
                           isExpanded: true,
                           items: attribute.availableCredentials.map((credential) {
@@ -134,12 +161,19 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           }).toList(),
                           onChanged: (value) {
                             setState(() {
-                              _selectedCredentials[attribute.name] = value;
+                              _selectedAttributeCredentials[attribute.name] = value;
                             });
                           },
                         ),
                       ),
-                    SizedBox(height: 16),
+                    Text(
+                      (_selectedAttributeCredentials[attribute.name]
+                              ?.attributes
+                              ?.toString() ??
+                          ''),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 32),
                   ],
                 );
               }),
@@ -160,19 +194,11 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
-                    if (predicate.availableCredentials.length == 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          'Credencial selecionada automaticamente: ${predicate.availableCredentials.first.getListedName()}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    if (predicate.availableCredentials.length > 1)
+                    if (predicate.availableCredentials.isNotEmpty)
                       SizedBox(
                         width: double.infinity,
                         child: DropdownButton<dynamic>(
-                          value: _selectedCredentials[predicate.name],
+                          value: _selectedPredicateCredentials[predicate.name],
                           hint: Text('Selecione uma credencial'),
                           isExpanded: true,
                           items: predicate.availableCredentials.map((credential) {
@@ -183,12 +209,19 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           }).toList(),
                           onChanged: (value) {
                             setState(() {
-                              _selectedCredentials[predicate.name] = value;
+                              _selectedPredicateCredentials[predicate.name] = value;
                             });
                           },
                         ),
                       ),
-                    SizedBox(height: 16),
+                      Text(
+                      (_selectedPredicateCredentials[predicate.name]
+                              ?.attributes
+                              ?.toString() ??
+                          ''),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 32),
                   ],
                 );
               }),

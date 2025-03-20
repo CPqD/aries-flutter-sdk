@@ -421,3 +421,64 @@ I/flutter (12448): getProofOfferDetails ariesResult:
     }
 
 
+
+
+
+
+
+
+
+
+
+
+================================================================================================================
+================================================================================================================
+
+
+
+
+
+
+
+
+retrievedCredentials.requestedAttributes: 
+    {
+        identidade_nascimento=[
+            RequestedAttribute(
+                credentialId=f2524c53-369f-4c5a-92f7-838b2325ea7b, 
+                timestamp=null, 
+                revealed=true, 
+                credentialInfo=IndyCredentialInfo(
+                    referent=f2524c53-369f-4c5a-92f7-838b2325ea7b, 
+                    attributes={
+                        data_de_nascimento=20000102
+                    }, 
+                    schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade_nascimento:1.0, 
+                    credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5392:default, 
+                    revocationRegistryId=null, 
+                    credentialRevocationId=null
+                ), 
+                revoked=null
+            )
+        ], 
+        identidade=[
+            RequestedAttribute(
+                credentialId=bc0db01b-f596-4b4d-badf-64207370d615, 
+                timestamp=null, 
+                revealed=true, 
+                credentialInfo=IndyCredentialInfo(
+                    referent=bc0db01b-f596-4b4d-badf-64207370d615, 
+                    attributes={
+                        email=bruno-brasil.ferreira@serpro.gov.br, 
+                        nome=bruno
+                    }, 
+                    schemaId=MoKavRm3zoZBFHMvndmt51:2:identidade:1.0, 
+                    credentialDefinitionId=MoKavRm3zoZBFHMvndmt51:3:CL:5275:default, 
+                    revocationRegistryId=null, 
+                    credentialRevocationId=null
+                ), 
+                revoked=null
+            )
+        ]
+    }
+

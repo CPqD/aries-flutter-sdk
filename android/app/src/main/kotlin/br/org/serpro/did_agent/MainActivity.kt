@@ -17,7 +17,6 @@ import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
-import org.hyperledger.ariesframework.agent.MessageSerializer
 import org.hyperledger.ariesframework.credentials.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
@@ -442,19 +441,11 @@ class MainActivity: FlutterFragmentActivity() {
 
             Log.d("MainActivity", "proofRequestMessageJson: ${proofRequestMessageJson.toString()}")
 
-
-            // val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
-            // val proofRequestJson = proofRequestMessage.indyProofRequest()
-            // logger.debug("Proof request json: $proofRequestJson")
-
-            // ------------------------
-            // Exploring getRequestedCredentialsForProofRequest
-            // ------------------------
-
             val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
+//            val retrievedCredentials = runBlocking { CustomProofCommand(agent!!).getRequestedCredentialsForProofRequest(proofRecordId!!) }
 
 
-            // ProofCommand.getRequestedCredentialsForProofRequest
+            // ProofCommand.getRequestedCredentialsForProofReq uest
 
 //            val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
 

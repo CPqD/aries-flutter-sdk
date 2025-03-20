@@ -21,7 +21,8 @@ class CredentialDetailsPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildDetailRow('ID:', credential.id),
+                  buildDetailRow('Credential ID:', credential.credentialId),
+                  buildDetailRow('Record ID:', credential.recordId),
                   buildDetailRow('Created At:', credential.createdAt.toString()),
                   buildDetailRow('Revocation ID:', credential.revocationId),
                   buildDetailRow('Link Secret ID:', credential.linkSecretId),
@@ -32,8 +33,7 @@ class CredentialDetailsPage extends StatelessWidget {
                   buildDetailRow('Definition ID:', credential.definitionId),
                   buildDetailRow(
                       'Revocation Registry ID:', credential.revocationRegistryId ?? ''),
-                  buildDetailRow(
-                      'Credential Values:', credential.getRawValues().toString()),
+                  buildDetailRow('Attributes:', credential.attributes.toString()),
                 ],
               ),
             ),
@@ -106,7 +106,7 @@ class CredentialDetailsPage extends StatelessWidget {
     );
 
     if (confirmDelete == true) {
-      final deleteResult = await removeCredential(credential.id);
+      final deleteResult = await removeCredential(credential.recordId);
       print('Delete Result: $deleteResult');
 
       if (deleteResult.success) {

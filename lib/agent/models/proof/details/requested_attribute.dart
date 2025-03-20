@@ -5,6 +5,7 @@ class RequestedAttribute {
   final String credentialId;
   final String? schemaId;
   final String? credentialDefinitionId;
+  final Map<String, String>? attributes;
   final bool revoked;
 
   CredentialRecord? record;
@@ -13,6 +14,7 @@ class RequestedAttribute {
     required this.credentialId,
     required this.schemaId,
     required this.credentialDefinitionId,
+    required this.attributes,
     this.revoked = false,
   });
 
@@ -22,10 +24,9 @@ class RequestedAttribute {
         credentialId: map["credentialId"].toString(),
         schemaId: map["schemaId"].toString(),
         credentialDefinitionId: map["credentialDefinitionId"].toString(),
+        attributes: Map<String, String>.from(map["attributes"] ?? {}),
         revoked: (map["revoked"] == true),
       );
-
-      // requestedAttribute.getRecord();
 
       return requestedAttribute;
     } catch (e) {
@@ -57,6 +58,7 @@ class RequestedAttribute {
         'credentialId: $credentialId, '
         'schemaId: $schemaId, '
         'credentialDefinitionId: $credentialDefinitionId, '
+        'attributes: $attributes, '
         'revoked: $revoked'
         '}';
   }

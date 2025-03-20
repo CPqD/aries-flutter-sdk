@@ -41,21 +41,23 @@ class JsonConverter {
             )
         }
 
-        fun toMap(credential: CredentialRecord): Map<String, Any?> {
+        fun toMap(credentialRecord: CredentialRecord): Map<String, Any?> {
             return mapOf(
-                "id" to credential.id,
-                "createdAt" to credential.createdAt.toString(),
-                "updatedAt" to credential.updatedAt.toString(),
-                "revocationId" to credential.credentialRevocationId,
-                "linkSecretId" to credential.linkSecretId,
-                "credential" to credential.credential,
-                "schemaId" to credential.schemaId,
-                "schemaName" to credential.schemaName,
-                "schemaVersion" to credential.schemaVersion,
-                "schemaIssuerId" to credential.schemaIssuerId,
-                "issuerId" to credential.issuerId,
-                "definitionId" to credential.credentialDefinitionId,
-                "revocationRegistryId" to credential.revocationRegistryId
+                "recordId" to credentialRecord.id,
+                "credentialId" to credentialRecord.credentialId,
+                "attributes" to credentialRecord.parseCredential(credentialRecord.credential),
+                "createdAt" to credentialRecord.createdAt.toString(),
+                "updatedAt" to credentialRecord.updatedAt.toString(),
+                "revocationId" to credentialRecord.credentialRevocationId,
+                "linkSecretId" to credentialRecord.linkSecretId,
+                "credential" to credentialRecord.credential,
+                "schemaId" to credentialRecord.schemaId,
+                "schemaName" to credentialRecord.schemaName,
+                "schemaVersion" to credentialRecord.schemaVersion,
+                "schemaIssuerId" to credentialRecord.schemaIssuerId,
+                "issuerId" to credentialRecord.issuerId,
+                "definitionId" to credentialRecord.credentialDefinitionId,
+                "revocationRegistryId" to credentialRecord.revocationRegistryId
             )
         }
 
@@ -104,6 +106,7 @@ class JsonConverter {
                 "credentialId" to requestedAttribute.credentialId,
                 "schemaId" to requestedAttribute.credentialInfo?.schemaId,
                 "credentialDefinitionId" to requestedAttribute.credentialInfo?.credentialDefinitionId,
+                "attributes" to requestedAttribute.credentialInfo?.attributes,
                 "revoked" to requestedAttribute.revoked,
             )
         }
@@ -113,6 +116,7 @@ class JsonConverter {
                 "credentialId" to requestedPredicate.credentialId,
                 "schemaId" to requestedPredicate.credentialInfo?.schemaId,
                 "credentialDefinitionId" to requestedPredicate.credentialInfo?.credentialDefinitionId,
+                "attributes" to requestedPredicate.credentialInfo?.attributes,
                 "revoked" to requestedPredicate.revoked,
             )
         }

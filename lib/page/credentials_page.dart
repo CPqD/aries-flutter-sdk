@@ -54,7 +54,7 @@ class _CredentialsPageState extends State<CredentialsPage> {
               final credential = credentials[index];
 
               return ListTile(
-                title: Text(credential.id),
+                title: Text(credential.credentialId),
                 subtitle: Text(credential.getSubtitle()),
                 onTap: () async {
                   final result = await Navigator.push(
