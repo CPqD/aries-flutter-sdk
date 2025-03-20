@@ -100,14 +100,14 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Atributos de \"${attribute.name}\" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
+                      'Atributos de "${attribute.name}" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (attribute.error.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Text(
-                          'Erro: ${attribute.error}',
+                          attribute.error.toString(),
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
@@ -149,14 +149,14 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Predicados de \"${predicate.name}\" solicitados:',
+                      'Predicados de "${predicate.name}" solicitados:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (predicate.error.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Text(
-                          'Erro: ${predicate.error}',
+                          predicate.error.toString(),
                           style: TextStyle(color: Colors.red),
                         ),
                       ),

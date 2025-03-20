@@ -25,7 +25,7 @@ class RequestedAttribute {
         revoked: (map["revoked"] == true),
       );
 
-      requestedAttribute.getRecord();
+      // requestedAttribute.getRecord();
 
       return requestedAttribute;
     } catch (e) {

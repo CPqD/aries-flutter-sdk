@@ -13,10 +13,10 @@ class RequestedPredicate {
 
   factory RequestedPredicate.fromMap(Map<String, dynamic> map) {
     return RequestedPredicate(
-      credentialId: map["credentialId"],
-      schemaId: map["schemaId"],
-      credentialDefinitionId: map["credentialDefinitionId"],
-      revoked: map["revoked"],
+      credentialId: map["credentialId"].toString(),
+      schemaId: map["schemaId"].toString(),
+      credentialDefinitionId: map["credentialDefinitionId"].toString(),
+      revoked: map["revoked"] == true,
     );
   }
 

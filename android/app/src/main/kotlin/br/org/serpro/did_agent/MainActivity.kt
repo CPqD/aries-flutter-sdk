@@ -448,9 +448,22 @@ class MainActivity: FlutterFragmentActivity() {
             // logger.debug("Proof request json: $proofRequestJson")
 
             // ------------------------
+            // Exploring getRequestedCredentialsForProofRequest
+            // ------------------------
 
             val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
 
+
+            // ProofCommand.getRequestedCredentialsForProofRequest
+
+//            val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
+
+//            val proofRequestJson = proofRequestMessage.indyProofRequest()
+//            logger.debug("Proof request json: $proofRequestJson")
+//            val proofRequest = Json.decodeFromString<ProofRequest>(proofRequestJson)
+
+
+            //            -------------------------
             Log.d("MainActivity", "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes.toString()}")
             Log.d("MainActivity", "retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates.toString()}")
 
@@ -462,6 +475,10 @@ class MainActivity: FlutterFragmentActivity() {
 
                 if (attributeArray.isEmpty()) {
                     errorMsg = "Não há nenhuma credencial do tipo '$schemaName'."
+                }
+
+                for (attr in attributeArray) {
+                    Log.d("MainActivity", "attr in attributeArray: ${attr.toString()}")
                 }
 
                 val nonRevoked = attributeArray.filter { attr -> attr.revoked != true }
