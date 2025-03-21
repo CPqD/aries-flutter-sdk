@@ -1,7 +1,5 @@
 import 'package:did_agent/agent/enums/credential_state.dart';
 import 'package:did_agent/global.dart';
-import 'package:did_agent/util/dialogs.dart';
-import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
 //import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -46,9 +44,9 @@ class HomePageState extends State<HomePage> {
     //     invitationResultDialog(invitation, context);
     //   }
     // } else {
-      setState(() {
-        _selectedIndex = index;
-      });
+    setState(() {
+      _selectedIndex = index;
+    });
     //}
   }
 
@@ -129,5 +127,27 @@ class HomePageState extends State<HomePage> {
     if (CredentialState.requestReceived.equals(proofState)) {
       updateNotifications();
     }
+  }
+
+  void credentialRevocationReceived(String credentialId) {
+    print('credentialRevocationReceived - $credentialId');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Credencial Revogada!'),
+          content: Text('A sua credencial de id $credentialId foi revogada!'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

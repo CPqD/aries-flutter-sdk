@@ -1,5 +1,7 @@
 package br.org.serpro.did_agent
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
 import org.hyperledger.ariesframework.connection.messages.ConnectionInvitationMessage
@@ -12,6 +14,7 @@ import org.hyperledger.ariesframework.oob.messages.OutOfBandInvitation
 import org.hyperledger.ariesframework.proofs.models.RequestedAttribute
 import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
+import org.hyperledger.ariesframework.revocationnotification.model.RevocationNotification
 import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
 class JsonConverter {
@@ -57,7 +60,15 @@ class JsonConverter {
                 "schemaIssuerId" to credentialRecord.schemaIssuerId,
                 "issuerId" to credentialRecord.issuerId,
                 "definitionId" to credentialRecord.credentialDefinitionId,
-                "revocationRegistryId" to credentialRecord.revocationRegistryId
+                "revocationRegistryId" to credentialRecord.revocationRegistryId,
+                "revocationNotification" to credentialRecord.revocationNotification?.let { toMap(it) }
+            )
+        }
+
+        fun toMap(revocationNotification: RevocationNotification): Map<String, Any?> {
+            return mapOf(
+                "revocationDate" to revocationNotification.revocationDate.toInstant().toString(),
+                "comment" to revocationNotification.comment
             )
         }
 

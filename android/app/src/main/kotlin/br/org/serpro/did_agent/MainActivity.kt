@@ -24,7 +24,6 @@ import org.hyperledger.ariesframework.problemreports.messages.MediationProblemRe
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import org.hyperledger.ariesframework.credentials.models.CredentialState
-import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import java.io.File
@@ -282,6 +281,12 @@ class MainActivity: FlutterFragmentActivity() {
             val credentials = runBlocking { agent?.credentialRepository?.getAll() }
 
             Log.d("MainActivity", "credentials: ${credentials.toString()}")
+
+            if (credentials != null) {
+                for (credential in credentials) {
+                    Log.d("MainActivity", "credential: ${credential.credentialId} - comment=${credential.revocationNotification?.comment} date=${credential.revocationNotification?.revocationDate}")
+                }
+            }
 
             val credentialsList = mutableListOf<Map<String, Any?>>()
 
@@ -575,6 +580,22 @@ class MainActivity: FlutterFragmentActivity() {
                 }
             }
 
+            agent!!.eventBus.subscribe<AgentEvents.RevocationNotificationReceivedEvent> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Log.d("MainActivity", "RevocationNotificationReceivedEvent ${it.record.id}: ${it.record.toString()}")
+
+                    sendCredentialRevocationToFlutter(it.record.id)
+                }
+            }
+
+            agent!!.eventBus.subscribe<AgentEvents.RevocationNotificationReceivedEventV2> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Log.d("MainActivity", "RevocationNotificationReceivedEventV2 ${it.record.id}: ${it.record.toString()}")
+
+                    sendCredentialRevocationToFlutter(it.record.id)
+                }
+            }
+
             agent!!.eventBus.subscribe<AgentEvents.ProofEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
                     Log.d("MainActivity", "Proof ${it.record.state}: ${it.record.id}")
@@ -614,6 +635,11 @@ class MainActivity: FlutterFragmentActivity() {
     private fun sendCredentialToFlutter(id: String, state: String) {
         Log.e("MainActivity", "Invoking credentialReceived from Kotlin")
         methodChannel.invokeMethod("credentialReceived", mapOf("id" to id, "state" to state))
+    }
+
+    private fun sendCredentialRevocationToFlutter(id: String) {
+        Log.e("MainActivity", "Invoking credentialReceived from Kotlin")
+        methodChannel.invokeMethod("credentialRevocationReceived", mapOf("id" to id))
     }
 
     private fun sendProofToFlutter(id: String, state: String) {

@@ -54,7 +54,31 @@ class _CredentialsPageState extends State<CredentialsPage> {
               final credential = credentials[index];
 
               return ListTile(
-                title: Text(credential.credentialId),
+                title: Row(
+                  children: [
+                    Text(credential.credentialId),
+                    if (credential.revocationNotification != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Text(
+                            'REVOGADA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 subtitle: Text(credential.getSubtitle()),
                 onTap: () async {
                   final result = await Navigator.push(

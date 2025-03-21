@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:did_agent/agent/models/credential/credential_revocation_notification.dart';
+
 class CredentialRecord {
   final String recordId;
   final String credentialId;
@@ -15,6 +17,7 @@ class CredentialRecord {
   final String schemaIssuerId;
   final String issuerId;
   final String definitionId;
+  final RevocationNotification? revocationNotification;
 
   String? revocationRegistryId;
 
@@ -34,6 +37,7 @@ class CredentialRecord {
     required this.issuerId,
     required this.definitionId,
     this.revocationRegistryId,
+    this.revocationNotification,
   });
 
   factory CredentialRecord.fromMap(Map<String, dynamic> map) {
@@ -53,6 +57,9 @@ class CredentialRecord {
       issuerId: map["issuerId"].toString(),
       definitionId: map["definitionId"].toString(),
       revocationRegistryId: map["revocationRegistryId"].toString(),
+      revocationNotification: map["revocationNotification"] == null
+          ? null
+          : RevocationNotification.fromMap(map["revocationNotification"]),
     );
   }
 
@@ -106,7 +113,8 @@ class CredentialRecord {
         'schemaIssuerId: $schemaIssuerId, '
         'issuerId: $issuerId, '
         'definitionId: $definitionId, '
-        'revocationRegistryId: $revocationRegistryId'
+        'revocationRegistryId: $revocationRegistryId, '
+        'revocationNotification: $revocationNotification'
         '}';
   }
 }

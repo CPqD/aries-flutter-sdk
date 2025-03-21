@@ -21,6 +21,27 @@ class CredentialDetailsPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (credential.revocationNotification != null)
+                    if (credential.revocationNotification != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Text(
+                            'REVOGADA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                   buildDetailRow('Credential ID:', credential.credentialId),
                   buildDetailRow('Record ID:', credential.recordId),
                   buildDetailRow('Created At:', credential.createdAt.toString()),
@@ -34,6 +55,8 @@ class CredentialDetailsPage extends StatelessWidget {
                   buildDetailRow(
                       'Revocation Registry ID:', credential.revocationRegistryId ?? ''),
                   buildDetailRow('Attributes:', credential.attributes.toString()),
+                  buildDetailRow('Revocation Notification:',
+                      credential.revocationNotification.toString()),
                 ],
               ),
             ),

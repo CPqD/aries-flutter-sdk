@@ -257,6 +257,14 @@ Future<dynamic> receiveFromNative(MethodCall call) async {
       final Map arguments = call.arguments;
       print(arguments);
       return "$arguments";
+    case 'credentialRevocationReceived':
+      print('credentialRevocationReceived on FLUTTER: ${call.arguments}');
+
+      final Map<String, String> arguments = Map<String, String>.from(call.arguments);
+
+      homePageKey.currentState?.credentialRevocationReceived(arguments["id"] ?? '');
+
+      return "$arguments";
     case 'credentialReceived':
       print('credentialReceived on FLUTTER: ${call.arguments}');
 
