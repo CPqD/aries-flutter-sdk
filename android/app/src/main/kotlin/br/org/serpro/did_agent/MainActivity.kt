@@ -442,17 +442,6 @@ class MainActivity: FlutterFragmentActivity() {
             Log.d("MainActivity", "proofRequestMessageJson: ${proofRequestMessageJson.toString()}")
 
             val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
-//            val retrievedCredentials = runBlocking { CustomProofCommand(agent!!).getRequestedCredentialsForProofRequest(proofRecordId!!) }
-
-
-            // ProofCommand.getRequestedCredentialsForProofReq uest
-
-//            val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
-
-//            val proofRequestJson = proofRequestMessage.indyProofRequest()
-//            logger.debug("Proof request json: $proofRequestJson")
-//            val proofRequest = Json.decodeFromString<ProofRequest>(proofRequestJson)
-
 
             //            -------------------------
             Log.d("MainActivity", "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes.toString()}")

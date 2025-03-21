@@ -17,6 +17,7 @@ class ProofNotificationPage extends StatefulWidget {
 
 class _ProofNotificationPageState extends State<ProofNotificationPage> {
   ProofOfferDetails? _proofDetails;
+  bool _canBeApproved = true;
   String? _errorMessage;
   bool _isLoading = true;
 
@@ -32,6 +33,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
   Future<void> _loadData() async {
     try {
       final proofOfferResult = await getProofOfferDetails(widget.notification.id);
+      bool canBeApproved = true;
 
       print('proofOfferResult: ${proofOfferResult.value.toString()}');
 
@@ -45,6 +47,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
           for (final proofDetailsAttr in proofOfferDetails.attributes) {
             if (proofDetailsAttr.error.isNotEmpty ||
                 proofDetailsAttr.availableCredentials.isEmpty) {
+              canBeApproved = false;
               continue;
             }
 
@@ -57,6 +60,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
           for (final proofDetailsPred in proofOfferDetails.predicates) {
             if (proofDetailsPred.error.isNotEmpty ||
                 proofDetailsPred.availableCredentials.isEmpty) {
+              canBeApproved = false;
               continue;
             }
 
@@ -70,6 +74,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
           _isLoading = false;
           _selectedAttributeCredentials = initialAttrCredentials;
           _selectedPredicateCredentials = initialPredCredentials;
+          _canBeApproved = _canBeApproved && canBeApproved;
         });
       } else {
         setState(() {
@@ -228,38 +233,57 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                   ],
                 );
               }),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await widget.notification.callOnAccept({
-                      'selectedAttributes': _selectedAttributeCredentials,
-                      'selectedPredicates': _selectedPredicateCredentials,
-                    });
+            if (_canBeApproved)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      final result = await widget.notification.callOnAccept({
+                        'selectedAttributes': _selectedAttributeCredentials,
+                        'selectedPredicates': _selectedPredicateCredentials,
+                      });
 
-                    if (context.mounted) {
-                      Navigator.pop(context);
+                      if (context.mounted) {
+                        Navigator.pop(context);
 
-                      acceptProofDialog(result, context);
-                    }
-                  },
-                  child: Text('Aceitar'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await widget.notification.callOnRefuse();
+                        acceptProofDialog(result, context);
+                      }
+                    },
+                    child: Text('Aceitar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final result = await widget.notification.callOnRefuse();
 
-                    if (context.mounted) {
-                      Navigator.pop(context);
+                      if (context.mounted) {
+                        Navigator.pop(context);
 
-                      declineProofDialog(result, context);
-                    }
-                  },
-                  child: Text('Recusar'),
-                ),
-              ],
-            ),
+                        declineProofDialog(result, context);
+                      }
+                    },
+                    child: Text('Recusar'),
+                  ),
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      final result = await widget.notification.callOnRefuse();
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+
+                        declineProofDialog(result, context);
+                      }
+                    },
+                    child: Text('Cancelar'),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
