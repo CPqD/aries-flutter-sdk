@@ -28,7 +28,20 @@ class RequestedPredicate {
   }
 
   String getListedName() {
-    return 'Credencial $credentialId';
+    if (schemaId == null) {
+      return "Credencial '$credentialId'";
+    }
+
+    final splitSchemaId = schemaId!.split(':');
+
+    if (splitSchemaId.length < 2) {
+      return "Credencial '$schemaId'";
+    }
+
+    final schemaName = splitSchemaId[splitSchemaId.length - 2];
+    final schemaVersion = splitSchemaId[splitSchemaId.length - 1];
+
+    return "Credencial '$schemaName' $schemaVersion";
   }
 
   @override

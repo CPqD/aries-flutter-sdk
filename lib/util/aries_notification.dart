@@ -18,7 +18,7 @@ final class AriesNotification {
   final String title;
   final NotificationType type;
   final DateTime receivedAt;
-  final Future<AriesResult> Function() onAccept;
+  final Future<AriesResult> Function([dynamic params]) onAccept;
   final Future<AriesResult> Function() onRefuse;
 
   AriesNotification({
@@ -36,7 +36,7 @@ final class AriesNotification {
       title: 'Oferta de Credential Recebida',
       type: NotificationType.credentialOffer,
       receivedAt: credOffer.createdAt ?? DateTime.now(),
-      onAccept: () async {
+      onAccept: ([params]) async {
         final acceptOfferResult = await acceptCredentialOffer(credOffer.id);
 
         if (acceptOfferResult.success) {
@@ -63,8 +63,12 @@ final class AriesNotification {
       title: 'Pedido de Prova Recebido',
       type: NotificationType.proofOffer,
       receivedAt: proofOffer.createdAt ?? DateTime.now(),
-      onAccept: () async {
-        final acceptOfferResult = await acceptProofOffer(proofOffer.id);
+      onAccept: ([params]) async {
+        final acceptOfferResult = await acceptProofOffer(
+          proofOffer.id,
+          params['selectedAttributes'],
+          params['selectedPredicates'],
+        );
 
         if (acceptOfferResult.success) {
           print('Proof Accepted: ${proofOffer.id}');
@@ -84,12 +88,15 @@ final class AriesNotification {
     );
   }
 
-  Future<AriesResult> callOnAccept() async {
+  Future<AriesResult> callOnAccept([dynamic params]) async {
     try {
-      return await onAccept.call();
+      return await onAccept.call(params);
     } catch (e) {
       return AriesResult(
-          success: false, error: 'Notification Accept failed: $e', value: null);
+        success: false,
+        error: 'Notification Accept failed: $e',
+        value: null,
+      );
     } finally {
       removeNotification(id);
     }

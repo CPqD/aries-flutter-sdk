@@ -1,14 +1,9 @@
-import 'package:did_agent/agent/models/credential/credential_record.dart';
-import 'package:did_agent/util/utils.dart';
-
 class RequestedAttribute {
   final String credentialId;
   final String? schemaId;
   final String? credentialDefinitionId;
   final Map<String, String>? attributes;
   final bool revoked;
-
-  CredentialRecord? record;
 
   RequestedAttribute({
     required this.credentialId,
@@ -38,18 +33,21 @@ class RequestedAttribute {
     return list.map((e) => RequestedAttribute.fromMap(e)).toList();
   }
 
-  Future<CredentialRecord?> getRecord() async {
-    if (record == null) {
-      final result = await getCredential(credentialId);
-
-      if (result.success) record = result.value;
+  String getListedName() {
+    if (schemaId == null) {
+      return "Credencial '$credentialId'";
     }
 
-    return record;
-  }
+    final splitSchemaId = schemaId!.split(':');
 
-  String getListedName() {
-    return "Credencial '${record?.schemaName ?? credentialId}'";
+    if (splitSchemaId.length < 2) {
+      return "Credencial '$schemaId'";
+    }
+
+    final schemaName = splitSchemaId[splitSchemaId.length - 2];
+    final schemaVersion = splitSchemaId[splitSchemaId.length - 1];
+
+    return "Credencial '$schemaName' $schemaVersion";
   }
 
   @override

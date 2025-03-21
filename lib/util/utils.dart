@@ -7,6 +7,8 @@ import 'package:did_agent/agent/models/credential/credential_exchange_record.dar
 import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
+import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
+import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 import 'package:did_agent/page/home.dart';
 import 'package:flutter/services.dart';
@@ -142,12 +144,22 @@ Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
 Future<AriesResult> acceptCredentialOffer(String credentialId) => AriesResult.invoke(
     AriesMethod.acceptCredentialOffer, {'credentialRecordId': credentialId});
 
-Future<AriesResult> acceptProofOffer(String proofId) {
-  final selectedCredentialsAttributes = {
-    'identidade': '8af132cb-a217-42ab-81bb-ff158bfacd4d'
-  };
+Future<AriesResult> acceptProofOffer(
+  String proofId,
+  Map<String, RequestedAttribute> selectedAttributes,
+  Map<String, RequestedPredicate> selectedPredicates,
+) {
+  final Map<String, String> selectedCredentialsAttributes = {};
 
-  final selectedCredentialsPredicates = {};
+  selectedAttributes.forEach((key, value) {
+    selectedCredentialsAttributes[key] = value.credentialId;
+  });
+
+  final Map<String, String> selectedCredentialsPredicates = {};
+
+  selectedPredicates.forEach((key, value) {
+    selectedCredentialsPredicates[key] = value.credentialId;
+  });
 
   return AriesResult.invoke(AriesMethod.acceptProofOffer, {
     'proofRecordId': proofId,

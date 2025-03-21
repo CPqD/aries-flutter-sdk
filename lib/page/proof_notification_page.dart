@@ -1,4 +1,3 @@
-import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
@@ -159,11 +158,13 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                               child: Text(credential.getListedName()),
                             );
                           }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedAttributeCredentials[attribute.name] = value;
-                            });
-                          },
+                          onChanged: attribute.availableCredentials.length > 1
+                              ? (value) {
+                                  setState(() {
+                                    _selectedAttributeCredentials[attribute.name] = value;
+                                  });
+                                }
+                              : null,
                         ),
                       ),
                     Text(
@@ -207,14 +208,16 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                               child: Text(credential.getListedName()),
                             );
                           }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedPredicateCredentials[predicate.name] = value;
-                            });
-                          },
+                          onChanged: predicate.availableCredentials.length > 1
+                              ? (value) {
+                                  setState(() {
+                                    _selectedPredicateCredentials[predicate.name] = value;
+                                  });
+                                }
+                              : null,
                         ),
                       ),
-                      Text(
+                    Text(
                       (_selectedPredicateCredentials[predicate.name]
                               ?.attributes
                               ?.toString() ??
@@ -230,12 +233,15 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    final result = await widget.notification.callOnAccept();
+                    final result = await widget.notification.callOnAccept({
+                      'selectedAttributes': _selectedAttributeCredentials,
+                      'selectedPredicates': _selectedPredicateCredentials,
+                    });
 
                     if (context.mounted) {
                       Navigator.pop(context);
 
-                      openNotificationResultDialog(result, context, isAccept: true);
+                      acceptProofDialog(result, context);
                     }
                   },
                   child: Text('Aceitar'),
@@ -247,7 +253,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                     if (context.mounted) {
                       Navigator.pop(context);
 
-                      openNotificationResultDialog(result, context, isAccept: false);
+                      declineProofDialog(result, context);
                     }
                   },
                   child: Text('Recusar'),
@@ -258,14 +264,5 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
         ),
       ),
     );
-  }
-
-  void openNotificationResultDialog(AriesResult result, BuildContext context,
-      {required bool isAccept}) {
-    if (isAccept) {
-      acceptProofDialog(result, context);
-    } else {
-      declineProofDialog(result, context);
-    }
   }
 }
