@@ -4,7 +4,7 @@ import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+//import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'notifications_page.dart';
 import 'settings_page.dart';
@@ -31,25 +31,25 @@ class HomePageState extends State<HomePage> {
   ];
 
   void _onItemTapped(int index) async {
-    if (index == 1) {
-      String qrCode = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666',
-        'Cancelar',
-        false,
-        ScanMode.QR,
-      );
-      print('QR Code: $qrCode');
-      if (qrCode != '-1') {
-        final invitation = await receiveInvitation(qrCode);
-        print(invitation);
-
-        invitationResultDialog(invitation, context);
-      }
-    } else {
+    // if (index == 1) {
+    //   String qrCode = await FlutterBarcodeScanner.scanBarcode(
+    //     '#ff6666',
+    //     'Cancelar',
+    //     false,
+    //     ScanMode.QR,
+    //   );
+    //   print('QR Code: $qrCode');
+    //   if (qrCode != '-1') {
+    //     final invitation = await receiveInvitation(qrCode);
+    //     print(invitation);
+    //
+    //     invitationResultDialog(invitation, context);
+    //   }
+    // } else {
       setState(() {
         _selectedIndex = index;
       });
-    }
+    //}
   }
 
   void setNotificationCount(int notificationCount) {

@@ -17,14 +17,14 @@ import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
-import org.hyperledger.ariesframework.credentials.models.AutoAcceptCredential
+import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import org.hyperledger.ariesframework.credentials.models.CredentialState
-import org.hyperledger.ariesframework.proofs.messages.RequestPresentationMessage
+import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import java.io.File
