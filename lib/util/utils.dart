@@ -141,8 +141,11 @@ Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
       {'invitationUrl': url},
     );
 
-Future<AriesResult> acceptCredentialOffer(String credentialId) => AriesResult.invoke(
-    AriesMethod.acceptCredentialOffer, {'credentialRecordId': credentialId});
+Future<AriesResult> acceptCredentialOffer(String credentialId, String protocolVersion) =>
+    AriesResult.invoke(AriesMethod.acceptCredentialOffer, {
+      'credentialRecordId': credentialId,
+      'protocolVersion': protocolVersion,
+    });
 
 Future<AriesResult> acceptProofOffer(
   String proofId,
@@ -229,8 +232,11 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
   }
 }
 
-Future<AriesResult> declineCredentialOffer(String credentialId) => AriesResult.invoke(
-    AriesMethod.declineCredentialOffer, {'credentialRecordId': credentialId});
+Future<AriesResult> declineCredentialOffer(String credentialId, String protocolVersion) =>
+    AriesResult.invoke(AriesMethod.declineCredentialOffer, {
+      'credentialRecordId': credentialId,
+      'protocolVersion': protocolVersion,
+    });
 
 Future<AriesResult> declineProofOffer(String proofId) =>
     AriesResult.invoke(AriesMethod.declineProofOffer, {'proofRecordId': proofId});

@@ -37,7 +37,8 @@ final class AriesNotification {
       type: NotificationType.credentialOffer,
       receivedAt: credOffer.createdAt ?? DateTime.now(),
       onAccept: ([params]) async {
-        final acceptOfferResult = await acceptCredentialOffer(credOffer.id);
+        final acceptOfferResult =
+            await acceptCredentialOffer(credOffer.id, credOffer.protocolVersion);
 
         if (acceptOfferResult.success) {
           print('Credential Accepted: ${credOffer.id}');
@@ -46,7 +47,8 @@ final class AriesNotification {
         return acceptOfferResult;
       },
       onRefuse: () async {
-        final declineOfferResult = await declineCredentialOffer(credOffer.id);
+        final declineOfferResult =
+            await declineCredentialOffer(credOffer.id, credOffer.protocolVersion);
 
         if (declineOfferResult.success) {
           print('Credential Refused: ${credOffer.id}');

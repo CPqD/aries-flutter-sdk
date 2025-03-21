@@ -142,15 +142,19 @@ class MainActivity: FlutterFragmentActivity() {
                 "acceptCredentialOffer" -> {
                     try {
                         val credentialRecordId = call.argument<String>("credentialRecordId")
-                        acceptCredentialOffer(credentialRecordId, result)
+                        val protocolVersion = call.argument<String>("protocolVersion")
+
+                        acceptCredentialOffer(credentialRecordId, protocolVersion, result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel acceptOffer: "+e.toString(),null)
                     }
                 }
                 "declineCredentialOffer" -> {
-                    try { 
+                    try {
                         val credentialRecordId = call.argument<String>("credentialRecordId")
-                        declineCredentialOffer(credentialRecordId, result)
+                        val protocolVersion = call.argument<String>("protocolVersion")
+
+                        declineCredentialOffer(credentialRecordId, protocolVersion, result)
                     }catch (e:Exception){
                         result?.error("1","Erro ao processar o methodchannel declineOffer: "+e.toString(),null)
                     }
@@ -442,17 +446,6 @@ class MainActivity: FlutterFragmentActivity() {
             Log.d("MainActivity", "proofRequestMessageJson: ${proofRequestMessageJson.toString()}")
 
             val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
-//            val retrievedCredentials = runBlocking { CustomProofCommand(agent!!).getRequestedCredentialsForProofRequest(proofRecordId!!) }
-
-
-            // ProofCommand.getRequestedCredentialsForProofReq uest
-
-//            val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
-
-//            val proofRequestJson = proofRequestMessage.indyProofRequest()
-//            logger.debug("Proof request json: $proofRequestJson")
-//            val proofRequest = Json.decodeFromString<ProofRequest>(proofRequestJson)
-
 
             //            -------------------------
             Log.d("MainActivity", "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes.toString()}")
@@ -588,6 +581,14 @@ class MainActivity: FlutterFragmentActivity() {
                 }
             }
 
+            agent!!.eventBus.subscribe<AgentEvents.CredentialEventV2> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Log.d("MainActivity", "Credential V2 ${it.record.id}: ${it.record.toString()}")
+
+                    sendCredentialToFlutter(it.record.id, it.record.state.toString())
+                }
+            }
+
             agent!!.eventBus.subscribe<AgentEvents.ProofEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
                     Log.d("MainActivity", "Proof ${it.record.state}: ${it.record.id}")
@@ -654,17 +655,22 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun acceptCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
+    private fun acceptCredentialOffer(credentialRecordId: String?, protocolVersion: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "accept offer called from Kotlin...")
 
         validateNotNull("CredentialRecordId", credentialRecordId)
+        validateNotNull("ProtocolVersion", protocolVersion)
         validateAgent()
 
         val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId!!, autoAcceptCredential = AutoAcceptCredential.Always);
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                agent!!.credentials.acceptOffer(acceptOfferOption)
+                if (protocolVersion == "v2") {
+                    agent!!.credentialsV2.acceptOffer(acceptOfferOption)
+                } else {
+                    agent!!.credentials.acceptOffer(acceptOfferOption)
+                }
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
@@ -676,17 +682,22 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
 
-    private fun declineCredentialOffer(credentialRecordId: String?, result: MethodChannel.Result) {
+    private fun declineCredentialOffer(credentialRecordId: String?, protocolVersion: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "decline offer called from Kotlin...")
 
         validateNotNull("CredentialRecordId", credentialRecordId)
+        validateNotNull("ProtocolVersion", protocolVersion)
         validateAgent()
 
         val acceptOfferOption = AcceptOfferOptions(credentialRecordId = credentialRecordId!!, autoAcceptCredential = AutoAcceptCredential.Never);
 
         lifecycleScope.launch(Dispatchers.Main) {
             try {
-                agent!!.credentials.declineOffer(acceptOfferOption)
+                if (protocolVersion == "v2") {
+                    agent!!.credentialsV2.declineOffer(acceptOfferOption)
+                } else {
+                    agent!!.credentials.declineOffer(acceptOfferOption)
+                }
 
                 result.success(mapOf("error" to "", "result" to true))
             } catch (e: Exception) {
