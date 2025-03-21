@@ -432,22 +432,8 @@ class MainActivity: FlutterFragmentActivity() {
         val predicatesList = mutableListOf<Map<String, Any?>>()
 
         try {
-            val record = runBlocking { agent!!.proofRepository.getById(proofRecordId!!)}
-
-            Log.d("MainActivity", "record: ${record.toString()}")
-
-            val proofRequestMessageJson = runBlocking {
-                agent!!.didCommMessageRepository.getAgentMessage(
-                    record.id,
-                    RequestPresentationMessage.type,
-                )
-            }
-
-            Log.d("MainActivity", "proofRequestMessageJson: ${proofRequestMessageJson.toString()}")
-
             val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
 
-            //            -------------------------
             Log.d("MainActivity", "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes.toString()}")
             Log.d("MainActivity", "retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates.toString()}")
 
