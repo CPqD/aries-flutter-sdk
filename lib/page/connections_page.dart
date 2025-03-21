@@ -1,8 +1,8 @@
 import 'package:did_agent/agent/aries_result.dart';
-import 'package:did_agent/agent/models/connection_record.dart';
+import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/page/connection_details_page.dart';
-import 'package:flutter/material.dart';
 import 'package:did_agent/util/utils.dart';
+import 'package:flutter/material.dart';
 
 class ConnectionsPage extends StatefulWidget {
   const ConnectionsPage({super.key});

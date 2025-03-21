@@ -39,7 +39,7 @@ android {
         applicationId = "br.org.serpro.did_agent"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 24
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -60,10 +60,13 @@ flutter {
 }
 
 dependencies {
-    implementation("org.hyperledger:aries-framework-kotlin:0.49.1-SNAPSHOT")
+    implementation("org.hyperledger:aries-framework-kotlin:0.50.1-SNAPSHOT")
     implementation("org.hyperledger:anoncreds_uniffi:0.2.0-wrapper.1")
+
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.5.31"
+    
     api "org.jetbrains.kotlinx:kotlinx-datetime:0.3.2"
+    api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
 }

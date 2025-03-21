@@ -30,7 +30,7 @@ class CredentialNotificationPage extends StatelessWidget {
             } else {
               final DidCommMessageRecord message = snapshot.data!.value;
               final attributes =
-                  message.getCredentialPreview(removeCredRevUuid: true).attributes;
+                  message.getCredentialPreview().attributes;
 
               print('message.getProofPreview: ${message.getProofPreview()}');
 

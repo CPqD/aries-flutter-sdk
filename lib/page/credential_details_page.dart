@@ -1,4 +1,4 @@
-import 'package:did_agent/agent/models/credential_record.dart';
+import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -22,7 +22,29 @@ class CredentialDetailsPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildDetailRow('ID:', credential.id),
+                  if (credential.revocationNotification != null)
+                    if (credential.revocationNotification != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Text(
+                            'REVOGADA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  buildDetailRow('Credential ID:', credential.credentialId),
+                  buildDetailRow('Record ID:', credential.recordId),
                   buildDetailRow('Created At:', credential.createdAt.toString()),
                   buildDetailRow('Revocation ID:', credential.revocationId),
                   buildDetailRow('Link Secret ID:', credential.linkSecretId),
@@ -33,8 +55,9 @@ class CredentialDetailsPage extends StatelessWidget {
                   buildDetailRow('Definition ID:', credential.definitionId),
                   buildDetailRow(
                       'Revocation Registry ID:', credential.revocationRegistryId ?? ''),
-                  buildDetailRow(
-                      'Credential Values:', credential.getRawValues().toString()),
+                  buildDetailRow('Attributes:', credential.attributes.toString()),
+                  buildDetailRow('Revocation Notification:',
+                      credential.revocationNotification.toString()),
                 ],
               ),
             ),
@@ -124,7 +147,7 @@ class CredentialDetailsPage extends StatelessWidget {
     );
 
     if (confirmDelete == true) {
-      final deleteResult = await removeCredential(credential.id);
+      final deleteResult = await removeCredential(credential.recordId);
       print('Delete Result: $deleteResult');
 
       if (deleteResult.success) {

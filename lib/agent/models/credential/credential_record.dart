@@ -1,7 +1,11 @@
 import 'dart:convert';
 
+import 'package:did_agent/agent/models/credential/credential_revocation_notification.dart';
+
 class CredentialRecord {
-  final String id;
+  final String recordId;
+  final String credentialId;
+  final Map<String, dynamic> attributes;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String revocationId;
@@ -13,11 +17,14 @@ class CredentialRecord {
   final String schemaIssuerId;
   final String issuerId;
   final String definitionId;
+  final RevocationNotification? revocationNotification;
 
   String? revocationRegistryId;
 
   CredentialRecord({
-    required this.id,
+    required this.recordId,
+    required this.credentialId,
+    required this.attributes,
     required this.createdAt,
     required this.updatedAt,
     required this.revocationId,
@@ -30,11 +37,14 @@ class CredentialRecord {
     required this.issuerId,
     required this.definitionId,
     this.revocationRegistryId,
+    this.revocationNotification,
   });
 
   factory CredentialRecord.fromMap(Map<String, dynamic> map) {
     return CredentialRecord(
-      id: map["id"].toString(),
+      recordId: map["recordId"].toString(),
+      credentialId: map["credentialId"].toString(),
+      attributes: Map<String, dynamic>.from(map["attributes"] ?? {}),
       createdAt: DateTime.tryParse(map["createdAt"].toString()),
       updatedAt: DateTime.tryParse(map["updatedAt"].toString()),
       revocationId: map["revocationId"].toString(),
@@ -47,6 +57,9 @@ class CredentialRecord {
       issuerId: map["issuerId"].toString(),
       definitionId: map["definitionId"].toString(),
       revocationRegistryId: map["revocationRegistryId"].toString(),
+      revocationNotification: map["revocationNotification"] == null
+          ? null
+          : RevocationNotification.fromMap(map["revocationNotification"]),
     );
   }
 
@@ -87,7 +100,9 @@ class CredentialRecord {
   @override
   String toString() {
     return 'CredentialRecord{'
-        'id: $id, '
+        'recordId: $recordId, '
+        'credentialId: $credentialId, '
+        'attributes: $attributes, '
         'createdAt: $createdAt, '
         'updatedAt: $updatedAt, '
         'revocationId: $revocationId, '
@@ -98,7 +113,8 @@ class CredentialRecord {
         'schemaIssuerId: $schemaIssuerId, '
         'issuerId: $issuerId, '
         'definitionId: $definitionId, '
-        'revocationRegistryId: $revocationRegistryId'
+        'revocationRegistryId: $revocationRegistryId, '
+        'revocationNotification: $revocationNotification'
         '}';
   }
 }

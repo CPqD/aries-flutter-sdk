@@ -62,6 +62,28 @@ class HomePageState extends State<HomePage> {
     invitationResultDialog(invitation, context);
   }
 
+  void credentialRevocationReceived(String credentialId) {
+    print('credentialRevocationReceived - $credentialId');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Credencial Revogada!'),
+          content: Text('A sua credencial de id $credentialId foi revogada!'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _onItemTapped() async {
     String qrCode = await FlutterBarcodeScanner.scanBarcode(
       '#ff6666',

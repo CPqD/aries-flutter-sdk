@@ -1,17 +1,20 @@
 package br.org.serpro.did_agent
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
 import org.hyperledger.ariesframework.connection.messages.ConnectionInvitationMessage
-import org.hyperledger.ariesframework.connection.models.ConnectionState
-import org.hyperledger.ariesframework.connection.models.didauth.Authentication
 import org.hyperledger.ariesframework.connection.models.didauth.DidDoc
 import org.hyperledger.ariesframework.connection.models.didauth.DidDocService
 import org.hyperledger.ariesframework.connection.models.didauth.publicKey.PublicKey
 import org.hyperledger.ariesframework.connection.repository.ConnectionRecord
 import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
 import org.hyperledger.ariesframework.oob.messages.OutOfBandInvitation
+import org.hyperledger.ariesframework.proofs.models.RequestedAttribute
+import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
+import org.hyperledger.ariesframework.revocationnotification.model.RevocationNotification
 import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
 class JsonConverter {
@@ -41,21 +44,31 @@ class JsonConverter {
             )
         }
 
-        fun toMap(credential: CredentialRecord): Map<String, Any?> {
+        fun toMap(credentialRecord: CredentialRecord): Map<String, Any?> {
             return mapOf(
-                "id" to credential.id,
-                "createdAt" to credential.createdAt.toString(),
-                "updatedAt" to credential.updatedAt.toString(),
-                "revocationId" to credential.credentialRevocationId,
-                "linkSecretId" to credential.linkSecretId,
-                "credential" to credential.credential,
-                "schemaId" to credential.schemaId,
-                "schemaName" to credential.schemaName,
-                "schemaVersion" to credential.schemaVersion,
-                "schemaIssuerId" to credential.schemaIssuerId,
-                "issuerId" to credential.issuerId,
-                "definitionId" to credential.credentialDefinitionId,
-                "revocationRegistryId" to credential.revocationRegistryId
+                "recordId" to credentialRecord.id,
+                "credentialId" to credentialRecord.credentialId,
+                "attributes" to credentialRecord.parseCredential(credentialRecord.credential),
+                "createdAt" to credentialRecord.createdAt.toString(),
+                "updatedAt" to credentialRecord.updatedAt.toString(),
+                "revocationId" to credentialRecord.credentialRevocationId,
+                "linkSecretId" to credentialRecord.linkSecretId,
+                "credential" to credentialRecord.credential,
+                "schemaId" to credentialRecord.schemaId,
+                "schemaName" to credentialRecord.schemaName,
+                "schemaVersion" to credentialRecord.schemaVersion,
+                "schemaIssuerId" to credentialRecord.schemaIssuerId,
+                "issuerId" to credentialRecord.issuerId,
+                "definitionId" to credentialRecord.credentialDefinitionId,
+                "revocationRegistryId" to credentialRecord.revocationRegistryId,
+                "revocationNotification" to credentialRecord.revocationNotification?.let { toMap(it) }
+            )
+        }
+
+        fun toMap(revocationNotification: RevocationNotification): Map<String, Any?> {
+            return mapOf(
+                "revocationDate" to revocationNotification.revocationDate.toInstant().toString(),
+                "comment" to revocationNotification.comment
             )
         }
 
@@ -96,6 +109,26 @@ class JsonConverter {
         fun toMap(didDocService: DidDocService): Map<String, Any?> {
             return mapOf(
                 "id" to didDocService.id
+            )
+        }
+
+        fun toMap(requestedAttribute: RequestedAttribute): Map<String, Any?> {
+            return mapOf(
+                "credentialId" to requestedAttribute.credentialId,
+                "schemaId" to requestedAttribute.credentialInfo?.schemaId,
+                "credentialDefinitionId" to requestedAttribute.credentialInfo?.credentialDefinitionId,
+                "attributes" to requestedAttribute.credentialInfo?.attributes,
+                "revoked" to requestedAttribute.revoked,
+            )
+        }
+
+        fun toMap(requestedPredicate: RequestedPredicate): Map<String, Any?> {
+            return mapOf(
+                "credentialId" to requestedPredicate.credentialId,
+                "schemaId" to requestedPredicate.credentialInfo?.schemaId,
+                "credentialDefinitionId" to requestedPredicate.credentialInfo?.credentialDefinitionId,
+                "attributes" to requestedPredicate.credentialInfo?.attributes,
+                "revoked" to requestedPredicate.revoked,
             )
         }
 
@@ -165,6 +198,26 @@ class JsonConverter {
 
             for (publicKey in publicKeys) {
                 result.add(toMap(publicKey))
+            }
+
+            return result
+        }
+
+        fun toRequestedAttributesList(requestedAttributes: List<RequestedAttribute>): List<Map<String, Any?>> {
+            val result = mutableListOf<Map<String, Any?>>()
+
+            for (requestedAttribute in requestedAttributes) {
+                result.add(toMap(requestedAttribute))
+            }
+
+            return result
+        }
+
+        fun toRequestedPredicatesList(requestedPredicates: List<RequestedPredicate>): List<Map<String, Any?>> {
+            val result = mutableListOf<Map<String, Any?>>()
+
+            for (requestedPredicate in requestedPredicates) {
+                result.add(toMap(requestedPredicate))
             }
 
             return result

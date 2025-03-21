@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:did_agent/agent/enums/did_comm.dart';
-import 'package:did_agent/agent/models/credential_preview.dart';
-import 'package:did_agent/agent/models/proof_preview.dart';
+import 'package:did_agent/agent/models/credential/credential_preview.dart';
+import 'package:did_agent/agent/models/proof/proof_preview.dart';
 
 class DidCommMessageRecord {
   final String id;
@@ -35,11 +35,10 @@ class DidCommMessageRecord {
     );
   }
 
-  CredentialPreview getCredentialPreview({bool removeCredRevUuid = false}) {
+  CredentialPreview getCredentialPreview() {
     try {
       final messageMap = jsonDecode(message);
-      return CredentialPreview.fromMap(messageMap["credential_preview"],
-          removeCredRevUuid: removeCredRevUuid);
+      return CredentialPreview.fromMap(messageMap["credential_preview"]);
     } catch (e) {
       print("Failed to get CredentialPreview: ${e.toString()}");
 
