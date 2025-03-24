@@ -1,7 +1,5 @@
-package br.org.serpro.did_agent
+package br.org.serpro.did_agent.utils
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
 import org.hyperledger.ariesframework.connection.messages.ConnectionInvitationMessage
