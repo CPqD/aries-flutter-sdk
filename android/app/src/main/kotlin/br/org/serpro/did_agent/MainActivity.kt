@@ -13,10 +13,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
+import org.hyperledger.ariesframework.agent.MessageSerializer
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
@@ -24,6 +26,9 @@ import org.hyperledger.ariesframework.problemreports.messages.MediationProblemRe
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import org.hyperledger.ariesframework.credentials.models.CredentialState
+import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
+import org.hyperledger.ariesframework.proofs.messages.v2.RequestPresentationMessageV2
+import org.hyperledger.ariesframework.proofs.models.ProofRequest
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import java.io.File
@@ -436,12 +441,40 @@ class MainActivity: FlutterFragmentActivity() {
         val attributesList = mutableListOf<Map<String, Any?>>()
         val predicatesList = mutableListOf<Map<String, Any?>>()
 
+        val proofRequestJson: String
+
         try {
-            val retrievedCredentials = runBlocking { agent!!.proofs.getRequestedCredentialsForProofRequest(proofRecordId!!) }
+            val recordMessageType = runBlocking { agent!!.didCommMessageRepository.getSingleByQuery("{\"associatedRecordId\": \"$proofRecordId\"}")}
 
-            Log.d("MainActivity", "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes.toString()}")
-            Log.d("MainActivity", "retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates.toString()}")
+            if (recordMessageType.message.contains("/2.0/")) {
+                val proofRequestMessageJson = runBlocking { agent!!.didCommMessageRepository.getAgentMessage(
+                    proofRecordId!!,
+                    RequestPresentationMessageV2.type,
+                ) }
 
+                val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessageV2
+
+                proofRequestJson = proofRequestMessage.indyProofRequest()
+            } else {
+                val proofRequestMessageJson = runBlocking { agent!!.didCommMessageRepository.getAgentMessage(
+                    proofRecordId!!,
+                    RequestPresentationMessage.type,
+                )}
+
+                val proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
+
+                proofRequestJson = proofRequestMessage.indyProofRequest()
+            }
+
+            Log.d("MainActivity", "proofRequestJson: $proofRequestJson")
+
+            val proofRequest = Json.decodeFromString<ProofRequest>(proofRequestJson)
+            Log.d("MainActivity", "proofRequest: $proofRequest")
+
+            val retrievedCredentials = runBlocking { agent!!.proofService.getRequestedCredentialsForProofRequest(proofRequest) }
+
+            Log.d("MainActivity", "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes}")
+            Log.d("MainActivity", "retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates}")
 
             retrievedCredentials.requestedAttributes.keys.forEach { schemaName ->
                 var errorMsg = ""
@@ -453,7 +486,7 @@ class MainActivity: FlutterFragmentActivity() {
                 }
 
                 for (attr in attributeArray) {
-                    Log.d("MainActivity", "attr in attributeArray: ${attr.toString()}")
+                    Log.d("MainActivity", "attr in attributeArray: $attr")
                 }
 
                 val nonRevoked = attributeArray.filter { attr -> attr.revoked != true }
@@ -493,12 +526,13 @@ class MainActivity: FlutterFragmentActivity() {
                 )
             }
 
-            Log.d("MainActivity", "attributesList: ${attributesList.toString()}")
-            Log.d("MainActivity", "predicatesList: ${predicatesList.toString()}")
+            Log.d("MainActivity", "attributesList: $attributesList")
+            Log.d("MainActivity", "predicatesList: $predicatesList")
 
             val jsonResult = mapOf(
                 "attributes" to JsonConverter.toJson(attributesList),
-                "predicates" to JsonConverter.toJson(predicatesList)
+                "predicates" to JsonConverter.toJson(predicatesList),
+                "proofRequest" to proofRequestJson,
             )
 
             result.success(mapOf("error" to "", "result" to jsonResult))
@@ -566,7 +600,7 @@ class MainActivity: FlutterFragmentActivity() {
         try {
             agent!!.eventBus.subscribe<AgentEvents.CredentialEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    Log.d("MainActivity", "Credential ${it.record.id}: ${it.record.toString()}")
+                    Log.d("MainActivity", "Credential ${it.record.id}: ${it.record}")
 
                     sendCredentialToFlutter(it.record.id, it.record.state.toString())
                 }
@@ -574,7 +608,7 @@ class MainActivity: FlutterFragmentActivity() {
 
             agent!!.eventBus.subscribe<AgentEvents.CredentialEventV2> {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    Log.d("MainActivity", "Credential V2 ${it.record.id}: ${it.record.toString()}")
+                    Log.d("MainActivity", "Credential V2 ${it.record.id}: ${it.record}")
 
                     sendCredentialToFlutter(it.record.id, it.record.state.toString())
                 }
@@ -582,7 +616,7 @@ class MainActivity: FlutterFragmentActivity() {
 
             agent!!.eventBus.subscribe<AgentEvents.RevocationNotificationReceivedEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    Log.d("MainActivity", "RevocationNotificationReceivedEvent ${it.record.id}: ${it.record.toString()}")
+                    Log.d("MainActivity", "RevocationNotificationReceivedEvent ${it.record.id}: ${it.record}")
 
                     sendCredentialRevocationToFlutter(it.record.id)
                 }
@@ -590,7 +624,7 @@ class MainActivity: FlutterFragmentActivity() {
 
             agent!!.eventBus.subscribe<AgentEvents.RevocationNotificationReceivedEventV2> {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    Log.d("MainActivity", "RevocationNotificationReceivedEventV2 ${it.record.id}: ${it.record.toString()}")
+                    Log.d("MainActivity", "RevocationNotificationReceivedEventV2 ${it.record.id}: ${it.record}")
 
                     sendCredentialRevocationToFlutter(it.record.id)
                 }

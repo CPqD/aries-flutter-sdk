@@ -6,11 +6,11 @@ import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
-import 'package:did_agent/page/home_page.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
+import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
 
 Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
@@ -198,14 +198,10 @@ Future<AriesResult<DidCommMessageRecord?>> getDidCommMessage(
 Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) async {
   print('getProofOfferDetails!!\n\n');
 
-  final didCommMessage = await getDidCommMessage(proofId);
-
-  if (!didCommMessage.success || didCommMessage.value == null) {
-    return AriesResult(success: false, error: didCommMessage.error);
-  }
-
   final proofOfferDetails = await AriesResult.invoke(
-      AriesMethod.getProofOfferDetails, {'proofRecordId': proofId});
+    AriesMethod.getProofOfferDetails,
+    {'proofRecordId': proofId},
+  );
 
   if (!proofOfferDetails.success) {
     return AriesResult(success: false, error: proofOfferDetails.error);
@@ -219,7 +215,7 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
     final ariesResult = AriesResult(
       success: true,
       error: proofOfferDetails.error,
-      value: ProofOfferDetails.from(resultMap, didCommMessage.value!),
+      value: ProofOfferDetails.fromMap(resultMap),
     );
 
     print('getProofOfferDetails ariesResult: $ariesResult\n\n');

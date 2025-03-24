@@ -189,7 +189,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Predicados de "${predicate.name}" solicitados:',
+                      'Predicado solicitado: [${_proofDetails!.getPredicateForName(predicate.name)?.asExpression()}]',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (predicate.error.isNotEmpty)
