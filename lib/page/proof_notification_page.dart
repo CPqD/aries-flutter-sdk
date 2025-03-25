@@ -90,6 +90,16 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
     }
   }
 
+  Widget textH2(String text) => Text(
+        text,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      );
+
+  Widget textH3(String text) => Text(
+        text,
+        style: TextStyle(fontSize: 14),
+      );
+
   Widget resultMessage({
     required bool isSuccess,
     String successText = "",
@@ -167,9 +177,8 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    textH2(
                       'Atributos de "${attribute.name}" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (attribute.error.isNotEmpty)
                       resultMessage(
@@ -186,7 +195,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           items: attribute.availableCredentials.map((credential) {
                             return DropdownMenuItem<dynamic>(
                               value: credential,
-                              child: Text(credential.getListedName()),
+                              child: textH3(credential.getListedName()),
                             );
                           }).toList(),
                           onChanged: attribute.availableCredentials.length > 1
@@ -200,8 +209,9 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                       ),
                     Text(
                       (_selectedAttributeCredentials[attribute.name]
-                              ?.attributes
-                              ?.toString() ??
+                              ?.getAttributesFromNames(_proofDetails!
+                                  .getAttributeNamesForSchema(attribute.name))
+                              .toString() ??
                           ''),
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -214,9 +224,8 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    textH2(
                       'Predicado solicitado: "${_proofDetails!.getPredicateForName(predicate.name)?.asExpression()}"',
-                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (predicate.error.isNotEmpty)
                       resultMessage(
@@ -233,7 +242,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           items: predicate.availableCredentials.map((credential) {
                             return DropdownMenuItem<dynamic>(
                               value: credential,
-                              child: Text(credential.getListedName()),
+                              child: textH3(credential.getListedName()),
                             );
                           }).toList(),
                           onChanged: predicate.availableCredentials.length > 1

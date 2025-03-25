@@ -50,6 +50,16 @@ class RequestedAttribute {
     return "Credencial '$schemaName' $schemaVersion";
   }
 
+  Map<String, dynamic> getAttributesFromNames(List<String> attributeNames) {
+    Map<String, dynamic> result = {};
+
+    for (final attributeName in attributeNames) {
+      result[attributeName] = attributes?[attributeName];
+    }
+
+    return result;
+  }
+
   @override
   String toString() {
     return 'RequestedAttribute{'
