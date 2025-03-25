@@ -127,6 +127,7 @@ class JsonConverter {
                 "credentialDefinitionId" to requestedPredicate.credentialInfo?.credentialDefinitionId,
                 "attributes" to requestedPredicate.credentialInfo?.attributes,
                 "revoked" to requestedPredicate.revoked,
+                "predicateError" to ""
             )
         }
 

@@ -4,7 +4,6 @@ import androidx.lifecycle.lifecycleScope
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.annotation.NonNull
 import br.org.serpro.did_agent.utils.CredentialUtils
 import br.org.serpro.did_agent.utils.JsonConverter
 import br.org.serpro.did_agent.utils.ProofUtils
@@ -16,24 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
-import org.hyperledger.ariesframework.agent.MessageSerializer
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
-import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
 import org.hyperledger.ariesframework.credentials.models.CredentialState
-import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
-import org.hyperledger.ariesframework.proofs.messages.v2.RequestPresentationMessageV2
-import org.hyperledger.ariesframework.proofs.models.ProofRequest
 import org.hyperledger.ariesframework.proofs.models.ProofState
-import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import java.io.File
 import kotlin.Exception
 

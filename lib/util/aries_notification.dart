@@ -33,7 +33,7 @@ final class AriesNotification {
   factory AriesNotification.fromCredentialOffer(CredentialExchangeRecord credOffer) {
     return AriesNotification(
       id: credOffer.id,
-      title: 'Oferta de Credential Recebida',
+      title: 'Oferta de Credencial Recebida',
       type: NotificationType.credentialOffer,
       receivedAt: credOffer.createdAt ?? DateTime.now(),
       onAccept: ([params]) async {

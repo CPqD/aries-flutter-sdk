@@ -1,6 +1,7 @@
 package br.org.serpro.did_agent.utils
 
 import android.util.Log
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.MessageSerializer
@@ -9,11 +10,19 @@ import org.hyperledger.ariesframework.proofs.messages.v2.RequestPresentationMess
 import org.hyperledger.ariesframework.proofs.models.ProofRequest
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
+import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
+import org.hyperledger.ariesframework.proofs.models.RetrievedCredentials
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
+import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
 class ProofUtils {
     companion object {
-        suspend fun acceptRequest(agent: Agent, proofRecordId: String, selectedCredentialsAttributes: Map<String, String>, selectedCredentialsPredicates: Map<String, String>): ProofExchangeRecord {
+        suspend fun acceptRequest(
+            agent: Agent,
+            proofRecordId: String,
+            selectedCredentialsAttributes: Map<String, String>,
+            selectedCredentialsPredicates: Map<String, String>
+        ): ProofExchangeRecord {
             val retrievedCredentials = agent.proofs.getRequestedCredentialsForProofRequest(proofRecordId)
             Log.e("MainActivity","acceptProofOffer - retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes}")
             Log.e("MainActivity","acceptProofOffer - retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates}")
@@ -65,35 +74,18 @@ class ProofUtils {
             return proofOffersList
         }
 
-        suspend fun getDetails(agent: Agent, proofRecordId: String): Triple<MutableList<Map<String, Any?>>, MutableList<Map<String, Any?>>, String> {
+        suspend fun getDetails(
+            agent: Agent,
+            proofRecordId: String
+        ): Triple<MutableList<Map<String, Any?>>, MutableList<Map<String, Any?>>, String> {
             val attributesList = mutableListOf<Map<String, Any?>>()
             val predicatesList = mutableListOf<Map<String, Any?>>()
-            val proofRequestJson: String
 
-            val recordMessageType = agent.didCommMessageRepository.getSingleByQuery("{\"associatedRecordId\": \"$proofRecordId\"}")
+            val recordMessageType = agent.didCommMessageRepository.getSingleByQuery(
+                "{\"associatedRecordId\": \"$proofRecordId\"}"
+            )
 
-            if (recordMessageType.message.contains("/2.0/")) {
-                val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(
-                    proofRecordId,
-                    RequestPresentationMessageV2.type,
-                )
-
-                val proofRequestMessage =
-                    MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessageV2
-
-                proofRequestJson = proofRequestMessage.indyProofRequest()
-            } else {
-                val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(
-                    proofRecordId,
-                    RequestPresentationMessage.type,
-                )
-
-                val proofRequestMessage =
-                    MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
-
-                proofRequestJson = proofRequestMessage.indyProofRequest()
-            }
-
+            val proofRequestJson = getProofRequestJson(agent, proofRecordId, recordMessageType)
             Log.d("MainActivity", "proofRequestJson: $proofRequestJson")
 
             val proofRequest = Json.decodeFromString<ProofRequest>(proofRequestJson)
@@ -148,8 +140,11 @@ class ProofUtils {
                     errorMsg = "Não há nenhuma credencial relacionada a '$predicateName'."
                 }
 
-                val nonRevoked = predicateArray.filter { pred -> pred.revoked != true }
-                if (errorMsg.isEmpty() && nonRevoked.isEmpty()) {
+                val availableCredentials = predicateArray
+                    .filter { pred -> pred.revoked != true }
+                    .map { pred -> credentialPredicateValidation(agent, predicateName, pred, proofRequestJson) }
+
+                if (errorMsg.isEmpty() && availableCredentials.isEmpty()) {
                     errorMsg =
                         "Não há nenhuma credencial não revogada relacionada a '$predicateName'."
                 }
@@ -158,9 +153,7 @@ class ProofUtils {
                     mapOf(
                         "error" to errorMsg,
                         "name" to predicateName,
-                        "availableCredentials" to JsonConverter.toRequestedPredicatesList(
-                            nonRevoked
-                        )
+                        "availableCredentials" to availableCredentials
                     )
                 )
             }
@@ -168,19 +161,68 @@ class ProofUtils {
             Log.d("MainActivity", "attributesList: $attributesList")
             Log.d("MainActivity", "predicatesList: $predicatesList")
 
-//            val requestedCredentials = agent.proofService.autoSelectCredentialsForProofRequest(retrievedCredentials)
-//
-//            Log.d("MainActivity", "requestedCredentials: $requestedCredentials")
-//
-//            val proof = runBlocking {
-//                agent.proofService.createProof(
-//                    proofRequestJson,
-//                    requestedCredentials
-//                )
-//            }
-//            Log.d("MainActivity", "proof: $proof")
-
             return Triple(attributesList, predicatesList, proofRequestJson)
+        }
+
+        private suspend fun credentialPredicateValidation(
+            agent: Agent,
+            predicateName: String,
+            requestedPredicate: RequestedPredicate,
+            proofRequestJson: String
+        ): Map<String, Any?> {
+            Log.d("MainActivity", "credentialPredicateValidation for $predicateName")
+
+            var predicateError = ""
+            val requestedCredentials = RequestedCredentials()
+
+            requestedCredentials.requestedPredicates[predicateName] = requestedPredicate
+
+            try {
+                agent.proofService.createProof(
+                    proofRequestJson,
+                    requestedCredentials
+                )
+
+                Log.d("MainActivity", "proofService.createProof OK")
+
+            } catch (e: Exception) {
+                Log.d("MainActivity", "proofService.createProof ERROR: $e")
+
+                predicateError = e.toString()
+            }
+
+            val resultMap = JsonConverter.toMap(requestedPredicate).toMutableMap()
+            resultMap["predicateError"] = predicateError
+
+            return resultMap
+        }
+
+        private suspend fun getProofRequestJson(
+            agent: Agent,
+            proofRecordId: String,
+            recordMessageType: DidCommMessageRecord
+        ): String {
+            if (recordMessageType.message.contains("/2.0/")) {
+                val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(
+                    proofRecordId,
+                    RequestPresentationMessageV2.type,
+                )
+
+                val proofRequestMessage =
+                    MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessageV2
+
+                return proofRequestMessage.indyProofRequest()
+            } else {
+                val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(
+                    proofRecordId,
+                    RequestPresentationMessage.type,
+                )
+
+                val proofRequestMessage =
+                    MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
+
+                return proofRequestMessage.indyProofRequest()
+            }
         }
     }
 }
