@@ -90,6 +90,45 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
     }
   }
 
+  Widget textH2(String text) => Text(
+        text,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      );
+
+  Widget textH3(String text) => Text(
+        text,
+        style: TextStyle(fontSize: 14),
+      );
+
+  Widget resultMessage({
+    required bool isSuccess,
+    String successText = "",
+    String errorText = "",
+    String generalText = "",
+  }) {
+    String text = generalText;
+
+    if (generalText.isEmpty) {
+      text = isSuccess ? successText : errorText;
+    }
+
+    return Row(children: [
+      SizedBox(width: 4),
+      Icon(
+        isSuccess ? Icons.check : Icons.close,
+        color: isSuccess ? Colors.green : Colors.red,
+      ),
+      SizedBox(width: 4),
+      Text(
+        text,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: isSuccess ? Colors.green : Colors.red,
+        ),
+      ),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -138,17 +177,13 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    textH2(
                       'Atributos de "${attribute.name}" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (attribute.error.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          attribute.error.toString(),
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      resultMessage(
+                        isSuccess: false,
+                        errorText: attribute.error.toString(),
                       ),
                     if (attribute.availableCredentials.isNotEmpty)
                       SizedBox(
@@ -160,7 +195,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           items: attribute.availableCredentials.map((credential) {
                             return DropdownMenuItem<dynamic>(
                               value: credential,
-                              child: Text(credential.getListedName()),
+                              child: textH3(credential.getListedName()),
                             );
                           }).toList(),
                           onChanged: attribute.availableCredentials.length > 1
@@ -174,8 +209,9 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                       ),
                     Text(
                       (_selectedAttributeCredentials[attribute.name]
-                              ?.attributes
-                              ?.toString() ??
+                              ?.getAttributesFromNames(_proofDetails!
+                                  .getAttributeNamesForSchema(attribute.name))
+                              .toString() ??
                           ''),
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -188,17 +224,13 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Predicado solicitado: [${_proofDetails!.getPredicateForName(predicate.name)?.asExpression()}]',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    textH2(
+                      'Predicado solicitado: "${_proofDetails!.getPredicateForName(predicate.name)?.asExpression()}"',
                     ),
                     if (predicate.error.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          predicate.error.toString(),
-                          style: TextStyle(color: Colors.red),
-                        ),
+                      resultMessage(
+                        isSuccess: false,
+                        errorText: predicate.error.toString(),
                       ),
                     if (predicate.availableCredentials.isNotEmpty)
                       SizedBox(
@@ -210,7 +242,7 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                           items: predicate.availableCredentials.map((credential) {
                             return DropdownMenuItem<dynamic>(
                               value: credential,
-                              child: Text(credential.getListedName()),
+                              child: textH3(credential.getListedName()),
                             );
                           }).toList(),
                           onChanged: predicate.availableCredentials.length > 1
@@ -222,18 +254,20 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                               : null,
                         ),
                       ),
-                    Text(
-                      (_selectedPredicateCredentials[predicate.name]
-                              ?.attributes
-                              ?.toString() ??
-                          ''),
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    if (predicate.availableCredentials.isNotEmpty)
+                      resultMessage(
+                        isSuccess: _selectedPredicateCredentials[predicate.name]
+                                ?.predicateError
+                                .isEmpty ??
+                            false,
+                        successText: "Requisito atendido",
+                        errorText: "Requisito não atendido",
+                      ),
                     SizedBox(height: 32),
                   ],
                 );
               }),
-            if (_canBeApproved)
+            if (canBeApproved())
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -288,5 +322,11 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
         ),
       ),
     );
+  }
+
+  bool canBeApproved() {
+    return (_canBeApproved &&
+        !_selectedPredicateCredentials.values
+            .any((predicate) => predicate.predicateError.isNotEmpty));
   }
 }

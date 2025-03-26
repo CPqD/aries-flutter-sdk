@@ -3,6 +3,7 @@ class RequestedPredicate {
   final String? schemaId;
   final String? credentialDefinitionId;
   final Map<String, String>? attributes;
+  final String predicateError;
   final bool revoked;
 
   RequestedPredicate({
@@ -10,6 +11,7 @@ class RequestedPredicate {
     required this.schemaId,
     required this.credentialDefinitionId,
     required this.attributes,
+    required this.predicateError,
     this.revoked = false,
   });
 
@@ -19,6 +21,7 @@ class RequestedPredicate {
       schemaId: map["schemaId"].toString(),
       credentialDefinitionId: map["credentialDefinitionId"].toString(),
       attributes: Map<String, String>.from(map["attributes"] ?? {}),
+      predicateError: map["predicateError"] ?? "",
       revoked: map["revoked"] == true,
     );
   }

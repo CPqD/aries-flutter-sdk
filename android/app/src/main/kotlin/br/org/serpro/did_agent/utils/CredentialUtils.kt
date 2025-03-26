@@ -1,0 +1,86 @@
+package br.org.serpro.did_agent.utils
+
+import android.util.Log
+import org.hyperledger.ariesframework.agent.Agent
+import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
+import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
+import org.hyperledger.ariesframework.credentials.models.CredentialState
+import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
+import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
+
+class CredentialUtils {
+    companion object {
+        suspend fun acceptOffer(agent: Agent, credentialRecordId: String, protocolVersion: String): CredentialExchangeRecord {
+            val acceptOfferOption = AcceptOfferOptions(
+                credentialRecordId = credentialRecordId,
+                autoAcceptCredential = AutoAcceptCredential.Always
+            )
+
+            if (protocolVersion == "v2") {
+                return agent.credentialsV2.acceptOffer(acceptOfferOption)
+            }
+
+            return agent.credentials.acceptOffer(acceptOfferOption)
+        }
+
+        suspend fun declineOffer(agent: Agent, credentialRecordId: String, protocolVersion: String): CredentialExchangeRecord {
+            val acceptOfferOption = AcceptOfferOptions(
+                credentialRecordId = credentialRecordId,
+                autoAcceptCredential = AutoAcceptCredential.Never
+            )
+
+            if (protocolVersion == "v2") {
+                return agent.credentialsV2.declineOffer(acceptOfferOption)
+            }
+
+            return agent.credentials.declineOffer(acceptOfferOption)
+        }
+
+        suspend fun getAllAsMaps(agent: Agent): List<Map<String, Any?>> {
+            val credentials = agent.credentialRepository.getAll()
+
+            Log.d("MainActivity", "credentials: ${credentials.toString()}")
+
+//          TODO - remove
+            for (credential in credentials) {
+                Log.d("MainActivity", "credential: ${credential.credentialId} - comment=${credential.revocationNotification?.comment} date=${credential.revocationNotification?.revocationDate}")
+            }
+
+            val credentialsList = mutableListOf<Map<String, Any?>>()
+
+            for (credential in credentials) {
+                credentialsList.add(JsonConverter.toMap(credential))
+            }
+
+            return credentialsList
+        }
+
+        suspend fun getDetails(agent: Agent, credentialId: String): Map<String, Any?>? {
+            val credential: CredentialRecord
+
+            try {
+                credential = agent.credentialRepository.getById(credentialId)
+            } catch (e: Exception) {
+                return null
+            }
+
+            Log.d("MainActivity", "credential: $credential")
+
+            return JsonConverter.toMap(credential)
+        }
+
+        suspend fun getOffersByState(agent: Agent, state: CredentialState): List<Map<String, Any?>> {
+            val credentialsReceived = agent.credentialExchangeRepository.findByQuery("{\"state\": \"${state}\"}")
+
+            Log.d("MainActivity", "credentialsReceived size: ${credentialsReceived.size}")
+
+            val credentialsOffersList = mutableListOf<Map<String, Any?>>()
+
+            for (credentialExchangeRecord in credentialsReceived) {
+                credentialsOffersList.add(JsonConverter.toMap(credentialExchangeRecord))
+            }
+
+            return credentialsOffersList
+        }
+    }
+}
