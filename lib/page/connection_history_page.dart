@@ -1,11 +1,9 @@
 import 'package:did_agent/global.dart';
-
+import 'package:did_agent/page/credential_notification_page.dart';
+import 'package:did_agent/page/proof_notification_page.dart';
 import 'package:flutter/material.dart';
 
 import '../util/aries_connection_history.dart';
-
-import 'credential_history_page.dart';
-import 'proof_history_page.dart';
 
 final connectionHistoryKey = GlobalKey<_ConnectionHistoryPageState>();
 
@@ -74,24 +72,49 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
                                 SizedBox(height: 8),
                                 Center(
                                   child: ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) {
-                                            if (historyItem.type ==
-                                                ConnectionHistoryType.connectionProof) {
-                                              return ProofHistoryPage(
-                                                connectionHistory: historyItem,
-                                              );
-                                            }
+                                    onPressed: () async {
+                                      Widget? newPage = null;
 
-                                            return CredentialHistoryPage(
-                                              connectionHistory: historyItem,
-                                            );
-                                          },
-                                        ),
-                                      );
+                                      if (historyItem.type ==
+                                          ConnectionHistoryType.connectionCredential) {
+                                        // IF IS PROOF
+                                        final notifications = await getNotifications();
+
+                                        final notification = notifications.firstWhere(
+                                          (x) => x.id == historyItem.id,
+                                        );
+
+                                        newPage = CredentialNotificationPage(
+                                          notification: notification,
+                                        );
+
+                                        // TODO - when is not proof
+                                      } else if (historyItem.type ==
+                                          ConnectionHistoryType.connectionProof) {
+                                        // IF IS PROOF
+                                        final notifications = await getNotifications();
+
+                                        final notification = notifications.firstWhere(
+                                          (x) => x.id == historyItem.id,
+                                        );
+
+                                        newPage = ProofNotificationPage(
+                                          notification: notification,
+                                        );
+
+                                        // TODO - when is not proof
+                                      }
+
+                                      if (newPage != null && mounted) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return newPage!;
+                                            },
+                                          ),
+                                        );
+                                      }
                                     },
                                     child: Text('Detalhes'),
                                   ),
