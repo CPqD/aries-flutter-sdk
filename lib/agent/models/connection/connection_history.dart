@@ -2,27 +2,26 @@ import '../credential/credential_exchange_record.dart';
 import '../proof/proof_exchange_record.dart';
 
 class ConnectionHistory {
-  final List<CredentialExchangeRecord> credentialsReceived;
-  final List<ProofExchangeRecord> proofsReceived;
+  final List<CredentialExchangeRecord> credentials;
+  final List<ProofExchangeRecord> proofs;
 
   ConnectionHistory({
-    required this.credentialsReceived,
-    required this.proofsReceived,
+    required this.credentials,
+    required this.proofs,
   });
 
   factory ConnectionHistory.from(Map<String, dynamic> map) {
     return ConnectionHistory(
-      credentialsReceived:
-          CredentialExchangeRecord.fromJson(map["credentialsReceived"].toString()),
-      proofsReceived: ProofExchangeRecord.fromJson(map["proofsReceived"].toString()),
+      credentials: CredentialExchangeRecord.fromJson(map["credentials"].toString()),
+      proofs: ProofExchangeRecord.fromJson(map["proofs"].toString()),
     );
   }
 
   @override
   String toString() {
     return 'ConnectionHistory{'
-        'credentialsReceived: $credentialsReceived, '
-        'proofsReceived: $proofsReceived'
+        'credentials: $credentials, '
+        'proofs: $proofs'
         '}';
   }
 }

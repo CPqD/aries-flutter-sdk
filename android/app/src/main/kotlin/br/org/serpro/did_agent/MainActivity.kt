@@ -26,6 +26,7 @@ import org.hyperledger.ariesframework.problemreports.messages.MediationProblemRe
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.proofs.models.ProofState
+import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 import java.io.File
 import kotlin.Exception
 
@@ -360,7 +361,7 @@ class MainActivity: FlutterFragmentActivity() {
         validateAgent()
 
         try {
-            val credentialsOffersList = runBlocking {  CredentialUtils.getOffersByState(agent!!, CredentialState.OfferReceived) }
+            val credentialsOffersList = runBlocking {  CredentialUtils.getExchangesByState(agent!!, CredentialState.OfferReceived) }
 
             result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsOffersList)))
         } catch (e: Exception) {
@@ -415,40 +416,49 @@ class MainActivity: FlutterFragmentActivity() {
         validateNotNull("ConnectionId", connectionId)
         validateAgent()
 
-        val credentialsReceived = mutableListOf<Map<String, Any?>>()
-        val proofsReceived = mutableListOf<Map<String, Any?>>()
+        val credentialsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
+        val proofsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
 
         try {
             val credentials = runBlocking {  agent!!.credentialExchangeRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
             val proofs = runBlocking {  agent!!.proofRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
 
-            if(credentials.isNotEmpty()) {
-                for (credentialExchangeRecord in credentials) {
-                    val map = JsonConverter.toMap(credentialExchangeRecord).toMutableMap()
-                    map["recordType"] = "CredentialRecord"
-                    credentialsReceived.add(map)
+            Log.d("MainActivity", "credentials: $credentials")
+            Log.d("MainActivity", "proofs: $proofs")
+
+
+            for (record in credentials) {
+                val map = JsonConverter.toMap(record).toMutableMap()
+                map["recordType"] = "CredentialRecord"
+
+                if (credentialsMap.containsKey(record.id) && record.state != CredentialState.OfferSent) {
+                    continue
                 }
+
+                credentialsMap[record.id] = map
             }
 
-            if(proofs.isNotEmpty()) {
-                for (proofExchangeRecord in proofs) {
-                    val map = JsonConverter.toMap(proofExchangeRecord).toMutableMap()
-                    map["recordType"] = "ProofExchangeRecord"
-                    proofsReceived.add(map)
+            for (record in proofs) {
+                val map = JsonConverter.toMap(record).toMutableMap()
+                map["recordType"] = "ProofExchangeRecord"
+
+                if (proofsMap.containsKey(record.id) && record.state != ProofState.RequestSent) {
+                    continue
                 }
+
+                proofsMap[record.id] = map
             }
 
-            Log.d("MainActivity", "credentialsReceived: ${credentialsReceived.toString()}")
-            Log.d("MainActivity", "proofsReceived: ${proofsReceived.toString()}")
+            Log.d("MainActivity", "credentialsMap: $credentialsMap")
+            Log.d("MainActivity", "proofsMap: $proofsMap")
 
             val jsonResult = mapOf(
-                "credentialsReceived" to JsonConverter.toJson(credentialsReceived),
-                "proofsReceived" to JsonConverter.toJson(proofsReceived)
+                "credentials" to JsonConverter.toJson(credentialsMap.values),
+                "proofs" to JsonConverter.toJson(proofsMap.values)
             )
-            Log.d("MainActivity", "jsonResult: ${jsonResult.toString()}")
+            Log.d("MainActivity", "jsonResult: $jsonResult")
             
             result.success(mapOf("error" to "", "result" to jsonResult))
-
         } catch (e: Exception) {
             Log.e("MainActivity", "Cannot get getConnectionHistory: ${e.message}")
             result.error("1", "Cannot get getConnectionHistory: ${e.message}", null)
@@ -482,7 +492,6 @@ class MainActivity: FlutterFragmentActivity() {
             return
         }
     }
-
 
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")

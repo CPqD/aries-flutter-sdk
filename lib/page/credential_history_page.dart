@@ -18,7 +18,7 @@ class CredentialHistoryPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<AriesResult>(
-          future: getDidCommMessage(connectionHistory.id),
+          future: getLatestDidCommMessage(connectionHistory.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());

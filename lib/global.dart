@@ -67,13 +67,14 @@ Future<void> updateConnectionHistory(String connectionId) async {
 
     print("connectionHistoryResult");
     print(connectionHistoryResult.value.toString());
+
     if (connectionHistoryResult.success && connectionHistoryResult.value != null) {
-      if (connectionHistoryResult.value!.credentialsReceived.isNotEmpty) {
-        for (var credential in connectionHistoryResult.value!.credentialsReceived) {
+      if (connectionHistoryResult.value!.credentials.isNotEmpty) {
+        for (var credential in connectionHistoryResult.value!.credentials) {
           updatedConnectionHistory
               .add(AriesConnectionHistory.fromConnectionCredential(credential));
         }
-        for (var proof in connectionHistoryResult.value!.proofsReceived) {
+        for (var proof in connectionHistoryResult.value!.proofs) {
           updatedConnectionHistory.add(AriesConnectionHistory.fromConnectionProof(proof));
         }
       }
