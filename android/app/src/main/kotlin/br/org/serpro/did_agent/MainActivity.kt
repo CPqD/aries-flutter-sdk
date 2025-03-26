@@ -192,6 +192,15 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1","Erro ao processar o methodchannel removeConnection: "+e.toString(),null)
                     }
                 }
+                "getConnectionHistory" -> {
+                    try {
+                        val connectionId = call.argument<String>("connectionId")
+            
+                        getConnectionHistory(connectionId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getConnectionHistory: " + e.toString(), null)
+                    }
+                }
                 
                 else -> result.notImplemented()
             }
@@ -399,6 +408,53 @@ class MainActivity: FlutterFragmentActivity() {
             return
         }
     }
+
+    private fun getConnectionHistory(connectionId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "getConnectionHistory called from Kotlin...")
+
+        validateNotNull("ConnectionId", connectionId)
+        validateAgent()
+
+        val credentialsReceived = mutableListOf<Map<String, Any?>>()
+        val proofsReceived = mutableListOf<Map<String, Any?>>()
+
+        try {
+            val credentials = runBlocking {  agent!!.credentialExchangeRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
+            val proofs = runBlocking {  agent!!.proofRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
+
+            if(credentials.isNotEmpty()) {
+                for (credentialExchangeRecord in credentials) {
+                    val map = JsonConverter.toMap(credentialExchangeRecord).toMutableMap()
+                    map["recordType"] = "CredentialRecord"
+                    credentialsReceived.add(map)
+                }
+            }
+
+            if(proofs.isNotEmpty()) {
+                for (proofExchangeRecord in proofs) {
+                    val map = JsonConverter.toMap(proofExchangeRecord).toMutableMap()
+                    map["recordType"] = "ProofExchangeRecord"
+                    proofsReceived.add(map)
+                }
+            }
+
+            Log.d("MainActivity", "credentialsReceived: ${credentialsReceived.toString()}")
+            Log.d("MainActivity", "proofsReceived: ${proofsReceived.toString()}")
+
+            val jsonResult = mapOf(
+                "credentialsReceived" to JsonConverter.toJson(credentialsReceived),
+                "proofsReceived" to JsonConverter.toJson(proofsReceived)
+            )
+            Log.d("MainActivity", "jsonResult: ${jsonResult.toString()}")
+            
+            result.success(mapOf("error" to "", "result" to jsonResult))
+
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get getConnectionHistory: ${e.message}")
+            result.error("1", "Cannot get getConnectionHistory: ${e.message}", null)
+            return
+        }
+    }    
 
     private fun getDidCommMessage(associatedRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "getDidCommMessage called from Kotlin...")

@@ -20,6 +20,13 @@ class NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> _refreshNotifications() async {
     await updateNotifications();
+    reload();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshNotifications();
   }
 
   @override
@@ -36,17 +43,9 @@ class NotificationsPageState extends State<NotificationsPage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return ListView(
-                children: [
-                  Center(child: Text('Erro: ${snapshot.error}')),
-                ],
-              );
+              return Center(child: Text('Erro: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return ListView(
-                children: [
-                  Center(child: Text('Nenhuma notificação disponível.')),
-                ],
-              );
+              return Center(child: Text('Nenhuma notificação disponível.'));
             } else {
               final notifications = snapshot.data!;
               return ListView.builder(

@@ -13,6 +13,8 @@ import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
 
+import '../agent/models/connection/connection_history.dart';
+
 Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
 
 Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
@@ -219,6 +221,37 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
     );
 
     print('getProofOfferDetails ariesResult: $ariesResult\n\n');
+
+    return ariesResult;
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString());
+  }
+}
+
+Future<AriesResult<ConnectionHistory?>> getConnectionHistory(String? connectionId) async {
+  print('getConnectionHistory!!\n\n');
+
+  final result = await AriesResult.invoke(
+    AriesMethod.getConnectionHistory,
+    {'connectionId': connectionId},
+  );
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error);
+  }
+
+  try {
+    final resultMap = Map<String, dynamic>.from(result.value);
+
+    final ariesResult = AriesResult(
+      success: true,
+      error: result.error,
+      value: ConnectionHistory.from(resultMap),
+    );
+
+    print('getConnectionHistory ariesResult: $ariesResult\n\n');
 
     return ariesResult;
   } catch (e) {
