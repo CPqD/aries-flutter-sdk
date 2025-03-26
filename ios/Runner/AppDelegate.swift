@@ -38,8 +38,18 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
                 self!.openWallet(flutterResult: result)
             case "getCredentials":
                 self!.getCredentials(flutterResult: result)
+            case "getCredential":
+                self!.getCredential(credentialId: (call.arguments as! [String])[0], flutterResult: result)
             case "getConnections":
                 self!.getConnections(flutterResult: result)
+            case "getCredentialsOffers":
+                self!.getCredentialsOffers(flutterResult: result)
+            case "getDidCommMessage":
+                self!.getDidCommMessage(associatedRecordId: (call.arguments as! [String])[0], flutterResult: result)
+            case "getProofOffers":
+                self!.getProofOffers(flutterResult: result)
+            case "getProofOfferDetails":
+                self!.getProofOfferDetails(proofRecordId: (call.arguments as! [String])[0], flutterResult: result)
             case "receiveInvitation":
                 self!.receiveInvitation(url: (call.arguments as! [String])[0], flutterResult: result)
             case "shutdown":
@@ -65,6 +75,7 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
         })
     }
     
+    //MARK: openWallet
     func openWallet(flutterResult : @escaping FlutterResult)  {
         let userDefaults = UserDefaults.standard
         var key = userDefaults.value(forKey:"walletKey") as? String
@@ -109,6 +120,7 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
         }
     }
     
+    //MARK: receiveInvitation
     func receiveInvitation(url: String, flutterResult : @escaping FlutterResult) {
         Task {
             do {
@@ -122,6 +134,8 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
             }
         }
     }
+    
+    //MARK: shutdown
     func shutdown(flutterResult : @escaping FlutterResult) {
         Task {
             do {
@@ -141,21 +155,27 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
             let credentials =  await agent!.credentialRepository?.getAll()
             var listCredentials : [[String : Any]] = []
             for credential in credentials ?? [] {
-                var rowDict : [String : Any] = [:]
-                rowDict["id"] = credential.id
-                rowDict["revocationId"] = credential.credentialRevocationId
-                rowDict["linkSecretId"] = credential.linkSecretId
-                rowDict["credentiald"] = credential.credential
-                rowDict["schemaId"] = credential.schemaId
-                rowDict["schemaName"] = credential.schemaName
-                rowDict["schemaVersion"] = credential.schemaVersion
-                rowDict["schemaIssuerId"] = credential.schemaIssuerId
-                rowDict["issuerId"] = credential.issuerId
-                rowDict["definitionId"] = credential.credentialDefinitionId
-                rowDict["revocationRegistryId"] = credential.revocationRegistryId
-                listCredentials.append(rowDict)
+                var rowDict = MapConverter.toMap(credential: credential)
+                
+                listCredentials.append(rowDict ?? [:])
             }
             flutterResult(listCredentials)
+        }
+    }
+    
+    
+    func getCredential(credentialId: String, flutterResult : @escaping FlutterResult) {
+        Task {
+            do{
+                let credential =  try await agent!.credentialRepository?.getById(credentialId)
+                guard let credential else {
+                    flutterResult(FlutterError.init(code: "1", message: "error: credential not found", details: nil))
+                    return
+                }
+                flutterResult(MapConverter.toMap(credential: credential))
+            } catch let error {
+                flutterResult(FlutterError.init(code: "1", message: "error: \(error)", details: nil))
+            }
         }
     }
     
@@ -166,29 +186,140 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
             print("inicio 2")
             var listCredentials : [[String : Any]] = []
             for connection in connections ?? [] {
-                var rowDict : [String : Any] = [:]
-                rowDict["id"] = connection.id
-                rowDict["state"] = connection.state.rawValue
-                rowDict["role"] = connection.role
-                rowDict["did"] = connection.did
-                rowDict["didDoc"] = connection.didDoc
-                rowDict["verkey"] = connection.verkey
-                rowDict["theirDidDoc"] = connection.theirDidDoc
-                rowDict["theirDid"] = connection.theirDid
-                rowDict["theirLabel"] = connection.theirLabel
-                rowDict["invitation"] = connection.invitation
-                rowDict["alias"] = connection.alias
-                rowDict["autoAcceptConnection"] = connection.autoAcceptConnection
-                rowDict["imageUrl"] = connection.imageUrl
-                rowDict["multiUseInvitation"] = connection.multiUseInvitation
-                rowDict["outOfBandInvitation"] = connection.outOfBandInvitation
-                rowDict["threadId"] = connection.threadId
-                rowDict["mediatorId"] = connection.mediatorId
-                rowDict["errorMessage"] = connection.errorMessage
+                var rowDict = MapConverter.toMap(connection: connection)
                 
-                listCredentials.append(rowDict)
+                listCredentials.append(rowDict ?? [:])
             }
             flutterResult(listCredentials)
+        }
+    }
+    
+    func getCredentialsOffers(flutterResult : @escaping FlutterResult) {
+        Task {
+            let credentialsOffers =  await agent!.credentialExchangeRepository?.findByQuery("{\"state\": \"\(CredentialState.OfferReceived)\"}" )
+            var listCredentials : [[String : Any]] = []
+            for credential in credentialsOffers ?? [] {
+                var rowDict = MapConverter.toMap(credentialExchangeRecord: credential)
+                
+                listCredentials.append(rowDict ?? [:])
+            }
+            flutterResult(listCredentials)
+        }
+    }
+    
+    
+    func getDidCommMessage(associatedRecordId: String, flutterResult : @escaping FlutterResult) {
+        Task {
+            do{
+                let didCommMessage =  try await agent!.didCommMessageRepository?.getSingleByQuery("{\"associatedRecordId\": \"\(associatedRecordId)\"}")
+                if (didCommMessage == nil) {
+                    flutterResult(FlutterError.init(code :"1", message: "didCommMessage not found", details: nil))
+                    return
+                }
+                flutterResult(MapConverter.toMap(didCommMessage: didCommMessage!))
+            } catch let error {
+                flutterResult(FlutterError.init(code: "1", message: "Cannot get didCommMessage: \(error)", details: nil))
+            }
+        }
+    }
+    
+    func getProofOffers(flutterResult : @escaping FlutterResult) {
+        Task {
+            print("inicio")
+            let items =  await agent!.proofRepository.findByQuery("{\"state\": \"\(ProofState.RequestReceived)\"}")
+            print("inicio 2")
+            var list : [[String : Any]] = []
+            for item in items  {
+                var rowDict = MapConverter.toMap(proofExchangeRecord: item)
+                
+                list.append(rowDict ?? [:])
+            }
+            flutterResult(list)
+        }
+    }
+    
+    func getProofOfferDetails(proofRecordId: String, flutterResult : @escaping FlutterResult) {
+        Task {
+            do{
+                var attributesList : Array<[String : Any]> = []
+                var predicatesList : Array<[String : Any]> = []
+                var proofRequestJson: String = ""
+                
+                var recordMessageType =  try await agent!.didCommMessageRepository.getSingleByQuery("{\"associatedRecordId\": \"\(proofRecordId)\"}")
+                
+                
+                //MARK: Verificar modificação
+                if(recordMessageType.message.contains("/2,0'")) {
+                    var proofRequestMessageJson = try await agent!.didCommMessageRepository.getAgentMessage(
+                        associatedRecordId: proofRecordId,
+                        messageType: RequestPresentationMessage.type
+                    )
+                    
+                    var proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as! RequestPresentationMessage
+                    proofRequestJson = try proofRequestMessage.indyProofRequest()
+                
+                } else {
+                    var proofRequestMessageJson = try await agent!.didCommMessageRepository.getAgentMessage(
+                        associatedRecordId: proofRecordId,
+                        messageType: RequestPresentationMessage.type
+                    )
+                    
+                    var proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as! RequestPresentationMessage
+                    proofRequestJson = try proofRequestMessage.indyProofRequest()
+                }
+               
+                
+                let data = proofRequestJson.data(using: .utf8)!
+                let decoder = JSONDecoder()
+                let proofRequest = try! decoder.decode(ProofRequest.self, from: data)
+                
+                var retrievedCredentials = try await agent!.proofService.getRequestedCredentialsForProofRequest(proofRequest: proofRequest)
+
+                retrievedCredentials.requestedAttributes.forEach { (key, value) in
+                    var errorMsg = ""
+                    let attrArray = retrievedCredentials.requestedAttributes[key]
+                    if ((attrArray?.count ?? 0) == 0) {
+                        errorMsg = "Não há nenhuma credencial do tipo '\(key)'."
+                    }
+                    var nonRevoked = attrArray?.filter { $0.revoked == false  }
+                    if errorMsg.isEmpty && (nonRevoked?.isEmpty ?? true) {
+                        errorMsg = "Não há nenhuma credencial não revogada do tipo '\(key)'."
+                    }
+                    
+                        
+                    attributesList.append(["error": errorMsg,
+                                           "name" : key,
+                                           "availableCredentials": MapConverter.toRequestedAttributesList(requestedAttributes: nonRevoked!)]
+                    )
+                }
+                
+                retrievedCredentials.requestedPredicates.forEach { (key, value) in
+                    var errorMsg = ""
+                    let predicateArray = retrievedCredentials.requestedPredicates[key]
+                    if ((predicateArray?.count ?? 0) == 0) {
+                        errorMsg = "Não há nenhuma credencial relacionada a '\(key)'."
+                    }
+                    var nonRevoked = predicateArray?.filter { $0.revoked == false  }
+                    if errorMsg.isEmpty && (nonRevoked?.isEmpty ?? true) {
+                        errorMsg = "Não há nenhuma credencial não revogada relacionada a '\(key)'."
+                    }
+                    
+                    predicatesList.append(["error": errorMsg,
+                                           "name" : key,
+                                           "availableCredentials": MapConverter.toRequestedPredicatesList(requestedPredicates: nonRevoked!)]
+                    )
+                   
+                }
+                
+                var dict : [String : Any] = [:]
+                dict["attributes"] = attributesList
+                dict["predicates"] = predicatesList
+                dict["proofRequest"] = proofRequestJson
+                flutterResult(dict)
+                
+            }catch let error {
+                flutterResult(FlutterError.init(code: "1", message: "Cannot get getProofOfferDetails: \(error)", details: nil))
+            }
         }
     }
     
@@ -303,11 +434,25 @@ let invitationUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoi
             }
         }
     }
-
+    
     
 }
 
 extension AppDelegate : AgentDelegate{
+    
+    func onCredentialStateV2Changed(credentialRecord: AriesFramework.CredentialExchangeRecord) {
+        sendCredentialEventToFlutter(id: credentialRecord.id, state: credentialRecord.state.rawValue)
+    }
+    
+    func onRevocationNotificationChanged(credentialExchangeRecord: AriesFramework.CredentialExchangeRecord) {
+    }
+    
+    func onRevocationNotificationV2Changed(credentialExchangeRecord: AriesFramework.CredentialExchangeRecord) {
+    }
+    
+    func onBasicMessageChanged(content: String) {
+    }
+    
     func onCredentialStateChanged(credentialRecord: CredentialExchangeRecord) {
         
         sendCredentialEventToFlutter(id: credentialRecord.id, state: credentialRecord.state.rawValue)
@@ -324,7 +469,7 @@ extension AppDelegate : AgentDelegate{
     func onProblemReportReceived(message: BaseProblemReportMessage){
         
     }
-
+    
     func onProofStateChanged(proofRecord: ProofExchangeRecord) {
         sendProofReceivedToFlutter(id: proofRecord.id, state: proofRecord.state.rawValue)
     }
