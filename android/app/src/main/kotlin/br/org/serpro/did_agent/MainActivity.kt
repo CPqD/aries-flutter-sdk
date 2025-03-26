@@ -26,7 +26,6 @@ import org.hyperledger.ariesframework.problemreports.messages.MediationProblemRe
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.proofs.models.ProofState
-import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 import java.io.File
 import kotlin.Exception
 
@@ -100,6 +99,14 @@ class MainActivity: FlutterFragmentActivity() {
                         getDidCommMessage(associatedRecordId, result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getDidCommMessage: " + e.toString(), null)
+                    }
+                }
+                "getDidCommMessagesByRecord" -> {
+                    try {
+                        val associatedRecordId = call.argument<String>("associatedRecordId")
+                        getDidCommMessagesByRecord(associatedRecordId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getDidCommMessageSent: " + e.toString(), null)
                     }
                 }
                 "getProofOffers" -> {
@@ -196,13 +203,13 @@ class MainActivity: FlutterFragmentActivity() {
                 "getConnectionHistory" -> {
                     try {
                         val connectionId = call.argument<String>("connectionId")
-            
+
                         getConnectionHistory(connectionId, result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getConnectionHistory: " + e.toString(), null)
                     }
                 }
-                
+
                 else -> result.notImplemented()
             }
         }
@@ -457,14 +464,14 @@ class MainActivity: FlutterFragmentActivity() {
                 "proofs" to JsonConverter.toJson(proofsMap.values)
             )
             Log.d("MainActivity", "jsonResult: $jsonResult")
-            
+
             result.success(mapOf("error" to "", "result" to jsonResult))
         } catch (e: Exception) {
             Log.e("MainActivity", "Cannot get getConnectionHistory: ${e.message}")
             result.error("1", "Cannot get getConnectionHistory: ${e.message}", null)
             return
         }
-    }    
+    }
 
     private fun getDidCommMessage(associatedRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "getDidCommMessage called from Kotlin...")
@@ -489,6 +496,33 @@ class MainActivity: FlutterFragmentActivity() {
         } catch (e: Exception) {
             Log.e("MainActivity", "Cannot get didCommMessage: ${e.message}")
             result.error("1", "Cannot get didCommMessage: ${e.message}", null)
+            return
+        }
+    }
+
+    private fun getDidCommMessagesByRecord(associatedRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "getDidCommMessagesByRecord called from Kotlin...")
+
+        validateAgent()
+        validateNotNull("AssociatedRecordId", associatedRecordId)
+
+        try {
+            val didCommMessagesList = mutableListOf<Map<String, Any?>>()
+
+            val didCommMessages = runBlocking {
+                agent!!.didCommMessageRepository.findByQuery("{\"associatedRecordId\": \"$associatedRecordId\"}")
+            }
+
+            for (didCommMessage in didCommMessages) {
+                Log.d("MainActivity", "didCommMessage: $didCommMessage")
+
+                didCommMessagesList.add(JsonConverter.toMap(didCommMessage))
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(didCommMessagesList)))
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get DidCommMessageSent: ${e.message}")
+            result.error("1", "Cannot get DidCommMessageSent: ${e.message}", null)
             return
         }
     }
@@ -682,7 +716,7 @@ class MainActivity: FlutterFragmentActivity() {
             } catch (e: Exception) {
                 Log.e("MainActivity","Failed to decline a proof: ${e.localizedMessage}")
 
-                result.error("1", e.message, null)         
+                result.error("1", e.message, null)
             }
         }
     }

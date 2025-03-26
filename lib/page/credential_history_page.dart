@@ -1,4 +1,5 @@
 import 'package:did_agent/agent/aries_result.dart';
+import 'package:did_agent/agent/models/credential/credential_preview.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
 import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/utils.dart';
@@ -18,7 +19,7 @@ class CredentialHistoryPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<AriesResult>(
-          future: getLatestDidCommMessage(connectionHistory.id),
+          future: getDidCommMessagesByRecord(connectionHistory.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
@@ -27,10 +28,18 @@ class CredentialHistoryPage extends StatelessWidget {
             } else if (!snapshot.hasData || !snapshot.data!.success) {
               return Center(child: Text('Nenhum dado disponível.'));
             } else {
-              final DidCommMessageRecord message = snapshot.data!.value;
-              final attributes = message.getCredentialPreview().attributes;
+              final List<DidCommMessageRecord> messages = snapshot.data!.value;
 
-              print('message.getProofPreview: ${message.getProofPreview()}');
+              CredentialPreview? credentialPreview;
+
+              for (final currentMessage in messages) {
+                if (currentMessage.getCredentialPreview() != null) {
+                  credentialPreview = currentMessage.getCredentialPreview();
+                  break;
+                }
+              }
+
+              final attributes = credentialPreview?.attributes ?? [];
 
               return SingleChildScrollView(
                 child: Column(

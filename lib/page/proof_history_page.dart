@@ -1,6 +1,8 @@
+import 'package:did_agent/agent/models/did_comm_message_record.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
+import 'package:did_agent/agent/models/proof/proof_preview.dart';
 import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +33,23 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
 
   Future<void> _loadData() async {
     try {
+      final didCommMessagesResult =
+          await getDidCommMessagesByRecord(widget.connectionHistory.id);
+
+      final didCommMessages =
+          didCommMessagesResult.value ?? [] as List<DidCommMessageRecord>;
+
+      ProofPreview? proofPreview;
+
+      for (final didCommMessage in didCommMessages) {
+        if (didCommMessage.getProofPreview() != null) {
+          proofPreview = didCommMessage.getProofPreview()!;
+          break;
+        }
+      }
+
+      print('--> proofPreview: ${proofPreview?.toString()}');
+
       final proofOfferResult = await getProofOfferDetails(widget.connectionHistory.id);
 
       print('proofOfferResult: ${proofOfferResult.value.toString()}');

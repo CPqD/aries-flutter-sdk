@@ -197,6 +197,32 @@ Future<AriesResult<DidCommMessageRecord?>> getDidCommMessage(
   }
 }
 
+Future<AriesResult<List<DidCommMessageRecord>>> getDidCommMessagesByRecord(
+    String associatedRecordId) async {
+  final result = await AriesResult.invoke(
+      AriesMethod.getDidCommMessagesByRecord, {'associatedRecordId': associatedRecordId});
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error, value: []);
+  }
+
+  try {
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    final originalList = List<Map<String, dynamic>>.from(jsonList);
+
+    return AriesResult(
+      success: true,
+      error: result.error,
+      value: originalList.map((map) => DidCommMessageRecord.fromMap(map)).toList(),
+    );
+  } catch (e) {
+    print('failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString(), value: []);
+  }
+}
+
 Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) async {
   print('getProofOfferDetails!!\n\n');
 

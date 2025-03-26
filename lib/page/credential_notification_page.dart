@@ -29,9 +29,7 @@ class CredentialNotificationPage extends StatelessWidget {
               return Center(child: Text('Nenhuma mensagem disponível.'));
             } else {
               final DidCommMessageRecord message = snapshot.data!.value;
-              final attributes = message.getCredentialPreview().attributes;
-
-              print('message.getProofPreview: ${message.getProofPreview()}');
+              final attributes = message.getCredentialPreview()?.attributes ?? [];
 
               return SingleChildScrollView(
                 child: Column(

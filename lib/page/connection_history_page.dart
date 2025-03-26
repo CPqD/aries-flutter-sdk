@@ -1,5 +1,11 @@
+import 'package:did_agent/agent/enums/credential_state.dart';
+import 'package:did_agent/agent/enums/proof_state.dart';
+import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
+import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 import 'package:did_agent/global.dart';
+import 'package:did_agent/page/credential_history_page.dart';
 import 'package:did_agent/page/credential_notification_page.dart';
+import 'package:did_agent/page/proof_history_page.dart';
 import 'package:did_agent/page/proof_notification_page.dart';
 import 'package:flutter/material.dart';
 
@@ -75,34 +81,49 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
                                     onPressed: () async {
                                       Widget? newPage = null;
 
+                                      print('historyItem: $historyItem');
+
                                       if (historyItem.type ==
                                           ConnectionHistoryType.connectionCredential) {
-                                        // IF IS PROOF
-                                        final notifications = await getNotifications();
+                                        final credExchangeRecord = historyItem.record
+                                            as CredentialExchangeRecord;
 
-                                        final notification = notifications.firstWhere(
-                                          (x) => x.id == historyItem.id,
-                                        );
+                                        if (CredentialState.done
+                                            .equals(credExchangeRecord.state)) {
+                                          newPage = CredentialHistoryPage(
+                                            connectionHistory: historyItem,
+                                          );
+                                        } else {
+                                          final notifications = await getNotifications();
 
-                                        newPage = CredentialNotificationPage(
-                                          notification: notification,
-                                        );
+                                          final notification = notifications.firstWhere(
+                                            (x) => x.id == historyItem.id,
+                                          );
 
-                                        // TODO - when is not proof
+                                          newPage = CredentialNotificationPage(
+                                            notification: notification,
+                                          );
+                                        }
                                       } else if (historyItem.type ==
                                           ConnectionHistoryType.connectionProof) {
-                                        // IF IS PROOF
-                                        final notifications = await getNotifications();
+                                        final proofExchangeRecord =
+                                            historyItem.record as ProofExchangeRecord;
 
-                                        final notification = notifications.firstWhere(
-                                          (x) => x.id == historyItem.id,
-                                        );
+                                        if (ProofState.done
+                                            .equals(proofExchangeRecord.state)) {
+                                          newPage = ProofHistoryPage(
+                                              connectionHistory: historyItem);
+                                        } else {
+                                          final notifications = await getNotifications();
 
-                                        newPage = ProofNotificationPage(
-                                          notification: notification,
-                                        );
+                                          final notification = notifications.firstWhere(
+                                            (x) => x.id == historyItem.id,
+                                          );
 
-                                        // TODO - when is not proof
+                                          newPage = ProofNotificationPage(
+                                            notification: notification,
+                                          );
+                                        }
                                       }
 
                                       if (newPage != null && mounted) {
