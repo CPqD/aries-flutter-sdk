@@ -18,11 +18,10 @@ class ConnectionHistoryPage extends StatefulWidget {
   final ConnectionRecord? connection;
   final String title;
 
-  const ConnectionHistoryPage({
-    super.key,
+  ConnectionHistoryPage({
     this.connection,
     this.title = 'Histórico',
-  });
+  }) : super(key: connectionHistoryKey);
 
   @override
   State<ConnectionHistoryPage> createState() => _ConnectionHistoryPageState();
@@ -36,38 +35,18 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _refreshHistory();
+    refreshHistory();
   }
 
-  void reload() {
-    setState(() {});
-  }
-
-  Future<void> _refreshHistory() async {
-    if (widget.connection != null) {
+  Future<void> refreshHistory() async {
+    if (widget.connection != null && mounted) {
       await updateConnectionHistory(widget.connection!);
     }
 
-    final history = await getConnectionHistoryList();
-    setState(() {
-      _history = history;
-    });
-  }
-
-  void _sendMessage() {
-    final message = _chatController.text.trim();
-    if (message.isNotEmpty) {
+    if (mounted) {
+      final history = await getConnectionHistoryList();
       setState(() {
-        _history.add(
-          AriesConnectionHistory(
-            id: 'message-${_history.length}',
-            title: message,
-            createdAt: DateTime.now(),
-            type: ConnectionHistoryType.messageSent,
-            record: null,
-          ),
-        );
-        _chatController.clear();
+        _history = history;
       });
     }
   }
@@ -118,95 +97,68 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
       body: Column(
         children: [
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: _refreshHistory,
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _history.length,
-                reverse: true,
-                itemBuilder: (context, index) {
-                  final historyItem = _history[index];
-                  return GestureDetector(
-                    onTap: () => _onMessageTap(historyItem),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                      child: Align(
-                        alignment: historyItem.wasSent()
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          padding: const EdgeInsets.all(12.0),
-                          decoration: BoxDecoration(
-                            color: historyItem.wasSent()
-                                ? Colors.blue[200]
-                                : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                historyItem.title,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: _history.length,
+              reverse: true,
+              itemBuilder: (context, index) {
+                final historyItem = _history[index];
+                return GestureDetector(
+                  onTap: () => _onMessageTap(historyItem),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                    child: Align(
+                      alignment: historyItem.wasSent()
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.all(12.0),
+                        decoration: BoxDecoration(
+                          color:
+                              historyItem.wasSent() ? Colors.blue[200] : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              historyItem.title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
-                              Text(
-                                historyItem.createdAt.toLocal().toString(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.black54,
-                                ),
+                            ),
+                            Text(
+                              historyItem.createdAt.toLocal().toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black54,
                               ),
-                              if (historyItem.type ==
-                                      ConnectionHistoryType.connectionCredential ||
-                                  historyItem.type ==
-                                      ConnectionHistoryType.connectionProof)
-                                SizedBox(
-                                  width: 200,
-                                  child: ElevatedButton(
-                                    onPressed: () => _onMessageTap(historyItem),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      minimumSize: const Size(80, 36),
-                                    ),
-                                    child: const Text('Detalhes'),
+                            ),
+                            if (historyItem.type ==
+                                    ConnectionHistoryType.connectionCredential ||
+                                historyItem.type == ConnectionHistoryType.connectionProof)
+                              SizedBox(
+                                width: 200,
+                                child: ElevatedButton(
+                                  onPressed: () => _onMessageTap(historyItem),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    minimumSize: const Size(80, 36),
                                   ),
+                                  child: const Text('Detalhes'),
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
           Divider(height: 1),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            color: Colors.grey[200],
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _chatController,
-                    decoration: InputDecoration(
-                      hintText: 'Digite sua mensagem...',
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  color: Theme.of(context).primaryColor,
-                  onPressed: _sendMessage,
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

@@ -212,16 +212,6 @@ class JsonConverter {
             return result
         }
 
-        fun toRequestedPredicatesList(requestedPredicates: List<RequestedPredicate>): List<Map<String, Any?>> {
-            val result = mutableListOf<Map<String, Any?>>()
-
-            for (requestedPredicate in requestedPredicates) {
-                result.add(toMap(requestedPredicate))
-            }
-
-            return result
-        }
-
         fun toJson(value: Any): String? {
             return Gson().toJson(value)
         }

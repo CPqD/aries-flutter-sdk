@@ -15,16 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Instant
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
+import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
-import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import java.io.File
 import kotlin.Exception
@@ -596,7 +597,14 @@ class MainActivity: FlutterFragmentActivity() {
 
             agent!!.eventBus.subscribe<AgentEvents.BasicMessageEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    Log.d("MainActivity", "Basic Message Event: ${it.message}")
+                    Log.e("MainActivity", "Basic Message Event: content=${it.message.content} / connectionRecordId=$${it.message.connectionRecordId}")
+
+
+                    sendBasicMessageToFlutter(
+                        it.message.content,
+                        it.message.connectionRecordId,
+                        it.message.theirLabel,
+                    )
                 }
             }
 
@@ -757,6 +765,17 @@ class MainActivity: FlutterFragmentActivity() {
 
             result.error("1", e.message, null)
         }
+    }
+
+    private fun sendBasicMessageToFlutter(messageContent: String, connectionRecordId: String?, connectionLabel: String?) {
+        methodChannel.invokeMethod(
+            "basicMessageReceived",
+            mapOf(
+                "message" to messageContent,
+                "connectionRecordId" to connectionRecordId,
+                "connectionLabel" to connectionLabel,
+            )
+        )
     }
 
     private fun sendCredentialToFlutter(id: String, state: String) {
