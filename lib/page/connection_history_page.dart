@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/enums/credential_state.dart';
 import 'package:did_agent/agent/enums/proof_state.dart';
+import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 import 'package:did_agent/global.dart';
@@ -14,19 +15,23 @@ import '../util/aries_connection_history.dart';
 final connectionHistoryKey = GlobalKey<_ConnectionHistoryPageState>();
 
 class ConnectionHistoryPage extends StatefulWidget {
-  final String? connectionId;
+  final ConnectionRecord? connection;
   final String title;
 
-  const ConnectionHistoryPage({super.key, this.connectionId, this.title = 'Histórico'});
+  const ConnectionHistoryPage({
+    super.key,
+    this.connection,
+    this.title = 'Histórico',
+  });
 
   @override
   State<ConnectionHistoryPage> createState() => _ConnectionHistoryPageState();
 }
 
 class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
-  void reload() {
-    setState(() {});
-  }
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  List<AriesConnectionHistory> _history = [];
 
   @override
   void initState() {
@@ -34,10 +39,73 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
     _refreshHistory();
   }
 
+  void reload() {
+    setState(() {});
+  }
+
   Future<void> _refreshHistory() async {
-    if (widget.connectionId != null || widget.connectionId!.isNotEmpty) {
-      await updateConnectionHistory(widget.connectionId!);
-      reload();
+    if (widget.connection != null) {
+      await updateConnectionHistory(widget.connection!);
+    }
+
+    final history = await getConnectionHistoryList();
+    setState(() {
+      _history = history;
+    });
+  }
+
+  void _sendMessage() {
+    final message = _chatController.text.trim();
+    if (message.isNotEmpty) {
+      setState(() {
+        _history.add(
+          AriesConnectionHistory(
+            id: 'message-${_history.length}',
+            title: message,
+            createdAt: DateTime.now(),
+            type: ConnectionHistoryType.messageSent,
+            record: null,
+          ),
+        );
+        _chatController.clear();
+      });
+    }
+  }
+
+  void _onMessageTap(AriesConnectionHistory historyItem) async {
+    Widget? newPage;
+
+    if (historyItem.type == ConnectionHistoryType.connectionCredential) {
+      final credExchangeRecord = historyItem.record as CredentialExchangeRecord?;
+
+      if (credExchangeRecord != null &&
+          CredentialState.done.equals(credExchangeRecord.state)) {
+        newPage = CredentialHistoryPage(connectionHistory: historyItem);
+      } else {
+        final notifications = await getNotifications();
+        final notification = notifications.firstWhere((x) => x.id == historyItem.id);
+
+        newPage = CredentialNotificationPage(notification: notification);
+      }
+    } else if (historyItem.type == ConnectionHistoryType.connectionProof) {
+      final proofExchangeRecord = historyItem.record as ProofExchangeRecord?;
+
+      if (proofExchangeRecord != null &&
+          ProofState.done.equals(proofExchangeRecord.state)) {
+        newPage = ProofHistoryPage(connectionHistory: historyItem);
+      } else {
+        final notifications = await getNotifications();
+        final notification = notifications.firstWhere((x) => x.id == historyItem.id);
+
+        newPage = ProofNotificationPage(notification: notification);
+      }
+    }
+
+    if (newPage != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => newPage!),
+      );
     }
   }
 
@@ -45,114 +113,109 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Histórico'),
+        title: Text(widget.title),
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshHistory,
-        child: FutureBuilder<List<AriesConnectionHistory>>(
-          future: getConnectionHistoryList(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Erro: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('Nenhum histórico de conexão disponível.'));
-            } else {
-              final history = snapshot.data!;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 30.0),
-                child: ListView.builder(
-                  itemCount: history.length,
-                  itemBuilder: (context, index) {
-                    final historyItem = history[index];
-                    return Card(
-                      child: Stack(
-                        children: [
-                          ListTile(
-                            title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(historyItem.title),
-                                Text(historyItem.createdAt.toLocal().toString()),
-                                SizedBox(height: 8),
-                                Center(
+      body: Column(
+        children: [
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _refreshHistory,
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: _history.length,
+                reverse: true,
+                itemBuilder: (context, index) {
+                  final historyItem = _history[index];
+                  return GestureDetector(
+                    onTap: () => _onMessageTap(historyItem),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                      child: Align(
+                        alignment: historyItem.wasSent()
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: historyItem.wasSent()
+                                ? Colors.blue[200]
+                                : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                historyItem.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Text(
+                                historyItem.createdAt.toLocal().toString(),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              if (historyItem.type ==
+                                      ConnectionHistoryType.connectionCredential ||
+                                  historyItem.type ==
+                                      ConnectionHistoryType.connectionProof)
+                                SizedBox(
+                                  width: 200,
                                   child: ElevatedButton(
-                                    onPressed: () async {
-                                      Widget? newPage = null;
-
-                                      print('historyItem: $historyItem');
-
-                                      if (historyItem.type ==
-                                          ConnectionHistoryType.connectionCredential) {
-                                        final credExchangeRecord = historyItem.record
-                                            as CredentialExchangeRecord;
-
-                                        if (CredentialState.done
-                                            .equals(credExchangeRecord.state)) {
-                                          newPage = CredentialHistoryPage(
-                                            connectionHistory: historyItem,
-                                          );
-                                        } else {
-                                          final notifications = await getNotifications();
-
-                                          final notification = notifications.firstWhere(
-                                            (x) => x.id == historyItem.id,
-                                          );
-
-                                          newPage = CredentialNotificationPage(
-                                            notification: notification,
-                                          );
-                                        }
-                                      } else if (historyItem.type ==
-                                          ConnectionHistoryType.connectionProof) {
-                                        final proofExchangeRecord =
-                                            historyItem.record as ProofExchangeRecord;
-
-                                        if (ProofState.done
-                                            .equals(proofExchangeRecord.state)) {
-                                          newPage = ProofHistoryPage(
-                                              connectionHistory: historyItem);
-                                        } else {
-                                          final notifications = await getNotifications();
-
-                                          final notification = notifications.firstWhere(
-                                            (x) => x.id == historyItem.id,
-                                          );
-
-                                          newPage = ProofNotificationPage(
-                                            notification: notification,
-                                          );
-                                        }
-                                      }
-
-                                      if (newPage != null && mounted) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) {
-                                              return newPage!;
-                                            },
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    child: Text('Detalhes'),
+                                    onPressed: () => _onMessageTap(historyItem),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      minimumSize: const Size(80, 36),
+                                    ),
+                                    child: const Text('Detalhes'),
                                   ),
                                 ),
-                              ],
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Divider(height: 1),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            color: Colors.grey[200],
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    decoration: InputDecoration(
+                      hintText: 'Digite sua mensagem...',
+                      border: InputBorder.none,
+                    ),
+                  ),
                 ),
-              );
-            }
-          },
-        ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _chatController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 }

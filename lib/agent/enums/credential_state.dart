@@ -16,6 +16,19 @@ enum CredentialState {
 
   bool equals(String otherValue) => value == otherValue;
 
+  static bool isSent(String value) {
+    final sentStates = {
+      proposalSent,
+      offerSent,
+      declined,
+      requestSent,
+      credentialIssued,
+      done
+    };
+
+    return sentStates.any((state) => state.value == value);
+  }
+
   static const Map<String, String> portugueseTranslations = {
     'ProposalSent': 'Proposta Enviada',
     'ProposalReceived': 'Proposta Recebida',

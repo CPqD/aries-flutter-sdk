@@ -57,7 +57,7 @@ class ConnectionDetailsPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => ConnectionHistoryPage(
-                            connectionId: connection.id,
+                            connection: connection,
                           ),
                         ),
                       );

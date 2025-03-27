@@ -1,3 +1,4 @@
+import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:did_agent/page/notifications_page.dart';
 import 'package:did_agent/util/aries_connection_history.dart';
@@ -59,11 +60,25 @@ void _refreshNotificationsPage() => notificationsKey.currentState?.reload();
 
 List<AriesConnectionHistory> _connectionHistory = [];
 
-Future<void> updateConnectionHistory(String connectionId) async {
+Future<void> updateConnectionHistory(ConnectionRecord connection) async {
   try {
-    List<AriesConnectionHistory> updatedConnectionHistory = [];
+    String title = 'Início da conexão';
 
-    final connectionHistoryResult = await getConnectionHistory(connectionId);
+    if (connection.theirLabel != null && connection.theirLabel!.isNotEmpty) {
+      title = 'Você se conectou com ${connection.theirLabel}';
+    }
+
+    List<AriesConnectionHistory> updatedConnectionHistory = [
+      AriesConnectionHistory(
+        id: connection.id,
+        title: title,
+        createdAt: connection.createdAt ?? DateTime.now(),
+        type: ConnectionHistoryType.messageSent,
+        record: connection,
+      ),
+    ];
+
+    final connectionHistoryResult = await getConnectionHistory(connection.id);
 
     print("connectionHistoryResult");
     print(connectionHistoryResult.value.toString());
