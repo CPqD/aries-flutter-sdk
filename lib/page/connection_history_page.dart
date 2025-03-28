@@ -89,7 +89,9 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
                                             as CredentialExchangeRecord;
 
                                         if (CredentialState.done
-                                            .equals(credExchangeRecord.state)) {
+                                                .equals(credExchangeRecord.state) ||
+                                            CredentialState.declined
+                                                .equals(credExchangeRecord.state)) {
                                           newPage = CredentialHistoryPage(
                                             connectionHistory: historyItem,
                                           );
@@ -110,7 +112,9 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
                                             historyItem.record as ProofExchangeRecord;
 
                                         if (ProofState.done
-                                            .equals(proofExchangeRecord.state)) {
+                                                .equals(proofExchangeRecord.state) ||
+                                            ProofState.declined
+                                                .equals(proofExchangeRecord.state)) {
                                           newPage = ProofHistoryPage(
                                               connectionHistory: historyItem);
                                         } else {
