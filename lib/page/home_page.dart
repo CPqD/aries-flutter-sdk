@@ -1,4 +1,6 @@
+import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/page/connection_history_page.dart';
+import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -57,22 +59,12 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  void basicMessageReceived(
-    String message, {
-    String? connectionRecordId,
-    String? connectionLabel,
-  }) {
-    print('basicMessageReceived - $message');
+  void basicMessageReceived(BasicMessageRecord basicMessage) {
+    print('basicMessageReceived - $basicMessage');
 
-    addToChatHistory(
-      connectionId: connectionRecordId ?? '',
-      createdAt: DateTime.now(),
-      message: message,
-      theirLabel: connectionLabel,
-      wasSent: false,
-    );
+    addToHistory(AriesConnectionHistory.fromBasicMessage(basicMessage));
 
-    connectionHistoryKey.currentState?.refreshHistory();
+    connectionHistoryKey.currentState?.reloadHistory();
   }
 
   void credentialRevocationReceived(String credentialId) {

@@ -20,6 +20,7 @@ import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
+import org.hyperledger.ariesframework.basicmessage.repository.BasicMessageRecord
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
@@ -55,21 +56,21 @@ class MainActivity: FlutterFragmentActivity() {
                     try {
                         init(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao inicializar agente: " + e.toString(), null)
+                        result.error("1", "Erro ao inicializar agente: $e", null)
                     }
                 }
                 "openwallet" -> {
                     try {
                         openWallet(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel openwallet: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel openwallet: $e", null)
                     }
                 }
                 "getCredentials" -> {
                     try {
                         getCredentials(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getCredentials: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getCredentials: $e", null)
                     }
                 }
                 "getCredential" -> {
@@ -77,21 +78,21 @@ class MainActivity: FlutterFragmentActivity() {
                         val credentialId = call.argument<String>("credentialId")
                         getCredential(credentialId, result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getCredentials: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getCredentials: $e", null)
                     }
                 }
                 "getConnections" -> {
                     try {
                         getConnections(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getConnections: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getConnections: $e", null)
                     }
                 }
                 "getCredentialsOffers" -> {
                     try {
                         getCredentialsOffers(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getCredentialsOffers: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getCredentialsOffers: $e", null)
                     }
                 }
                 "getDidCommMessage" -> {
@@ -99,7 +100,7 @@ class MainActivity: FlutterFragmentActivity() {
                         val associatedRecordId = call.argument<String>("associatedRecordId")
                         getDidCommMessage(associatedRecordId, result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getDidCommMessage: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getDidCommMessage: $e", null)
                     }
                 }
                 "getDidCommMessagesByRecord" -> {
@@ -107,14 +108,14 @@ class MainActivity: FlutterFragmentActivity() {
                         val associatedRecordId = call.argument<String>("associatedRecordId")
                         getDidCommMessagesByRecord(associatedRecordId, result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getDidCommMessageSent: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getDidCommMessageSent: $e", null)
                     }
                 }
                 "getProofOffers" -> {
                     try {
                         getProofOffers(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getProofOffers: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getProofOffers: $e", null)
                     }
                 }
                 "getProofOfferDetails" -> {
@@ -122,7 +123,7 @@ class MainActivity: FlutterFragmentActivity() {
                         val proofRecordId = call.argument<String>("proofRecordId")
                         getProofOfferDetails(proofRecordId, result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getProofOfferDetails: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getProofOfferDetails: $e", null)
                     }
                 }
                 "receiveInvitation" -> {
@@ -130,21 +131,21 @@ class MainActivity: FlutterFragmentActivity() {
                         val invitationUrl = call.argument<String>("invitationUrl")
                         receiveInvitation(invitationUrl, result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel receiveInvitation: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel receiveInvitation: $e", null)
                     }
                 }
                 "subscribe" -> {
                     try {
                         subscribeEvents(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel subscribe: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel subscribe: $e", null)
                     }
                 }
                 "shutdown" -> {
                     try {
                         shutdown(result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel shutdown: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel shutdown: $e", null)
                     }
                 }
                 "acceptCredentialOffer" -> {
@@ -154,7 +155,7 @@ class MainActivity: FlutterFragmentActivity() {
 
                         acceptCredentialOffer(credentialRecordId, protocolVersion, result)
                     }catch (e:Exception){
-                        result.error("1","Erro ao processar o methodchannel acceptOffer: "+e.toString(),null)
+                        result.error("1","Erro ao processar o methodchannel acceptOffer: $e",null)
                     }
                 }
                 "declineCredentialOffer" -> {
@@ -164,7 +165,7 @@ class MainActivity: FlutterFragmentActivity() {
 
                         declineCredentialOffer(credentialRecordId, protocolVersion, result)
                     }catch (e:Exception){
-                        result.error("1","Erro ao processar o methodchannel declineOffer: "+e.toString(),null)
+                        result.error("1","Erro ao processar o methodchannel declineOffer: $e",null)
                     }
                 }
                 "acceptProofOffer" -> {
@@ -174,7 +175,7 @@ class MainActivity: FlutterFragmentActivity() {
                         val selectedCredentialsPredicates = call.argument<Map<String, String>>("selectedCredentialsPredicates")
                         acceptProofOffer(proofRecordId, selectedCredentialsAttributes, selectedCredentialsPredicates, result)
                     }catch (e:Exception){
-                        result.error("1","Erro ao processar o methodchannel acceptProofOffer: "+e.toString(),null)
+                        result.error("1","Erro ao processar o methodchannel acceptProofOffer: $e",null)
                     }
                 }
                 "declineProofOffer" -> {
@@ -182,7 +183,7 @@ class MainActivity: FlutterFragmentActivity() {
                         val proofRecordId = call.argument<String>("proofRecordId")
                         declineProofOffer(proofRecordId, result)
                     }catch (e:Exception){
-                        result.error("1","Erro ao processar o methodchannel declineProofOffer: "+e.toString(),null)
+                        result.error("1","Erro ao processar o methodchannel declineProofOffer: $e",null)
                     }
                 }
                 "removeCredential" -> {
@@ -190,7 +191,7 @@ class MainActivity: FlutterFragmentActivity() {
                         val credentialRecordId = call.argument<String>("credentialRecordId")
                         removeCredential(credentialRecordId, result)
                     }catch (e:Exception){
-                        result.error("1","Erro ao processar o methodchannel removeCredential: "+e.toString(),null)
+                        result.error("1","Erro ao processar o methodchannel removeCredential: $e",null)
                     }
                 }
                 "removeConnection" -> {
@@ -198,7 +199,7 @@ class MainActivity: FlutterFragmentActivity() {
                         val connectionRecordId = call.argument<String>("connectionRecordId")
                         removeConnection(connectionRecordId, result)
                     }catch (e:Exception){
-                        result.error("1","Erro ao processar o methodchannel removeConnection: "+e.toString(),null)
+                        result.error("1","Erro ao processar o methodchannel removeConnection: $e",null)
                     }
                 }
                 "getConnectionHistory" -> {
@@ -207,7 +208,7 @@ class MainActivity: FlutterFragmentActivity() {
 
                         getConnectionHistory(connectionId, result)
                     } catch (e: Exception) {
-                        result.error("1", "Erro ao processar o methodchannel getConnectionHistory: " + e.toString(), null)
+                        result.error("1", "Erro ao processar o methodchannel getConnectionHistory: $e", null)
                     }
                 }
 
@@ -426,14 +427,10 @@ class MainActivity: FlutterFragmentActivity() {
 
         val credentialsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
         val proofsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
+        val basicMessagesList = mutableListOf<Map<String, Any?>>()
 
         try {
             val credentials = runBlocking {  agent!!.credentialExchangeRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
-            val proofs = runBlocking {  agent!!.proofRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
-
-            Log.d("MainActivity", "credentials: $credentials")
-            Log.d("MainActivity", "proofs: $proofs")
-
 
             for (record in credentials) {
                 val map = JsonConverter.toMap(record).toMutableMap()
@@ -446,6 +443,8 @@ class MainActivity: FlutterFragmentActivity() {
                 credentialsMap[record.id] = map
             }
 
+            val proofs = runBlocking {  agent!!.proofRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
+
             for (record in proofs) {
                 val map = JsonConverter.toMap(record).toMutableMap()
                 map["recordType"] = "ProofExchangeRecord"
@@ -457,13 +456,25 @@ class MainActivity: FlutterFragmentActivity() {
                 proofsMap[record.id] = map
             }
 
+            val basicMessages = runBlocking { agent!!.basicMessageRepository.findByConnectionRecordId(connectionId) }
+
+            for (basicMessage in basicMessages) {
+                val map = JsonConverter.toMap(basicMessage).toMutableMap()
+                map["recordType"] = "BasicMessage"
+
+                basicMessagesList.add(map)
+            }
+
             Log.d("MainActivity", "credentialsMap: $credentialsMap")
             Log.d("MainActivity", "proofsMap: $proofsMap")
+            Log.d("MainActivity", "basicMessagesList: $basicMessagesList")
 
             val jsonResult = mapOf(
                 "credentials" to JsonConverter.toJson(credentialsMap.values),
-                "proofs" to JsonConverter.toJson(proofsMap.values)
+                "proofs" to JsonConverter.toJson(proofsMap.values),
+                "basicMessages" to JsonConverter.toJson(basicMessagesList),
             )
+
             Log.d("MainActivity", "jsonResult: $jsonResult")
 
             result.success(mapOf("error" to "", "result" to jsonResult))
@@ -597,14 +608,9 @@ class MainActivity: FlutterFragmentActivity() {
 
             agent!!.eventBus.subscribe<AgentEvents.BasicMessageEvent> {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    Log.e("MainActivity", "Basic Message Event: content=${it.message.content} / connectionRecordId=$${it.message.connectionRecordId}")
+                    Log.e("MainActivity", "Basic Message Event: content=${it.record}")
 
-
-                    sendBasicMessageToFlutter(
-                        it.message.content,
-                        it.message.connectionRecordId,
-                        it.message.theirLabel,
-                    )
+                    sendBasicMessageToFlutter(it.record)
                 }
             }
 
@@ -767,14 +773,12 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun sendBasicMessageToFlutter(messageContent: String, connectionRecordId: String?, connectionLabel: String?) {
+    private fun sendBasicMessageToFlutter(basicMessageRecord: BasicMessageRecord) {
+        val basicMessageRecordMap = JsonConverter.toMap(basicMessageRecord)
+
         methodChannel.invokeMethod(
             "basicMessageReceived",
-            mapOf(
-                "message" to messageContent,
-                "connectionRecordId" to connectionRecordId,
-                "connectionLabel" to connectionLabel,
-            )
+            mapOf("basicMessageRecord" to JsonConverter.toJson(basicMessageRecordMap))
         )
     }
 

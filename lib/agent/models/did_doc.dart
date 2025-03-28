@@ -2,7 +2,7 @@ class DidDoc {
   final String id;
   final String context;
   final List<Map<String, dynamic>> publicKey;
-  final List<String> authentication;
+  final List<dynamic> authentication;
   final List<Map<String, dynamic>> service;
 
   DidDoc({
@@ -14,13 +14,17 @@ class DidDoc {
   });
 
   factory DidDoc.fromMap(Map<String, dynamic> map) {
-    return DidDoc(
-      id: map["id"].toString(),
-      context: map["context"].toString(),
-      publicKey: List<Map<String, dynamic>>.from(map["publicKey"] ?? []),
-      authentication: List<String>.from(map["authentication"] ?? []),
-      service: List<Map<String, dynamic>>.from(map["service"] ?? []),
-    );
+    try {
+      return DidDoc(
+        id: map["id"].toString(),
+        context: map["context"].toString(),
+        publicKey: List<Map<String, dynamic>>.from(map["publicKey"] ?? []),
+        authentication: List<dynamic>.from(map["authentication"] ?? []),
+        service: List<Map<String, dynamic>>.from(map["service"] ?? []),
+      );
+    } catch (e) {
+      throw Exception('Failed to create DidDoc from map: $e');
+    }
   }
 
   @override

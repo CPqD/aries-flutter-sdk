@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/enums/credential_state.dart';
 import 'package:did_agent/agent/enums/proof_state.dart';
+import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 
 import '../agent/models/credential/credential_exchange_record.dart';
@@ -30,22 +31,34 @@ class AriesConnectionHistory {
     required this.record,
   });
 
-  factory AriesConnectionHistory.fromConnectionCredential(CredentialExchangeRecord cred) {
+  factory AriesConnectionHistory.fromCredential(CredentialExchangeRecord cred) {
     return AriesConnectionHistory(
-        id: cred.id,
-        title: 'Credencial - ${cred.getStateInPortuguese()}',
-        type: ConnectionHistoryType.connectionCredential,
-        createdAt: cred.createdAt!,
-        record: cred);
+      id: cred.id,
+      title: 'Credencial - ${cred.getStateInPortuguese()}',
+      type: ConnectionHistoryType.connectionCredential,
+      createdAt: cred.createdAt!,
+      record: cred,
+    );
   }
 
-  factory AriesConnectionHistory.fromConnectionProof(ProofExchangeRecord proof) {
+  factory AriesConnectionHistory.fromProof(ProofExchangeRecord proof) {
     return AriesConnectionHistory(
-        id: proof.id,
-        title: 'Prova - ${proof.getStateInPortuguese()}',
-        type: ConnectionHistoryType.connectionProof,
-        createdAt: proof.createdAt!,
-        record: proof);
+      id: proof.id,
+      title: 'Prova - ${proof.getStateInPortuguese()}',
+      type: ConnectionHistoryType.connectionProof,
+      createdAt: proof.createdAt!,
+      record: proof,
+    );
+  }
+
+  factory AriesConnectionHistory.fromBasicMessage(BasicMessageRecord msg) {
+    return AriesConnectionHistory(
+      id: msg.id,
+      title: msg.content,
+      type: ConnectionHistoryType.messageReceived,
+      createdAt: msg.createdAt ?? DateTime.now(),
+      record: msg,
+    );
   }
 
   bool wasSent() {

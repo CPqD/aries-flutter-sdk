@@ -6,6 +6,7 @@ import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
@@ -38,7 +39,7 @@ Future<AriesResult<List<ConnectionRecord>>> getConnections() async {
       value: originalList.map((map) => ConnectionRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getConnections - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -62,7 +63,7 @@ Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
       value: originalList.map((map) => CredentialRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getCredentials - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -85,7 +86,7 @@ Future<AriesResult<CredentialRecord>> getCredential(String credentialId) async {
       value: CredentialRecord.fromMap(credentialMap),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getCredential - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -109,7 +110,7 @@ Future<AriesResult<List<CredentialExchangeRecord>>> getCredentialsOffers() async
       value: originalList.map((map) => CredentialExchangeRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getCredentialsOffers - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -133,7 +134,7 @@ Future<AriesResult<List<ProofExchangeRecord>>> getProofOffers() async {
       value: originalList.map((map) => ProofExchangeRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getProofOffers - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -201,7 +202,7 @@ Future<AriesResult<DidCommMessageRecord?>> getDidCommMessage(
       value: DidCommMessageRecord.fromMap(resultMap),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getDidCommMessage - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -227,7 +228,7 @@ Future<AriesResult<List<DidCommMessageRecord>>> getDidCommMessagesByRecord(
       value: originalList.map((map) => DidCommMessageRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getDidCommMessagesByRecord - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -260,7 +261,7 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
 
     return ariesResult;
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getProofOfferDetails - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -291,7 +292,7 @@ Future<AriesResult<ConnectionHistory?>> getConnectionHistory(String? connectionI
 
     return ariesResult;
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getConnectionHistory - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -340,11 +341,10 @@ Future<dynamic> receiveFromNative(MethodCall call) async {
 
       print('basicMessageReceived: $arguments');
 
-      homePageKey.currentState?.basicMessageReceived(
-        arguments["message"].toString(),
-        connectionRecordId: arguments["connectionRecordId"].toString(),
-        connectionLabel: arguments["connectionLabel"].toString(),
-      );
+      final basicMessageRecord =
+          BasicMessageRecord.fromMap(jsonDecode(arguments["basicMessageRecord"] ?? '{}'));
+
+      homePageKey.currentState?.basicMessageReceived(basicMessageRecord);
 
       return "$arguments";
     case 'credentialRevocationReceived':

@@ -2,6 +2,7 @@ package br.org.serpro.did_agent.utils
 
 import com.google.gson.Gson
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
+import org.hyperledger.ariesframework.basicmessage.repository.BasicMessageRecord
 import org.hyperledger.ariesframework.connection.messages.ConnectionInvitationMessage
 import org.hyperledger.ariesframework.connection.models.didauth.DidDoc
 import org.hyperledger.ariesframework.connection.models.didauth.DidDocService
@@ -17,6 +18,15 @@ import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
 class JsonConverter {
     companion object {
+        fun toMap(basicMessageRecord: BasicMessageRecord): Map<String, Any?> {
+            return mapOf(
+                "id" to basicMessageRecord.id,
+                "createdAt" to basicMessageRecord.createdAt.toString(),
+                "content" to basicMessageRecord.content,
+                "connectionRecord" to basicMessageRecord.connectionRecord?.let { toMap(basicMessageRecord.connectionRecord!!) },
+            )
+        }
+
         fun toMap(connection: ConnectionRecord): Map<String, Any?> {
             return mapOf(
                 "id" to connection.id,

@@ -43,6 +43,10 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
       await updateConnectionHistory(widget.connection!);
     }
 
+    reloadHistory();
+  }
+
+  Future<void> reloadHistory() async {
     if (mounted) {
       final history = await getConnectionHistoryList();
       setState(() {

@@ -57,11 +57,12 @@ void _refreshNotificationsPage() => notificationsKey.currentState?.reload();
 // ConnectionHistory
 
 List<AriesConnectionHistory> _connectionHistory = [];
-Map<String, List<AriesConnectionHistory>> _chatHistory = {};
 
 Future<void> updateConnectionHistory(ConnectionRecord connection) async {
   try {
-    List<AriesConnectionHistory> updatedConnectionHistory = [];
+    List<AriesConnectionHistory> updatedConnectionHistory = [
+      startConnectionHistory(connection)
+    ];
 
     final connectionHistoryResult = await getConnectionHistory(connection.id);
 
@@ -73,15 +74,16 @@ Future<void> updateConnectionHistory(ConnectionRecord connection) async {
     }
 
     for (var credential in connectionHistoryResult.value!.credentials) {
-      updatedConnectionHistory
-          .add(AriesConnectionHistory.fromConnectionCredential(credential));
+      updatedConnectionHistory.add(AriesConnectionHistory.fromCredential(credential));
     }
 
     for (var proof in connectionHistoryResult.value!.proofs) {
-      updatedConnectionHistory.add(AriesConnectionHistory.fromConnectionProof(proof));
+      updatedConnectionHistory.add(AriesConnectionHistory.fromProof(proof));
     }
 
-    updatedConnectionHistory.addAll(getChatHistory(connection));
+    for (var message in connectionHistoryResult.value!.basicMessages) {
+      updatedConnectionHistory.add(AriesConnectionHistory.fromBasicMessage(message));
+    }
 
     updatedConnectionHistory.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -95,58 +97,22 @@ Future<List<AriesConnectionHistory>> getConnectionHistoryList() async {
   return _connectionHistory;
 }
 
-List<AriesConnectionHistory> getChatHistory(ConnectionRecord connection) {
-  if (_chatHistory[connection.id] == null) {
-    startChatHistoryForConnection(
-      connectionId: connection.id,
-      connectionDate: connection.createdAt,
-      connectionName: connection.theirLabel,
-    );
-  }
-
-  return _chatHistory[connection.id] ?? [];
+void addToHistory(AriesConnectionHistory connectionHistory) {
+  _connectionHistory.add(connectionHistory);
 }
 
-void addToChatHistory(
-    {required String connectionId,
-    required String message,
-    required bool wasSent,
-    required String? theirLabel,
-    required DateTime? createdAt}) {
-  if (_chatHistory[connectionId] == null) {
-    startChatHistoryForConnection(
-      connectionId: connectionId,
-      connectionDate: createdAt,
-      connectionName: theirLabel,
-    );
-  }
-
-  _chatHistory[connectionId]?.add(AriesConnectionHistory(
-    id: 'basic-message-${_chatHistory.length}',
-    title: message,
-    createdAt: createdAt ?? DateTime.now(),
-    type: wasSent
-        ? ConnectionHistoryType.messageSent
-        : ConnectionHistoryType.messageReceived,
-    record: null,
-  ));
-}
-
-void startChatHistoryForConnection(
-    {required String connectionId, String? connectionName, DateTime? connectionDate}) {
+AriesConnectionHistory startConnectionHistory(ConnectionRecord connection) {
   String message = 'Início da conexão';
 
-  if (connectionName != null && connectionName.isNotEmpty) {
-    message = 'Você se conectou com $connectionName';
+  if (connection.theirLabel != null && connection.theirLabel!.isNotEmpty) {
+    message = 'Você se conectou com ${connection.theirLabel}';
   }
 
-  _chatHistory[connectionId] = [
-    AriesConnectionHistory(
-      id: 'basic-message-0',
-      title: message,
-      createdAt: connectionDate ?? DateTime.now(),
-      type: ConnectionHistoryType.messageSent,
-      record: null,
-    )
-  ];
+  return AriesConnectionHistory(
+    id: 'basic-message-0',
+    title: message,
+    createdAt: connection.createdAt ?? DateTime.now(),
+    type: ConnectionHistoryType.messageSent,
+    record: null,
+  );
 }
