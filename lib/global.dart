@@ -1,8 +1,12 @@
 import 'package:did_agent/page/home_page.dart';
 import 'package:did_agent/page/notifications_page.dart';
+import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:did_agent/util/utils.dart';
 
+import 'page/connection_history_page.dart';
+
+// Notification
 List<AriesNotification> _notifications = [];
 
 Future<void> updateNotifications() async {
@@ -50,3 +54,44 @@ void _updateNotificationCount() =>
     homePageKey.currentState?.setNotificationCount(_notifications.length);
 
 void _refreshNotificationsPage() => notificationsKey.currentState?.reload();
+
+// ConnectionHistory
+
+List<AriesConnectionHistory> _connectionHistory = [];
+
+Future<void> updateConnectionHistory(String connectionId) async {
+  try {
+    List<AriesConnectionHistory> updatedConnectionHistory = [];
+
+    final connectionHistoryResult = await getConnectionHistory(connectionId);
+
+    print("connectionHistoryResult");
+    print(connectionHistoryResult.value.toString());
+
+    if (connectionHistoryResult.success && connectionHistoryResult.value != null) {
+      if (connectionHistoryResult.value!.credentials.isNotEmpty) {
+        for (var credential in connectionHistoryResult.value!.credentials) {
+          updatedConnectionHistory
+              .add(AriesConnectionHistory.fromConnectionCredential(credential));
+        }
+        for (var proof in connectionHistoryResult.value!.proofs) {
+          updatedConnectionHistory.add(AriesConnectionHistory.fromConnectionProof(proof));
+        }
+      }
+    }
+
+    updatedConnectionHistory.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    _connectionHistory = updatedConnectionHistory;
+
+    _refreshConnectionHistoryPage();
+  } catch (e) {
+    print('Failed to update connection history: $e');
+  }
+}
+
+Future<List<AriesConnectionHistory>> getConnectionHistoryList() async {
+  return _connectionHistory;
+}
+
+void _refreshConnectionHistoryPage() => connectionHistoryKey.currentState?.reload();

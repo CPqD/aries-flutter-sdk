@@ -70,7 +70,7 @@ class CredentialRecord {
         '${createdAt?.toLocal()}';
   }
 
-  Map<String, dynamic> getValues() {
+  Map<String, dynamic> getRawValues() {
     try {
       final decodedCredential = Map<String, dynamic>.from(jsonDecode(credential));
       return Map<String, dynamic>.from(decodedCredential["values"]);
@@ -80,9 +80,9 @@ class CredentialRecord {
     }
   }
 
-  Map<String, dynamic> getRawValues() {
+  Map<String, dynamic> getValues() {
     try {
-      final values = getValues();
+      final values = getRawValues();
 
       Map<String, dynamic> simplifiedValues = {};
 

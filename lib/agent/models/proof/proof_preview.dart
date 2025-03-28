@@ -23,7 +23,7 @@ class ProofPreview {
       nonce: map["nonce"].toString(),
       version: map["version"].toString(),
       nonRevoked: map["nonRevoked"] ?? {},
-      requestedPredicates: map["requestedPredicates"] ?? {},
+      requestedPredicates: map["requested_predicates"] ?? {},
       requestedAttributes: SchemaAttributes.fromMap(map["requested_attributes"] ?? {}),
     );
   }

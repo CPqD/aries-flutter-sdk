@@ -9,6 +9,7 @@ enum AriesMethod {
   getCredential('getCredential'),
   getCredentialsOffers('getCredentialsOffers'),
   getDidCommMessage('getDidCommMessage'),
+  getDidCommMessagesByRecord('getDidCommMessagesByRecord'),
   getProofOffers('getProofOffers'),
   getProofOfferDetails('getProofOfferDetails'),
   invitation('receiveInvitation'),
@@ -16,7 +17,8 @@ enum AriesMethod {
   removeConnection('removeConnection'),
   removeCredential('removeCredential'),
   subscribe('subscribe'),
-  shutdown('shutdown');
+  shutdown('shutdown'),
+  getConnectionHistory('getConnectionHistory');
 
   final String value;
 

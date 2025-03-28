@@ -1,4 +1,5 @@
 import 'package:did_agent/agent/models/connection/connection_record.dart';
+import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -52,10 +53,18 @@ class ConnectionDetailsPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       print('History');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ConnectionHistoryPage(
+                            connectionId: connection.id,
+                          ),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.grey,
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -63,7 +72,7 @@ class ConnectionDetailsPage extends StatelessWidget {
                     child: Text('Histórico'),
                   ),
                 ),
-                SizedBox(width: 16), // Add some space between the buttons
+                SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _confirmDelete(context),

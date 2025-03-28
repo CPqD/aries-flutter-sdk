@@ -69,7 +69,7 @@ class CredentialUtils {
             return JsonConverter.toMap(credential)
         }
 
-        suspend fun getOffersByState(agent: Agent, state: CredentialState): List<Map<String, Any?>> {
+        suspend fun getExchangesByState(agent: Agent, state: CredentialState): List<Map<String, Any?>> {
             val credentialsReceived = agent.credentialExchangeRepository.findByQuery("{\"state\": \"${state}\"}")
 
             Log.d("MainActivity", "credentialsReceived size: ${credentialsReceived.size}")

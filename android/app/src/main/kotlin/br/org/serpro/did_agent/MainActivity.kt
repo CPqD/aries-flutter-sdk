@@ -101,6 +101,14 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel getDidCommMessage: " + e.toString(), null)
                     }
                 }
+                "getDidCommMessagesByRecord" -> {
+                    try {
+                        val associatedRecordId = call.argument<String>("associatedRecordId")
+                        getDidCommMessagesByRecord(associatedRecordId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getDidCommMessageSent: " + e.toString(), null)
+                    }
+                }
                 "getProofOffers" -> {
                     try {
                         getProofOffers(result)
@@ -192,7 +200,16 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1","Erro ao processar o methodchannel removeConnection: "+e.toString(),null)
                     }
                 }
-                
+                "getConnectionHistory" -> {
+                    try {
+                        val connectionId = call.argument<String>("connectionId")
+
+                        getConnectionHistory(connectionId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getConnectionHistory: " + e.toString(), null)
+                    }
+                }
+
                 else -> result.notImplemented()
             }
         }
@@ -351,7 +368,7 @@ class MainActivity: FlutterFragmentActivity() {
         validateAgent()
 
         try {
-            val credentialsOffersList = runBlocking {  CredentialUtils.getOffersByState(agent!!, CredentialState.OfferReceived) }
+            val credentialsOffersList = runBlocking {  CredentialUtils.getExchangesByState(agent!!, CredentialState.OfferReceived) }
 
             result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialsOffersList)))
         } catch (e: Exception) {
@@ -400,6 +417,62 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun getConnectionHistory(connectionId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "getConnectionHistory called from Kotlin...")
+
+        validateNotNull("ConnectionId", connectionId)
+        validateAgent()
+
+        val credentialsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
+        val proofsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
+
+        try {
+            val credentials = runBlocking {  agent!!.credentialExchangeRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
+            val proofs = runBlocking {  agent!!.proofRepository.findByQuery("{\"connectionId\": \"${connectionId!!}\"}") }
+
+            Log.d("MainActivity", "credentials: $credentials")
+            Log.d("MainActivity", "proofs: $proofs")
+
+
+            for (record in credentials) {
+                val map = JsonConverter.toMap(record).toMutableMap()
+                map["recordType"] = "CredentialRecord"
+
+                if (credentialsMap.containsKey(record.id) && record.state != CredentialState.OfferSent) {
+                    continue
+                }
+
+                credentialsMap[record.id] = map
+            }
+
+            for (record in proofs) {
+                val map = JsonConverter.toMap(record).toMutableMap()
+                map["recordType"] = "ProofExchangeRecord"
+
+                if (proofsMap.containsKey(record.id) && record.state != ProofState.RequestSent) {
+                    continue
+                }
+
+                proofsMap[record.id] = map
+            }
+
+            Log.d("MainActivity", "credentialsMap: $credentialsMap")
+            Log.d("MainActivity", "proofsMap: $proofsMap")
+
+            val jsonResult = mapOf(
+                "credentials" to JsonConverter.toJson(credentialsMap.values),
+                "proofs" to JsonConverter.toJson(proofsMap.values)
+            )
+            Log.d("MainActivity", "jsonResult: $jsonResult")
+
+            result.success(mapOf("error" to "", "result" to jsonResult))
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get getConnectionHistory: ${e.message}")
+            result.error("1", "Cannot get getConnectionHistory: ${e.message}", null)
+            return
+        }
+    }
+
     private fun getDidCommMessage(associatedRecordId: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "getDidCommMessage called from Kotlin...")
 
@@ -427,6 +500,32 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
+    private fun getDidCommMessagesByRecord(associatedRecordId: String?, result: MethodChannel.Result) {
+        Log.d("MainActivity", "getDidCommMessagesByRecord called from Kotlin...")
+
+        validateAgent()
+        validateNotNull("AssociatedRecordId", associatedRecordId)
+
+        try {
+            val didCommMessagesList = mutableListOf<Map<String, Any?>>()
+
+            val didCommMessages = runBlocking {
+                agent!!.didCommMessageRepository.findByQuery("{\"associatedRecordId\": \"$associatedRecordId\"}")
+            }
+
+            for (didCommMessage in didCommMessages) {
+                Log.d("MainActivity", "didCommMessage: $didCommMessage")
+
+                didCommMessagesList.add(JsonConverter.toMap(didCommMessage))
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(didCommMessagesList)))
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Cannot get DidCommMessageSent: ${e.message}")
+            result.error("1", "Cannot get DidCommMessageSent: ${e.message}", null)
+            return
+        }
+    }
 
     private fun receiveInvitation(invitationUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "receiveInvitation called from Kotlin with invitationUrl: $invitationUrl")
@@ -617,7 +716,7 @@ class MainActivity: FlutterFragmentActivity() {
             } catch (e: Exception) {
                 Log.e("MainActivity","Failed to decline a proof: ${e.localizedMessage}")
 
-                result.error("1", e.message, null)         
+                result.error("1", e.message, null)
             }
         }
     }

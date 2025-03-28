@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import '../../enums/proof_state.dart';
+
 class ProofExchangeRecord {
   final String id;
   final DateTime? createdAt;
@@ -24,6 +28,23 @@ class ProofExchangeRecord {
       threadId: map["threadId"].toString(),
       state: map["state"].toString(),
     );
+  }
+
+  static List<ProofExchangeRecord> fromList(List<Map<String, dynamic>> list) {
+    return list.map((e) => ProofExchangeRecord.fromMap(e)).toList();
+  }
+
+  static List<ProofExchangeRecord> fromJson(String json) {
+    try {
+      final jsonResult = List<Map<String, dynamic>>.from(jsonDecode(json));
+      return fromList(jsonResult);
+    } catch (e) {
+      throw Exception('Failed to create CredentialExchangeRecord from json: $e');
+    }
+  }
+
+  String getStateInPortuguese() {
+    return ProofState.portugueseTranslations[state] ?? 'Estado Desconhecido';
   }
 
   @override

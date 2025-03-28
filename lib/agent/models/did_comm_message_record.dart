@@ -35,18 +35,18 @@ class DidCommMessageRecord {
     );
   }
 
-  CredentialPreview getCredentialPreview() {
+  CredentialPreview? getCredentialPreview() {
     try {
       final messageMap = jsonDecode(message);
       return CredentialPreview.fromMap(messageMap["credential_preview"]);
     } catch (e) {
       print("Failed to get CredentialPreview: ${e.toString()}");
 
-      return CredentialPreview(attributes: [], type: '');
+      return null;
     }
   }
 
-  ProofPreview getProofPreview() {
+  ProofPreview? getProofPreview() {
     try {
       final messageMap = jsonDecode(message);
       final presentations =
@@ -64,11 +64,7 @@ class DidCommMessageRecord {
     } catch (e) {
       print("Failed to get ProofPreview: ${e.toString()}");
 
-      return ProofPreview(
-        nonRevoked: {},
-        requestedPredicates: {},
-        requestedAttributes: [],
-      );
+      return null;
     }
   }
 
