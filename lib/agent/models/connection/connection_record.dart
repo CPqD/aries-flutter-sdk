@@ -48,33 +48,35 @@ class ConnectionRecord {
   });
 
   factory ConnectionRecord.fromMap(Map<String, dynamic> map) {
-    print('invitation: ${map['invitation']}');
-
-    return ConnectionRecord(
-      id: map["id"].toString(),
-      createdAt: DateTime.tryParse(map["createdAt"].toString()),
-      updatedAt: DateTime.tryParse(map["updatedAt"].toString()),
-      state: ConnectionState.from(map["state"].toString()),
-      role: ConnectionRole.from(map["role"].toString()),
-      did: map["did"].toString(),
-      didDoc: DidDoc.fromMap(map["didDoc"]),
-      verkey: map["verkey"].toString(),
-      theirDidDoc: DidDoc.fromMap(map["theirDidDoc"]),
-      theirDid: map["theirDid"].toString(),
-      theirLabel: map["theirLabel"].toString(),
-      invitation: map["invitation"] == null
-          ? null
-          : ConnectionInvitationMessage.fromMap(map["invitation"]),
-      outOfBandInvitation: map["outOfBandInvitation"],
-      alias: map["alias"].toString(),
-      autoAcceptConnection:
-          map["autoAcceptConnection"].toString().toLowerCase() == 'true',
-      imageUrl: map["imageUrl"].toString(),
-      multiUseInvitation: map["multiUseInvitation"].toString().toLowerCase() == 'true',
-      threadId: map["threadId"].toString(),
-      mediatorId: map["mediatorId"].toString(),
-      errorMessage: map["errorMessage"].toString(),
-    );
+    try {
+      return ConnectionRecord(
+        id: map["id"].toString(),
+        createdAt: DateTime.tryParse(map["createdAt"].toString()),
+        updatedAt: DateTime.tryParse(map["updatedAt"].toString()),
+        state: ConnectionState.from(map["state"].toString()),
+        role: ConnectionRole.from(map["role"].toString()),
+        did: map["did"].toString(),
+        didDoc: DidDoc.fromMap(map["didDoc"]),
+        verkey: map["verkey"].toString(),
+        theirDidDoc: DidDoc.fromMap(map["theirDidDoc"]),
+        theirDid: map["theirDid"].toString(),
+        theirLabel: map["theirLabel"].toString(),
+        invitation: map["invitation"] == null
+            ? null
+            : ConnectionInvitationMessage.fromMap(map["invitation"]),
+        outOfBandInvitation: map["outOfBandInvitation"],
+        alias: map["alias"].toString(),
+        autoAcceptConnection:
+            map["autoAcceptConnection"].toString().toLowerCase() == 'true',
+        imageUrl: map["imageUrl"].toString(),
+        multiUseInvitation: map["multiUseInvitation"].toString().toLowerCase() == 'true',
+        threadId: map["threadId"].toString(),
+        mediatorId: map["mediatorId"].toString(),
+        errorMessage: map["errorMessage"].toString(),
+      );
+    } catch (e) {
+      throw Exception('Failed to create ConnectionRecord from json: $e');
+    }
   }
 
   String getName() {

@@ -6,10 +6,12 @@ import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
+import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
 
@@ -37,7 +39,7 @@ Future<AriesResult<List<ConnectionRecord>>> getConnections() async {
       value: originalList.map((map) => ConnectionRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getConnections - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -61,7 +63,7 @@ Future<AriesResult<List<CredentialRecord>>> getCredentials() async {
       value: originalList.map((map) => CredentialRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getCredentials - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -84,7 +86,7 @@ Future<AriesResult<CredentialRecord>> getCredential(String credentialId) async {
       value: CredentialRecord.fromMap(credentialMap),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getCredential - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -108,7 +110,7 @@ Future<AriesResult<List<CredentialExchangeRecord>>> getCredentialsOffers() async
       value: originalList.map((map) => CredentialExchangeRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getCredentialsOffers - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -132,7 +134,7 @@ Future<AriesResult<List<ProofExchangeRecord>>> getProofOffers() async {
       value: originalList.map((map) => ProofExchangeRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getProofOffers - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -143,11 +145,16 @@ Future<AriesResult> receiveInvitation(String url) => AriesResult.invoke(
       {'invitationUrl': url},
     );
 
-Future<AriesResult> acceptCredentialOffer(String credentialId, String protocolVersion) =>
-    AriesResult.invoke(AriesMethod.acceptCredentialOffer, {
-      'credentialRecordId': credentialId,
-      'protocolVersion': protocolVersion,
-    });
+Future<AriesResult> acceptCredentialOffer(String credentialId, String protocolVersion) {
+  final result = AriesResult.invoke(AriesMethod.acceptCredentialOffer, {
+    'credentialRecordId': credentialId,
+    'protocolVersion': protocolVersion,
+  });
+
+  connectionHistoryKey.currentState?.refreshHistory();
+
+  return result;
+}
 
 Future<AriesResult> acceptProofOffer(
   String proofId,
@@ -166,11 +173,15 @@ Future<AriesResult> acceptProofOffer(
     selectedCredentialsPredicates[key] = value.credentialId;
   });
 
-  return AriesResult.invoke(AriesMethod.acceptProofOffer, {
+  final result = AriesResult.invoke(AriesMethod.acceptProofOffer, {
     'proofRecordId': proofId,
     'selectedCredentialsAttributes': selectedCredentialsAttributes,
     'selectedCredentialsPredicates': selectedCredentialsPredicates
   });
+
+  connectionHistoryKey.currentState?.refreshHistory();
+
+  return result;
 }
 
 Future<AriesResult<DidCommMessageRecord?>> getDidCommMessage(
@@ -191,7 +202,7 @@ Future<AriesResult<DidCommMessageRecord?>> getDidCommMessage(
       value: DidCommMessageRecord.fromMap(resultMap),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getDidCommMessage - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -217,7 +228,7 @@ Future<AriesResult<List<DidCommMessageRecord>>> getDidCommMessagesByRecord(
       value: originalList.map((map) => DidCommMessageRecord.fromMap(map)).toList(),
     );
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getDidCommMessagesByRecord - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString(), value: []);
   }
@@ -250,7 +261,7 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
 
     return ariesResult;
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getProofOfferDetails - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
@@ -281,20 +292,33 @@ Future<AriesResult<ConnectionHistory?>> getConnectionHistory(String? connectionI
 
     return ariesResult;
   } catch (e) {
-    print('failed to decode = ${e.toString()}\n\n');
+    print('getConnectionHistory - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }
 }
 
-Future<AriesResult> declineCredentialOffer(String credentialId, String protocolVersion) =>
-    AriesResult.invoke(AriesMethod.declineCredentialOffer, {
-      'credentialRecordId': credentialId,
-      'protocolVersion': protocolVersion,
-    });
+Future<AriesResult> declineCredentialOffer(String credentialId, String protocolVersion) {
+  final result = AriesResult.invoke(AriesMethod.declineCredentialOffer, {
+    'credentialRecordId': credentialId,
+    'protocolVersion': protocolVersion,
+  });
 
-Future<AriesResult> declineProofOffer(String proofId) =>
-    AriesResult.invoke(AriesMethod.declineProofOffer, {'proofRecordId': proofId});
+  connectionHistoryKey.currentState?.refreshHistory();
+
+  return result;
+}
+
+Future<AriesResult> declineProofOffer(String proofId) {
+  final result = AriesResult.invoke(
+    AriesMethod.declineProofOffer,
+    {'proofRecordId': proofId},
+  );
+
+  connectionHistoryKey.currentState?.refreshHistory();
+
+  return result;
+}
 
 Future<AriesResult> removeConnection(String connectionId) => AriesResult.invoke(
     AriesMethod.removeConnection, {'connectionRecordId': connectionId});
@@ -311,6 +335,17 @@ Future<dynamic> receiveFromNative(MethodCall call) async {
     case 'calldart':
       final Map arguments = call.arguments;
       print(arguments);
+      return "$arguments";
+    case 'basicMessageReceived':
+      final Map<String, String> arguments = Map<String, String>.from(call.arguments);
+
+      print('basicMessageReceived: $arguments');
+
+      final basicMessageRecord =
+          BasicMessageRecord.fromMap(jsonDecode(arguments["basicMessageRecord"] ?? '{}'));
+
+      homePageKey.currentState?.basicMessageReceived(basicMessageRecord);
+
       return "$arguments";
     case 'credentialRevocationReceived':
       print('credentialRevocationReceived on FLUTTER: ${call.arguments}');

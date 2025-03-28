@@ -1,3 +1,6 @@
+import 'package:did_agent/agent/models/proof/basic_message_record.dart';
+import 'package:did_agent/page/connection_history_page.dart';
+import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -43,6 +46,7 @@ class HomePageState extends State<HomePage> {
 
     if (CredentialState.offerReceived.equals(credentialState)) {
       updateNotifications();
+      connectionHistoryKey.currentState?.refreshHistory();
     }
   }
 
@@ -51,19 +55,22 @@ class HomePageState extends State<HomePage> {
 
     if (CredentialState.requestReceived.equals(proofState)) {
       updateNotifications();
+      connectionHistoryKey.currentState?.refreshHistory();
     }
   }
 
-  void receivedInvitation(String qrCode) async {
-    final invitation = await receiveInvitation(qrCode);
+  void basicMessageReceived(BasicMessageRecord basicMessage) {
+    print('basicMessageReceived - $basicMessage');
 
-    print('receivedInvitation - state: $invitation');
+    addToHistory(AriesConnectionHistory.fromBasicMessage(basicMessage));
 
-    invitationResultDialog(invitation, context);
+    connectionHistoryKey.currentState?.reloadHistory();
   }
 
   void credentialRevocationReceived(String credentialId) {
     print('credentialRevocationReceived - $credentialId');
+
+    connectionHistoryKey.currentState?.refreshHistory();
 
     showDialog(
       context: context,
@@ -82,6 +89,14 @@ class HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  void receivedInvitation(String qrCode) async {
+    final invitation = await receiveInvitation(qrCode);
+
+    print('receivedInvitation - state: $invitation');
+
+    invitationResultDialog(invitation, context);
   }
 
   void _onItemTapped() async {

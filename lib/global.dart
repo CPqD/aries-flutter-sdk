@@ -1,10 +1,9 @@
+import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:did_agent/page/notifications_page.dart';
 import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:did_agent/util/utils.dart';
-
-import 'page/connection_history_page.dart';
 
 // Notification
 List<AriesNotification> _notifications = [];
@@ -59,32 +58,36 @@ void _refreshNotificationsPage() => notificationsKey.currentState?.reload();
 
 List<AriesConnectionHistory> _connectionHistory = [];
 
-Future<void> updateConnectionHistory(String connectionId) async {
+Future<void> updateConnectionHistory(ConnectionRecord connection) async {
   try {
-    List<AriesConnectionHistory> updatedConnectionHistory = [];
+    List<AriesConnectionHistory> updatedConnectionHistory = [
+      startConnectionHistory(connection)
+    ];
 
-    final connectionHistoryResult = await getConnectionHistory(connectionId);
+    final connectionHistoryResult = await getConnectionHistory(connection.id);
 
     print("connectionHistoryResult");
     print(connectionHistoryResult.value.toString());
 
-    if (connectionHistoryResult.success && connectionHistoryResult.value != null) {
-      if (connectionHistoryResult.value!.credentials.isNotEmpty) {
-        for (var credential in connectionHistoryResult.value!.credentials) {
-          updatedConnectionHistory
-              .add(AriesConnectionHistory.fromConnectionCredential(credential));
-        }
-        for (var proof in connectionHistoryResult.value!.proofs) {
-          updatedConnectionHistory.add(AriesConnectionHistory.fromConnectionProof(proof));
-        }
-      }
+    if (!connectionHistoryResult.success || connectionHistoryResult.value == null) {
+      return;
+    }
+
+    for (var credential in connectionHistoryResult.value!.credentials) {
+      updatedConnectionHistory.add(AriesConnectionHistory.fromCredential(credential));
+    }
+
+    for (var proof in connectionHistoryResult.value!.proofs) {
+      updatedConnectionHistory.add(AriesConnectionHistory.fromProof(proof));
+    }
+
+    for (var message in connectionHistoryResult.value!.basicMessages) {
+      updatedConnectionHistory.add(AriesConnectionHistory.fromBasicMessage(message));
     }
 
     updatedConnectionHistory.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     _connectionHistory = updatedConnectionHistory;
-
-    _refreshConnectionHistoryPage();
   } catch (e) {
     print('Failed to update connection history: $e');
   }
@@ -94,4 +97,22 @@ Future<List<AriesConnectionHistory>> getConnectionHistoryList() async {
   return _connectionHistory;
 }
 
-void _refreshConnectionHistoryPage() => connectionHistoryKey.currentState?.reload();
+void addToHistory(AriesConnectionHistory connectionHistory) {
+  _connectionHistory.add(connectionHistory);
+}
+
+AriesConnectionHistory startConnectionHistory(ConnectionRecord connection) {
+  String message = 'Início da conexão';
+
+  if (connection.theirLabel != null && connection.theirLabel!.isNotEmpty) {
+    message = 'Você se conectou com ${connection.theirLabel}';
+  }
+
+  return AriesConnectionHistory(
+    id: 'basic-message-0',
+    title: message,
+    createdAt: connection.createdAt ?? DateTime.now(),
+    type: ConnectionHistoryType.messageSent,
+    record: null,
+  );
+}
