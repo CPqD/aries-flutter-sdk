@@ -1,4 +1,5 @@
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/models/proof/details/predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_preview.dart';
 import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/utils.dart';
@@ -50,6 +51,16 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
     }
   }
 
+  Widget textH2(String text) => Text(
+        text,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      );
+
+  Widget textH3(String text) => Text(
+        text,
+        style: TextStyle(fontSize: 14),
+      );
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -98,14 +109,12 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          textH2(
                             'Atributos de "${attribute.schemaName}" solicitados:',
-                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           ...attribute.attributeNames.map((attrName) {
-                            return Text(
+                            return textH3(
                               attrName,
-                              style: TextStyle(fontWeight: FontWeight.bold),
                             );
                           }),
                           SizedBox(height: 32),
@@ -114,16 +123,15 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
                     }),
                   if (_proofPreview!.requestedPredicates.isNotEmpty)
                     ..._proofPreview!.requestedPredicates.entries.map((entry) {
+                      final p = Predicate.fromMap(entry.value);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Predicados de "${entry.key}" solicitados:',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          textH2(
+                            'Predicado solicitado:',
                           ),
-                          Text(
-                            entry.value.toString(),
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          textH3(
+                            p.asExpression(),
                           ),
                           SizedBox(height: 32),
                         ],
