@@ -21,8 +21,11 @@ Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
 
 Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
 
-Future<AriesResult<List<ConnectionRecord>>> getConnections() async {
-  final result = await AriesResult.invoke(AriesMethod.getConnections);
+Future<AriesResult<List<ConnectionRecord>>> getConnections(
+    {bool hideMediator = false}) async {
+  final result = await AriesResult.invoke(AriesMethod.getConnections, {
+    'hideMediator': hideMediator,
+  });
 
   if (!result.success || result.value == null) {
     return AriesResult(success: false, error: result.error, value: []);

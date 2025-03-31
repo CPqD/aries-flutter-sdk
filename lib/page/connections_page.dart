@@ -17,7 +17,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   @override
   void initState() {
     super.initState();
-    _connectionsFuture = getConnections();
+    _connectionsFuture = getConnections(hideMediator: true);
   }
 
   @override
@@ -65,7 +65,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
                     if (result == true) {
                       setState(() {
-                        _connectionsFuture = getConnections();
+                        _connectionsFuture = getConnections(hideMediator: true);
                       });
                     }
                   });

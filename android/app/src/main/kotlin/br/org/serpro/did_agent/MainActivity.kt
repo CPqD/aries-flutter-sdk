@@ -83,7 +83,13 @@ class MainActivity: FlutterFragmentActivity() {
                 }
                 "getConnections" -> {
                     try {
-                        getConnections(result)
+                        var hideMediator = call.argument<Boolean>("hideMediator")
+
+                        if (hideMediator == null) {
+                            hideMediator = false
+                        }
+
+                        getConnections(hideMediator, result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getConnections: $e", null)
                     }
@@ -329,7 +335,7 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun getConnections(result: MethodChannel.Result) {
+    private fun getConnections(hideMediator: Boolean, result: MethodChannel.Result) {
         Log.d("MainActivity", "getConnections called from Kotlin...")
 
         validateAgent()
@@ -352,6 +358,9 @@ class MainActivity: FlutterFragmentActivity() {
             Log.d("MainActivity", "getConnections -> connections is not Null Or Empty")
 
             for (connection in connections) {
+                if (hideMediator && connection.mediatorId == null) {
+                    continue
+                }
                 connectionsList.add(JsonConverter.toMap(connection))
             }
 
