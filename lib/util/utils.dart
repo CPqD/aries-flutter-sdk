@@ -14,10 +14,19 @@ import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
 import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../agent/models/connection/connection_history.dart';
 
-Future<AriesResult> init() => AriesResult.invoke(AriesMethod.init);
+Future<AriesResult> init() async {
+  var mediatorUrl = String.fromEnvironment('MEDIATOR_URL');
+
+  if (mediatorUrl.isEmpty) {
+    mediatorUrl = dotenv.env['MEDIATOR_URL'] ?? '';
+  }
+
+  return await AriesResult.invoke(AriesMethod.init, {'mediatorUrl': mediatorUrl});
+}
 
 Future<AriesResult> openWallet() => AriesResult.invoke(AriesMethod.openWallet);
 

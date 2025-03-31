@@ -33,13 +33,13 @@ import kotlin.Exception
 
 
 const val genesisPath = "bcovrin-genesis.txn"
-const val mediatorUrl = "https://blockchain.cpqd.com.br/cpqdid/agent-mediator-endpoint-com?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9jb25uZWN0aW9ucy8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiMGEyYzc4MTYtMGYxZC00OTc3LTg5YzAtMGE0NmNhNTg4Nzk0IiwgInJlY2lwaWVudEtleXMiOiBbIjRFVFhHZGM3UjJzYVBzZktZR1g1dU15dDNFWU5aQVdyejJpN3VXbnN0eGJkIl0sICJsYWJlbCI6ICJNZWRpYWRvciBTT1UgaUQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHBzOi8vYmxvY2tjaGFpbi5jcHFkLmNvbS5ici9jcHFkaWQvYWdlbnQtbWVkaWF0b3ItZW5kcG9pbnQtY29tIn0="
 
 class MainActivity: FlutterFragmentActivity() {
     companion object {
         private const val INTEGRITYCHANNEL = "br.gov.serprocpqd/wallet"
     }
     private var agent: Agent? = null
+    private var mediatorUrl: String? = null
     private var walletKey: String? = null
     private var subscribed = false
 
@@ -54,7 +54,8 @@ class MainActivity: FlutterFragmentActivity() {
             when (call.method) {
                 "init" -> {
                     try {
-                        init(result)
+                        val mediatorUrl = call.argument<String>("mediatorUrl")
+                        init(mediatorUrl, result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao inicializar agente: $e", null)
                     }
@@ -223,8 +224,12 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    private fun init(result: MethodChannel.Result) {
+    private fun init(mediatorUrl: String?, result: MethodChannel.Result) {
         Log.d("MainActivity", "init called from Kotlin...")
+
+        validateNotNull("MediatorUrl", mediatorUrl)
+
+        this.mediatorUrl = mediatorUrl
 
         val sharedPreferences: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
         walletKey = sharedPreferences.getString("flutter.walletKey", null)
@@ -243,12 +248,6 @@ class MainActivity: FlutterFragmentActivity() {
         }
 
         result.success(mapOf("error" to "", "result" to true))
-    }
-
-    private fun copyResourceFile(resource: String) {
-        val inputStream = applicationContext.assets.open(resource)
-        val file = File(applicationContext.filesDir.absolutePath, resource)
-        file.outputStream().use { inputStream.copyTo(it) }
     }
 
     private fun openWallet(result: MethodChannel.Result) {
@@ -780,6 +779,12 @@ class MainActivity: FlutterFragmentActivity() {
 
             result.error("1", e.message, null)
         }
+    }
+
+    private fun copyResourceFile(resource: String) {
+        val inputStream = applicationContext.assets.open(resource)
+        val file = File(applicationContext.filesDir.absolutePath, resource)
+        file.outputStream().use { inputStream.copyTo(it) }
     }
 
     private fun sendBasicMessageToFlutter(basicMessageRecord: BasicMessageRecord) {

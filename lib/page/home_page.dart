@@ -65,6 +65,28 @@ class HomePageState extends State<HomePage> {
     addToHistory(AriesConnectionHistory.fromBasicMessage(basicMessage));
 
     connectionHistoryKey.currentState?.reloadHistory();
+
+    final title = basicMessage.connectionRecord?.theirLabel == null
+        ? 'Nova Mensagem'
+        : 'Nova Mensagem de ${basicMessage.connectionRecord?.theirLabel}';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(basicMessage.content),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void credentialRevocationReceived(String credentialId) {
