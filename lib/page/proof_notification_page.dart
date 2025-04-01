@@ -119,11 +119,14 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
         color: isSuccess ? Colors.green : Colors.red,
       ),
       SizedBox(width: 4),
-      Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: isSuccess ? Colors.green : Colors.red,
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isSuccess ? Colors.green : Colors.red,
+            overflow: TextOverflow.visible,
+          ),
         ),
       ),
     ]);
