@@ -64,9 +64,7 @@ class CredentialRecord {
   }
 
   String getSubtitle() {
-    return 'revocationId: $revocationId\n'
-        'schemaName: $schemaName\n'
-        'schemaVersion: $schemaVersion\n'
+    return 'ID: $credentialId\n'
         '${createdAt?.toLocal()}';
   }
 

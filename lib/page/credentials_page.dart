@@ -56,7 +56,13 @@ class _CredentialsPageState extends State<CredentialsPage> {
               return ListTile(
                 title: Row(
                   children: [
-                    Text(credential.credentialId),
+                    Expanded(
+                      child: Text(
+                        'Credencial ${credential.schemaName}',
+                        overflow:
+                            TextOverflow.ellipsis, // Prevents overflow by truncating text
+                      ),
+                    ),
                     if (credential.revocationNotification != null)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
