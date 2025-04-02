@@ -8,10 +8,10 @@
 import AriesFramework
 
 class MapConverter {
-    static func toMap(connection: ConnectionRecord) -> Dictionary<String, Any?>? {
+    static func toMap(_ obj: ConnectionRecord) -> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(connection)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -20,23 +20,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(credential: CredentialRecord) -> Dictionary<String, Any?>? {
+    static func toMap(_ obj: CredentialRecord) -> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(credential)
-        do {
-            return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-        } catch {
-            print(error.localizedDescription)
-        }
-        
-        return nil
-    }
-    
-    static func toMap(credentialExchangeRecord: CredentialExchangeRecord)-> Dictionary<String, Any?>? {
-        let encoder = JSONEncoder()
-        // swiftlint:disable:next force_try
-        let data = try! encoder.encode(credentialExchangeRecord)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -46,10 +33,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(didCommMessage: DidCommMessageRecord)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: CredentialExchangeRecord)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(didCommMessage)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -59,10 +46,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(didDoc: DidDoc?)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: DidCommMessageRecord)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(didDoc)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -72,10 +59,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(didDocService: DidDocService)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: DidDoc?)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(didDocService)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -85,10 +72,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(invitation: ConnectionInvitationMessage)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: DidDocService)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(invitation)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -98,8 +85,21 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(outOfBandInvitation: OutOfBandInvitation)-> Dictionary<String, Any?>? {
-        let text = outOfBandInvitation.toJsonString()
+    static func toMap(_ obj: ConnectionInvitationMessage)-> [String: Any?]? {
+        let encoder = JSONEncoder()
+        // swiftlint:disable:next force_try
+        let data = try! encoder.encode(obj)
+        do {
+            return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        return nil
+    }
+    
+    static func toMap(_ obj: OutOfBandInvitation)-> [String: Any?]? {
+        let text = obj.toJsonString()
         if let data = text.data(using: .utf8) {
             do {
                 return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
@@ -110,10 +110,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(proofExchangeRecord: ProofExchangeRecord)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: ProofExchangeRecord)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(proofExchangeRecord)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -123,10 +123,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(requestedAttribute: RequestedAttribute)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: RequestedAttribute)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(requestedAttribute)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -136,10 +136,10 @@ class MapConverter {
         return nil
     }
     
-    static func toMap(requestedPredicate: RequestedPredicate)-> Dictionary<String, Any?>? {
+    static func toMap(_ obj: RequestedPredicate)-> [String: Any?]? {
         let encoder = JSONEncoder()
         // swiftlint:disable:next force_try
-        let data = try! encoder.encode(requestedPredicate)
+        let data = try! encoder.encode(obj)
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
@@ -148,6 +148,20 @@ class MapConverter {
         
         return nil
     }
+    
+    static func toMap(_ obj: BasicMessageRecord)-> [String: Any?]? {
+        let encoder = JSONEncoder()
+        let data = try! encoder.encode(obj)
+        do {
+            return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        return nil
+    }
+    
+    
     
     static func toStringList(objs: Array<Any>) -> Array<String> {
         var result = Array<String>()
@@ -163,7 +177,7 @@ class MapConverter {
         var result = Array<Dictionary<String, Any?>>()
         
         for didDocService in didDocServices {
-            if let didDocService = toMap(didDocService: didDocService) {
+            if let didDocService = toMap(didDocService) {
                 result.append(didDocService)
             }
         }
@@ -175,7 +189,7 @@ class MapConverter {
         var result = Array<[String: Any?]>()
         
         for requestedAttribute in requestedAttributes {
-            result.append(toMap(requestedAttribute : requestedAttribute)!)
+            result.append(toMap(requestedAttribute)!)
         }
         
         return result
@@ -185,7 +199,7 @@ class MapConverter {
         var result = Array<[String: Any?]>()
         
         for requestedPredicate in requestedPredicates {
-            result.append(toMap(requestedPredicate : requestedPredicate)!)
+            result.append(toMap(requestedPredicate)!)
         }
         
         return result
