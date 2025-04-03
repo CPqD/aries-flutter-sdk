@@ -24,8 +24,8 @@ class ProofUtils {
             selectedCredentialsPredicates: Map<String, String>
         ): ProofExchangeRecord {
             val retrievedCredentials = agent.proofs.getRequestedCredentialsForProofRequest(proofRecordId)
-            Log.e("MainActivity","acceptProofOffer - retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes}")
-            Log.e("MainActivity","acceptProofOffer - retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates}")
+            Log.e("ProofUtils","acceptProofOffer - retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes}")
+            Log.e("ProofUtils","acceptProofOffer - retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates}")
 
             val requestedCredentials = RequestedCredentials()
 
@@ -86,19 +86,20 @@ class ProofUtils {
             )
 
             val proofRequestJson = getProofRequestJson(agent, proofRecordId, recordMessageType)
-            Log.d("MainActivity", "proofRequestJson: $proofRequestJson")
+            Log.d("ProofUtils", "proofRequestJson: $proofRequestJson")
 
             val proofRequest = Json.decodeFromString<ProofRequest>(proofRequestJson)
-            Log.d("MainActivity", "proofRequest: $proofRequest")
+            Log.d("ProofUtils", "proofRequest: $proofRequest")
 
             val retrievedCredentials = agent.proofService.getRequestedCredentialsForProofRequest(proofRequest)
 
             Log.d(
-                "MainActivity",
+                "ProofUtils",
                 "retrievedCredentials.requestedAttributes: ${retrievedCredentials.requestedAttributes}"
             )
+
             Log.d(
-                "MainActivity",
+                "ProofUtils",
                 "retrievedCredentials.requestedPredicates: ${retrievedCredentials.requestedPredicates}"
             )
 
@@ -158,8 +159,8 @@ class ProofUtils {
                 )
             }
 
-            Log.d("MainActivity", "attributesList: $attributesList")
-            Log.d("MainActivity", "predicatesList: $predicatesList")
+            Log.d("ProofUtils", "attributesList: $attributesList")
+            Log.d("ProofUtils", "predicatesList: $predicatesList")
 
             return Triple(attributesList, predicatesList, proofRequestJson)
         }
@@ -170,7 +171,7 @@ class ProofUtils {
             requestedPredicate: RequestedPredicate,
             proofRequestJson: String
         ): Map<String, Any?> {
-            Log.d("MainActivity", "credentialPredicateValidation for $predicateName")
+            Log.d("ProofUtils", "credentialPredicateValidation for $predicateName")
 
             var predicateError = ""
             val requestedCredentials = RequestedCredentials()
@@ -183,10 +184,10 @@ class ProofUtils {
                     requestedCredentials
                 )
 
-                Log.d("MainActivity", "proofService.createProof OK")
+                Log.d("ProofUtils", "proofService.createProof OK")
 
             } catch (e: Exception) {
-                Log.d("MainActivity", "proofService.createProof ERROR: $e")
+                Log.d("ProofUtils", "proofService.createProof ERROR: $e")
 
                 predicateError = e.toString()
             }

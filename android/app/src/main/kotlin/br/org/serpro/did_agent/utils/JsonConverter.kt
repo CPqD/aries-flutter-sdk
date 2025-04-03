@@ -24,6 +24,7 @@ class JsonConverter {
                 "createdAt" to basicMessageRecord.createdAt.toString(),
                 "content" to basicMessageRecord.content,
                 "connectionRecord" to basicMessageRecord.connectionRecord?.let { toMap(basicMessageRecord.connectionRecord!!) },
+                "recordType" to "BasicMessage",
             )
         }
 
@@ -89,6 +90,7 @@ class JsonConverter {
                 "threadId" to credentialExchangeRecord.threadId,
                 "state" to credentialExchangeRecord.state,
                 "protocolVersion" to credentialExchangeRecord.protocolVersion,
+                "recordType" to "CredentialRecord",
             )
         }
 
@@ -171,6 +173,7 @@ class JsonConverter {
                 "connectionId" to proofExchangeRecord.connectionId,
                 "threadId" to proofExchangeRecord.threadId,
                 "state" to proofExchangeRecord.state,
+                "recordType" to "ProofExchangeRecord"
             )
         }
 

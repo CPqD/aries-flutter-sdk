@@ -39,11 +39,11 @@ class CredentialUtils {
         suspend fun getAllAsMaps(agent: Agent): List<Map<String, Any?>> {
             val credentials = agent.credentialRepository.getAll()
 
-            Log.d("MainActivity", "credentials: ${credentials.toString()}")
+            Log.d("CredentialUtils", "credentials: ${credentials.toString()}")
 
 //          TODO - remove
             for (credential in credentials) {
-                Log.d("MainActivity", "credential: ${credential.credentialId} - comment=${credential.revocationNotification?.comment} date=${credential.revocationNotification?.revocationDate}")
+                Log.d("CredentialUtils", "credential: ${credential.credentialId} - comment=${credential.revocationNotification?.comment} date=${credential.revocationNotification?.revocationDate}")
             }
 
             val credentialsList = mutableListOf<Map<String, Any?>>()
@@ -64,7 +64,7 @@ class CredentialUtils {
                 return null
             }
 
-            Log.d("MainActivity", "credential: $credential")
+            Log.d("CredentialUtils", "credential: $credential")
 
             return JsonConverter.toMap(credential)
         }
@@ -72,7 +72,7 @@ class CredentialUtils {
         suspend fun getExchangesByState(agent: Agent, state: CredentialState): List<Map<String, Any?>> {
             val credentialsReceived = agent.credentialExchangeRepository.findByQuery("{\"state\": \"${state}\"}")
 
-            Log.d("MainActivity", "credentialsReceived size: ${credentialsReceived.size}")
+            Log.d("CredentialUtils", "credentialsReceived size: ${credentialsReceived.size}")
 
             val credentialsOffersList = mutableListOf<Map<String, Any?>>()
 
