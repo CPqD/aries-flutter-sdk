@@ -62,27 +62,25 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
       final credExchangeRecord = historyItem.record as CredentialExchangeRecord?;
 
       if (credExchangeRecord != null &&
-          (CredentialState.done.equals(credExchangeRecord.state) ||
-              CredentialState.declined.equals(credExchangeRecord.state))) {
-        newPage = CredentialHistoryPage(connectionHistory: historyItem);
-      } else {
+          CredentialState.offerReceived.equals(credExchangeRecord.state)) {
         final notifications = await getNotifications();
         final notification = notifications.firstWhere((x) => x.id == historyItem.id);
 
         newPage = CredentialNotificationPage(notification: notification);
+      } else {
+        newPage = CredentialHistoryPage(connectionHistory: historyItem);
       }
     } else if (historyItem.type == ConnectionHistoryType.connectionProof) {
       final proofExchangeRecord = historyItem.record as ProofExchangeRecord?;
 
       if (proofExchangeRecord != null &&
-          (ProofState.done.equals(proofExchangeRecord.state) ||
-              ProofState.declined.equals(proofExchangeRecord.state))) {
-        newPage = ProofHistoryPage(connectionHistory: historyItem);
-      } else {
+          ProofState.requestReceived.equals(proofExchangeRecord.state)) {
         final notifications = await getNotifications();
         final notification = notifications.firstWhere((x) => x.id == historyItem.id);
 
         newPage = ProofNotificationPage(notification: notification);
+      } else {
+        newPage = ProofHistoryPage(connectionHistory: historyItem);
       }
     }
 
