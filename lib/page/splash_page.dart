@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:did_agent/global.dart';
 import 'package:flutter/material.dart';
 
@@ -36,8 +38,10 @@ class _SplashPageState extends State<SplashPage> {
       print(openResult);
 
       if (openResult.success || openResult.error == "Wallet is already open") {
-        final subscribeResult = await subscribe();
-        print(subscribeResult);
+        if (Platform.isAndroid) {
+          final subscribeResult = await subscribe();
+          print(subscribeResult);
+        }
 
         updateNotifications();
 

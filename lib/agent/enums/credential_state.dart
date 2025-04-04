@@ -8,7 +8,8 @@ enum CredentialState {
   requestReceived('RequestReceived'),
   credentialIssued('CredentialIssued'),
   credentialReceived('CredentialReceived'),
-  done('Done');
+  done('Done'),
+  revoked('Revoked');
 
   final String value;
 

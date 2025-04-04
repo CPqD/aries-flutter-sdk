@@ -318,6 +318,7 @@ class MainActivity: FlutterFragmentActivity() {
         validateAgent()
         validateNotNull("CredentialId", credentialId)
 
+
         try {
             val credential = runBlocking { CredentialUtils.getDetails(agent!!, credentialId!!) }
 

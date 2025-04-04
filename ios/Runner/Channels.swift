@@ -18,48 +18,49 @@ extension AppDelegate {
         channel.setMethodCallHandler({
             [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
             
+            let args = self!.argsToMap(call.arguments)
             switch (call.method) {
             case "init":
-                self!.initWallet(mediatorUrl: (call.arguments as! [String])[0], flutterResult: result)
+                self!.initWallet(mediatorUrl: args?["mediatorUrl"] as? String, flutterResult: result)
             case "openwallet":
                 self!.openWallet(flutterResult: result)
             case "getCredentials":
                 self!.getCredentials(flutterResult: result)
             case "getCredential":
-                self!.getCredential(credentialId: (call.arguments as! [String])[0], flutterResult: result)
+                self!.getCredential(credentialId: args?["credentialId"] as! String, flutterResult: result)
             case "getConnections":
-                self!.getConnections(flutterResult: result)
+                self!.getConnections( hideMediator: args?["hideMediator"] as! Bool, flutterResult: result)
             case "getCredentialsOffers":
                 self!.getCredentialsOffers(flutterResult: result)
             case "getDidCommMessage":
-                self!.getDidCommMessage(associatedRecordId: (call.arguments as! [String])[0], flutterResult: result)
+                self!.getDidCommMessage(associatedRecordId: args?["associatedRecordId"] as! String, flutterResult: result)
             case "getDidCommMessagesByRecord":
-                self!.getDidCommMessagesByRecord(associatedRecordId: (call.arguments as! [String])[0], flutterResult: result)
+                self!.getDidCommMessagesByRecord(associatedRecordId: args?["associatedRecordId"] as! String, flutterResult: result)
             case "getProofOffers":
                 self!.getProofOffers(flutterResult: result)
             case "getProofOfferDetails":
-                self!.getProofOfferDetails(proofRecordId: (call.arguments as! [String])[0], flutterResult: result)
+                self!.getProofOfferDetails(proofRecordId: args?["proofRecordId"] as! String, flutterResult: result)
             case "receiveInvitation":
-                self!.receiveInvitation(url: (call.arguments as! [String])[0], flutterResult: result)
+                self!.receiveInvitation(url: args?["invitationUrl"] as! String, flutterResult: result)
             case "shutdown":
                 self!.shutdown(flutterResult: result)
             case "acceptCredentialOffer":
-                self!.acceptCredentialOffer(credentialRecordId: (call.arguments as! [String])[0],
-                                            protocolVersion: (call.arguments as! [String])[1], flutterResult: result)
+                self!.acceptCredentialOffer(credentialRecordId: args?["credentialRecordId"] as? String,
+                                            protocolVersion: args?["protocolVersion"] as? String, flutterResult: result)
             case "declineCredentialOffer":
-                self!.declineCredentialOffer(credentialRecordId: (call.arguments as! [String])[0], protocolVersion: (call.arguments as! [String])[1],flutterResult: result)
+                self!.declineCredentialOffer(credentialRecordId: args?["credentialRecordId"] as? String, protocolVersion: args?["protocolVersion"] as? String,flutterResult: result)
             case "acceptProofOffer":
-                self!.acceptProofOffer(proofRecordId: (call.arguments as! [Any])[0] as? String,
-                                       selectedCredentialsAttributes: (call.arguments as! [Any])[1] as? [String : String] , selectedCredentialsPredicates:(call.arguments as! [Any])[2] as? [String : String],
+                self!.acceptProofOffer(proofRecordId:args?["proofRecordId"] as? String,
+                                       selectedCredentialsAttributes: args?["selectedCredentialsAttributes"] as? [String : String], selectedCredentialsPredicates:args?["selectedCredentialsPredicates"] as? [String : String],
                                        flutterResult: result)
             case "declineProofOffer":
-                self!.declineProofOffer(proofRecordId: (call.arguments as! [String])[0], flutterResult: result)
+                self!.declineProofOffer(proofRecordId: args?["proofRecordId"] as? String, flutterResult: result)
             case "removeCredential":
-                self!.removeCredential(credentialRecordId: (call.arguments as! [String])[0],flutterResult: result)
+                self!.removeCredential(credentialRecordId: args?["credentialRecordId"] as? String,flutterResult: result)
             case "removeConnection":
-                self!.removeConnection(connectionId: (call.arguments as! [String])[0],flutterResult: result)
+                self!.removeConnection(connectionId: args?["connectionRecordId"] as? String,flutterResult: result)
             case "getConnectionHistory":
-                self!.getConnectionHistory(connectionId: (call.arguments as! [String])[0],flutterResult: result)
+                self!.getConnectionHistory(connectionId: args?["connectionId"] as! String,flutterResult: result)
             default:
                 var dict : [String : Any] = [:]
                 dict["error"] = ""
@@ -69,10 +70,14 @@ extension AppDelegate {
         })
     }
     
+    func argsToMap(_ arguments: Any?) -> [String: Any]? {
+        return arguments as? [String: Any]
+    }
+    
     //MARK: initWallet
     func initWallet (mediatorUrl : String?, flutterResult : @escaping FlutterResult) {
         guard let mediatorUrl = mediatorUrl else {
-            sendError("credentialRecordId is null", flutterResult)
+            sendError("mediatorUrl is null", flutterResult)
             return
         }
         
@@ -93,6 +98,12 @@ extension AppDelegate {
                     return
                 }
             }
+        }
+        else {
+            var dict : [String : Any] = [:]
+            dict["error"] = ""
+            dict["result"] = true
+            flutterResult(dict)
         }
     }
     
@@ -130,11 +141,14 @@ extension AppDelegate {
             let credentials =  await agent!.credentialRepository?.getAll()
             var listCredentials : [[String : Any?]] = []
             for credential in credentials ?? [] {
-                if let rowDict = MapConverter.toMap(credential: credential) {
+                if let rowDict = MapConverter.toMap(credential) {
                     listCredentials.append(rowDict)
                 }
             }
-            flutterResult(listCredentials)
+            var dict : [String : Any] = [:]
+            dict["error"] = ""
+            dict["result"] = toJson(listCredentials)
+            flutterResult(dict)
         }
     }
     
@@ -148,7 +162,12 @@ extension AppDelegate {
                     
                     return
                 }
-                flutterResult(MapConverter.toMap(credential: credential))
+                
+                var dict : [String : Any] = [:]
+                dict["error"] = ""
+                dict["result"] = toJson(MapConverter.toMap(credential) as Any)
+                flutterResult(dict)
+
             } catch let error {
                 sendError(error, flutterResult)
             }
@@ -156,30 +175,43 @@ extension AppDelegate {
     }
     
     //MARK: getConnections
-    func getConnections(flutterResult : @escaping FlutterResult) {
+    func getConnections(hideMediator : Bool, flutterResult : @escaping FlutterResult) {
         Task {
             let connections =  await agent!.connectionRepository?.getAll()
-            var listCredentials : [[String : Any?]] = []
+            var list : [[String : Any?]] = []
             for connection in connections ?? [] {
-                if let rowDict = MapConverter.toMap(connection: connection) {
-                    listCredentials.append(rowDict)
+                if(hideMediator && connection.mediatorId == nil){
+                    continue
+                }
+                if let rowDict = MapConverter.toMap(connection) {
+                    list.append(rowDict)
+                    print(rowDict)
                 }
             }
-            flutterResult(listCredentials)
+            var dict : [String : Any] = [:]
+            dict["error"] = ""
+            dict["result"] = toJson(list)
+            flutterResult(dict)
         }
     }
     
     //MARK: getCredentialsOffers
     func getCredentialsOffers(flutterResult : @escaping FlutterResult) {
         Task {
-            let credentialsOffers =  await agent!.credentialExchangeRepository?.findByQuery("{\"state\": \"\(CredentialState.OfferReceived)\"}" )
+            let credentialsOffers =  await agent!.credentialExchangeRepository?.findByQuery("{\"state\": \"\(CredentialState.OfferReceived.rawValue)\"}" )
             var listCredentials : [[String : Any?]] = []
             for credential in credentialsOffers ?? [] {
-                if let rowDict = MapConverter.toMap(credentialExchangeRecord: credential) {
+                if let rowDict = MapConverter.toMap( credential) {
                     listCredentials.append(rowDict)
                 }
             }
-            flutterResult(listCredentials)
+
+            var dict : [String : Any] = [:]
+            dict["error"] = ""
+            dict["result"] = toJson(listCredentials)
+            
+            
+            flutterResult(dict)
         }
     }
     
@@ -370,16 +402,23 @@ extension AppDelegate {
     //MARK: getDidCommMessage
     func getDidCommMessage(associatedRecordId: String, flutterResult : @escaping FlutterResult) {
         Task {
-            do{
-                let didCommMessage =  try await agent!.didCommMessageRepository?.getSingleByQuery("{\"associatedRecordId\": \"\(associatedRecordId)\"}")
+            
+                let didCommMessage =  await agent!.didCommMessageRepository?.findByQuery("{\"associatedRecordId\": \"\(associatedRecordId)\"}")
                 if (didCommMessage == nil) {
                     sendError("didCommMessage not found", flutterResult)
                     return
                 }
-                flutterResult(MapConverter.toMap(didCommMessage: didCommMessage!))
-            } catch let error {
-                sendError(error, flutterResult)
-            }
+                if(didCommMessage?.count ?? 0 == 0) {
+                    sendError("didCommMessage not found", flutterResult)
+                    return
+                }
+                var dict : [String : Any] = [:]
+                dict["error"] = ""
+                dict["result"] = toJson(MapConverter.toMap( didCommMessage![0]) as Any)
+                
+                flutterResult(dict)
+                
+            
         }
     }
     
@@ -391,7 +430,7 @@ extension AppDelegate {
             print("inicio 2")
             var list : [[String : Any?]] = []
             for item in items  {
-                if let rowDict = MapConverter.toMap(proofExchangeRecord: item) {
+                if let rowDict = MapConverter.toMap(item) {
                     
                     list.append(rowDict)
                 }
@@ -412,6 +451,7 @@ extension AppDelegate {
                 
                 guard let proofRequestJson = await getProofRequestJson(proofRecordId: proofRecordId, recordMessageType:recordMessageType) else {
                     self.sendError("proofRequestJson is null", flutterResult)
+                    return
                 }
                 
                 let data = proofRequestJson.data(using: .utf8)!
@@ -476,7 +516,7 @@ extension AppDelegate {
             
             var list : [[String : Any?]] = []
             for item in items  {
-                if let rowDict = MapConverter.toMap(didCommMessageRecord: item) {
+                if let rowDict = MapConverter.toMap(item) {
                     
                     list.append(rowDict)
                 }
@@ -508,7 +548,7 @@ extension AppDelegate {
                 var proofs =  await agent!.proofRepository.findByQuery("{\"connectionId\": \"\(connectionId)\"}")
                 
                 for record in proofs {
-                    var map = MapConverter.toMap(proofExchangeRecord: record)
+                    var map = MapConverter.toMap(record)
                     map?["recordType"] = "ProofExchangeRecord"
                     if let _ = proofsMap[record.id] {
                         if record.state != ProofState.RequestSent {
@@ -531,7 +571,7 @@ extension AppDelegate {
                 var dict : [String : Any] = [:]
                 dict["credentials"] = credentialsMap
                 dict["proofs"] = proofsMap
-                dict["basicMessages"] = basicMessagesList
+                dict["basicMessages"] = toJson(basicMessagesList)
                 flutterResult(dict)
                 
             } catch {
@@ -552,16 +592,16 @@ extension AppDelegate {
         do{
             
             if(recordMessageType.message.contains("/2,0'")) {
-                var proofRequestMessageJson = try await agent!.didCommMessageRepository.getAgentMessage(
+                let proofRequestMessageJson = try await agent!.didCommMessageRepository.getAgentMessage(
                     associatedRecordId: proofRecordId,
                     messageType: RequestPresentationMessageV2.type
                 )
                 
-                var proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as! RequestPresentationMessageV2
+                let proofRequestMessage = MessageSerializer.decodeFromString(proofRequestMessageJson) as! RequestPresentationMessageV2
                 return try proofRequestMessage.indyProofRequest()
                 
             } else {
-                var proofRequestMessageJson = try await agent!.didCommMessageRepository.getAgentMessage(
+                let proofRequestMessageJson = try await agent!.didCommMessageRepository.getAgentMessage(
                     associatedRecordId: proofRecordId,
                     messageType: RequestPresentationMessage.type
                 )
@@ -573,4 +613,11 @@ extension AppDelegate {
             return nil
         }
     }
+    
+    func toJson(_ json: Any) -> String{
+        let jsonData = try! JSONSerialization.data(withJSONObject: json, options: [])
+        return String(data: jsonData, encoding: .utf8)!
+    }
+
+    
 }

@@ -57,7 +57,7 @@ class CredentialDetailsPage extends StatelessWidget {
                       'Revocation Registry ID:', credential.revocationRegistryId ?? ''),
                   buildDetailRow('Attributes:', credential.attributes.toString()),
                   buildDetailRow('Revocation Notification:',
-                      credential.revocationNotification.toString()),
+                      credential.revocationNotification?.toString() ?? ''),
                 ],
               ),
             ),
