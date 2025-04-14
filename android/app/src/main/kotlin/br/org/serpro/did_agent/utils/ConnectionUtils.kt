@@ -25,48 +25,8 @@ class ConnectionUtils {
             return connectionsList
         }
 
-        data class ConnectionHistory(
-            val credentialsMap: Collection<Map<String, Any?>>,
-            val proofsMap: Collection<Map<String, Any?>>,
-            val basicMessagesList: Collection<Map<String, Any?>>
-        )
-
-        suspend fun getHistory(agent: Agent, connectionId: String): ConnectionHistory {
-            val credentialsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
-            val proofsMap = emptyMap<String, Map<String, Any?>>().toMutableMap()
-            val basicMessagesList = mutableListOf<Map<String, Any?>>()
-
-            val credentials = agent.credentialExchangeRepository.findByQuery(
-                "{\"connectionId\": \"${connectionId}\"}"
-            )
-
-            for (record in credentials) {
-                if (credentialsMap.containsKey(record.id) && record.state != CredentialState.OfferSent) {
-                    continue
-                }
-                credentialsMap[record.id] = JsonConverter.toMap(record)
-            }
-
-            val proofs = agent.proofRepository.findByQuery("{\"connectionId\": \"${connectionId}\"}")
-
-            for (record in proofs) {
-                if (proofsMap.containsKey(record.id) && record.state != ProofState.RequestSent) {
-                    continue
-                }
-                proofsMap[record.id] = JsonConverter.toMap(record)
-            }
-
-            val basicMessages = runBlocking { agent.basicMessageRepository.findByConnectionRecordId(connectionId) }
-
-            for (basicMessage in basicMessages) {
-                basicMessagesList.add(JsonConverter.toMap(basicMessage))
-            }
-
-            Log.d("ConnectionUtils", "credentialsMap: $credentialsMap")
-            Log.d("ConnectionUtils", "proofsMap: $proofsMap")
-            Log.d("ConnectionUtils", "basicMessagesList: $basicMessagesList")
-
-            return ConnectionHistory(credentialsMap.values, proofsMap.values, basicMessagesList)
+        suspend fun getHistoryFromTypes(agent: Agent, types: List<String>, connectionId: String): List<Map<String, Any?>> {
+            return HistoryUtils.getHistoryFromTypes(agent, types, connectionId, null)
         }
     }
 }

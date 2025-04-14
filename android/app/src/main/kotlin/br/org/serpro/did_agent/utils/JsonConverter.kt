@@ -8,9 +8,12 @@ import org.hyperledger.ariesframework.connection.models.didauth.DidDoc
 import org.hyperledger.ariesframework.connection.models.didauth.DidDocService
 import org.hyperledger.ariesframework.connection.models.didauth.publicKey.PublicKey
 import org.hyperledger.ariesframework.connection.repository.ConnectionRecord
+import org.hyperledger.ariesframework.credentials.models.CredentialPreviewAttribute
 import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
+import org.hyperledger.ariesframework.history.repository.HistoryRecord
 import org.hyperledger.ariesframework.oob.messages.OutOfBandInvitation
 import org.hyperledger.ariesframework.proofs.models.RequestedAttribute
+import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import org.hyperledger.ariesframework.revocationnotification.model.RevocationNotification
@@ -94,6 +97,14 @@ class JsonConverter {
             )
         }
 
+        fun toMap(credPreviewAttr: CredentialPreviewAttribute): Map<String, Any?> {
+            return mapOf(
+                "name" to credPreviewAttr.name,
+                "mimeType" to credPreviewAttr.mimeType,
+                "value" to credPreviewAttr.value,
+            )
+        }
+
         fun toMap(didCommMessage: DidCommMessageRecord): Map<String, Any?> {
             return mapOf(
                 "id" to didCommMessage.id,
@@ -113,6 +124,22 @@ class JsonConverter {
                 "publicKey" to toPublicKeyList(didDoc.publicKey),
                 "authentication" to toStringList(didDoc.authentication),
                 "service" to toDidDocServiceList(didDoc.service),
+            )
+        }
+
+        fun toMap(record: HistoryRecord): Map<String, Any?> {
+            return mapOf(
+                "id" to record.id,
+                "createdAt" to record.createdAt.toString(),
+                "historyType" to record.historyType.toString(),
+                "connectionId" to record.connectionId,
+                "associatedRecordId" to record.associatedRecordId,
+                "theirLabel" to record.theirLabel,
+                "content" to record.content,
+                "credentialPreviewAttr" to record.credentialPreviewAttr?.let {
+                    toCredentialPreviewAttributeList(it)
+                },
+                "proofRequestedCredentials" to record.proofRequestedCredentials?.toJsonString(),
             )
         }
 
@@ -190,6 +217,16 @@ class JsonConverter {
 
             for (obj in objs) {
                 result.add(obj.toString())
+            }
+
+            return result
+        }
+
+        fun toCredentialPreviewAttributeList(credPreviewAttrs: List<CredentialPreviewAttribute>): List<Map<String, Any?>> {
+            val result = mutableListOf<Map<String, Any?>>()
+
+            for (credPreviewAttr in credPreviewAttrs) {
+                result.add(toMap(credPreviewAttr))
             }
 
             return result

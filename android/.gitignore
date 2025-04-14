@@ -15,3 +15,4 @@ local.properties
 
 app/.cxx
 app/src/main/jniLibs
+app/.gradle

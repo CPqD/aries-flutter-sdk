@@ -1,12 +1,12 @@
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/agent/models/proof/details/predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_preview.dart';
-import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
 class ProofHistoryPage extends StatefulWidget {
-  final AriesConnectionHistory connectionHistory;
+  final HistoryRecord connectionHistory;
 
   const ProofHistoryPage({super.key, required this.connectionHistory});
 
@@ -66,7 +66,7 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(widget.connectionHistory.title),
+          title: Text(widget.connectionHistory.getTitle()),
         ),
         body: Center(child: CircularProgressIndicator()),
       );
@@ -74,7 +74,7 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
     if (_errorMessage != null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(widget.connectionHistory.title),
+          title: Text(widget.connectionHistory.getTitle()),
         ),
         body: Center(child: Text(_errorMessage!)),
       );
@@ -82,14 +82,14 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
     if (_proofPreview == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(widget.connectionHistory.title),
+          title: Text(widget.connectionHistory.getTitle()),
         ),
         body: Center(child: Text('Nenhum dado disponível.')),
       );
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.connectionHistory.title),
+        title: Text(widget.connectionHistory.getTitle()),
       ),
       body: SingleChildScrollView(
         child: Column(

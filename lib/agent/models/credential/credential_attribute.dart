@@ -14,9 +14,13 @@ class CredentialAttribute {
     );
   }
 
+  static List<CredentialAttribute> fromList(List<Map<String, dynamic>> list) {
+    return list.map((e) => CredentialAttribute.fromMap(e)).toList();
+  }
+
   @override
   String toString() {
-    return 'CredentialAttributes{'
+    return 'CredentialAttribute{'
         'name: $name, '
         'value: $value'
         '}';

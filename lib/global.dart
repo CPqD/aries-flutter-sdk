@@ -1,7 +1,8 @@
+import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/connection/connection_record.dart';
+import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:did_agent/page/notifications_page.dart';
-import 'package:did_agent/util/aries_connection_history.dart';
 import 'package:did_agent/util/aries_notification.dart';
 import 'package:did_agent/util/utils.dart';
 
@@ -56,13 +57,11 @@ void _refreshNotificationsPage() => notificationsKey.currentState?.reload();
 
 // ConnectionHistory
 
-List<AriesConnectionHistory> _connectionHistory = [];
+List<HistoryRecord> _connectionHistory = [];
 
 Future<void> updateConnectionHistory(ConnectionRecord connection) async {
   try {
-    List<AriesConnectionHistory> updatedConnectionHistory = [
-      startConnectionHistory(connection)
-    ];
+    List<HistoryRecord> updatedConnectionHistory = [startConnectionHistory(connection)];
 
     final connectionHistoryResult = await getConnectionHistory(connection.id);
 
@@ -73,17 +72,7 @@ Future<void> updateConnectionHistory(ConnectionRecord connection) async {
       return;
     }
 
-    for (var credential in connectionHistoryResult.value!.credentials) {
-      updatedConnectionHistory.add(AriesConnectionHistory.fromCredential(credential));
-    }
-
-    for (var proof in connectionHistoryResult.value!.proofs) {
-      updatedConnectionHistory.add(AriesConnectionHistory.fromProof(proof));
-    }
-
-    for (var message in connectionHistoryResult.value!.basicMessages) {
-      updatedConnectionHistory.add(AriesConnectionHistory.fromBasicMessage(message));
-    }
+    updatedConnectionHistory.addAll(connectionHistoryResult.value!);
 
     updatedConnectionHistory.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -93,26 +82,27 @@ Future<void> updateConnectionHistory(ConnectionRecord connection) async {
   }
 }
 
-Future<List<AriesConnectionHistory>> getConnectionHistoryList() async {
+Future<List<HistoryRecord>> getConnectionHistoryList() async {
   return _connectionHistory;
 }
 
-void addToHistory(AriesConnectionHistory connectionHistory) {
-  _connectionHistory.add(connectionHistory);
+void addToHistory(HistoryRecord connHistoryRecord) {
+  _connectionHistory.add(connHistoryRecord);
 }
 
-AriesConnectionHistory startConnectionHistory(ConnectionRecord connection) {
+HistoryRecord startConnectionHistory(ConnectionRecord connection) {
   String message = 'Início da conexão';
 
   if (connection.theirLabel != null && connection.theirLabel!.isNotEmpty) {
     message = 'Você se conectou com ${connection.theirLabel}';
   }
 
-  return AriesConnectionHistory(
+  return HistoryRecord(
     id: 'basic-message-0',
-    title: message,
     createdAt: connection.createdAt ?? DateTime.now(),
-    type: ConnectionHistoryType.messageSent,
-    record: null,
+    historyType: HistoryType.basicMessageSent,
+    associatedRecordId: 'basic-message-0',
+    connectionId: connection.id,
+    content: message,
   );
 }

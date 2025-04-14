@@ -1,4 +1,4 @@
-import 'package:did_agent/agent/models/credential/credential_attributes.dart';
+import 'package:did_agent/agent/models/credential/credential_attribute.dart';
 
 class CredentialPreview {
   final String type;

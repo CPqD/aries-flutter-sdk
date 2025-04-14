@@ -199,8 +199,9 @@ class MainActivity: FlutterFragmentActivity() {
                 "getConnectionHistory" -> {
                     try {
                         val connectionId = call.argument<String>("connectionId")
+                        val historyTypes = call.argument<List<String>>("historyTypes")
 
-                        ariesIntegration.getConnectionHistory(connectionId, result)
+                        ariesIntegration.getConnectionHistory(connectionId, historyTypes, result)
                     } catch (e: Exception) {
                         result.error("1", "Erro ao processar o methodchannel getConnectionHistory: $e", null)
                     }

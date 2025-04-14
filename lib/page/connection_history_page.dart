@@ -1,16 +1,12 @@
-import 'package:did_agent/agent/enums/credential_state.dart';
-import 'package:did_agent/agent/enums/proof_state.dart';
+import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/connection/connection_record.dart';
-import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
-import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
+import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/global.dart';
 import 'package:did_agent/page/credential_history_page.dart';
 import 'package:did_agent/page/credential_notification_page.dart';
 import 'package:did_agent/page/proof_history_page.dart';
 import 'package:did_agent/page/proof_notification_page.dart';
 import 'package:flutter/material.dart';
-
-import '../util/aries_connection_history.dart';
 
 final connectionHistoryKey = GlobalKey<_ConnectionHistoryPageState>();
 
@@ -30,7 +26,7 @@ class ConnectionHistoryPage extends StatefulWidget {
 class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
   final TextEditingController _chatController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  List<AriesConnectionHistory> _history = [];
+  List<HistoryRecord> _history = [];
 
   @override
   void initState() {
@@ -55,33 +51,35 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
     }
   }
 
-  void _onMessageTap(AriesConnectionHistory historyItem) async {
+  void _onMessageTap(HistoryRecord historyItem) async {
     Widget? newPage;
 
-    if (historyItem.type == ConnectionHistoryType.connectionCredential) {
-      final credExchangeRecord = historyItem.record as CredentialExchangeRecord?;
-
-      if (credExchangeRecord != null &&
-          CredentialState.offerReceived.equals(credExchangeRecord.state)) {
+    switch (historyItem.historyType) {
+      case HistoryType.basicMessageReceived:
+      case HistoryType.basicMessageSent:
+      case HistoryType.credentialRevoked:
+        break;
+      case HistoryType.credentialOfferReceived:
         final notifications = await getNotifications();
         final notification = notifications.firstWhere((x) => x.id == historyItem.id);
 
         newPage = CredentialNotificationPage(notification: notification);
-      } else {
-        newPage = CredentialHistoryPage(connectionHistory: historyItem);
-      }
-    } else if (historyItem.type == ConnectionHistoryType.connectionProof) {
-      final proofExchangeRecord = historyItem.record as ProofExchangeRecord?;
+        break;
+      case HistoryType.credentialOfferAccepted:
+      case HistoryType.credentialOfferDeclined:
+        newPage = CredentialHistoryPage(historyRecord: historyItem);
+        break;
 
-      if (proofExchangeRecord != null &&
-          ProofState.requestReceived.equals(proofExchangeRecord.state)) {
+      case HistoryType.proofRequestReceived:
         final notifications = await getNotifications();
         final notification = notifications.firstWhere((x) => x.id == historyItem.id);
 
         newPage = ProofNotificationPage(notification: notification);
-      } else {
+        break;
+      case HistoryType.proofRequestAccepted:
+      case HistoryType.proofRequestDeclined:
         newPage = ProofHistoryPage(connectionHistory: historyItem);
-      }
+        break;
     }
 
     if (newPage != null && mounted) {
@@ -126,7 +124,7 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              historyItem.title,
+                              historyItem.getTitle(),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
@@ -139,9 +137,9 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
                                 color: Colors.black54,
                               ),
                             ),
-                            if (historyItem.type ==
-                                    ConnectionHistoryType.connectionCredential ||
-                                historyItem.type == ConnectionHistoryType.connectionProof)
+                            if (HistoryType.isFromCredentialOffer(
+                                    historyItem.historyType.value) ||
+                                HistoryType.isFromProof(historyItem.historyType.value))
                               SizedBox(
                                 width: 200,
                                 child: ElevatedButton(

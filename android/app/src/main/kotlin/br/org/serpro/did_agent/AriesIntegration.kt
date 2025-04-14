@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.LifecycleCoroutineScope
 import br.org.serpro.did_agent.utils.ConnectionUtils
 import br.org.serpro.did_agent.utils.CredentialUtils
+import br.org.serpro.did_agent.utils.HistoryUtils
 import br.org.serpro.did_agent.utils.JsonConverter
 import br.org.serpro.did_agent.utils.ProofUtils
 import io.flutter.plugin.common.MethodChannel
@@ -491,25 +492,20 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         }
     }
 
-    fun getConnectionHistory(connectionId: String?, result: MethodChannel.Result) {
+    fun getConnectionHistory(connectionId: String?, historyTypes: List<String>?, result: MethodChannel.Result) {
         Log.d("AriesIntegration", "getConnectionHistory called from Kotlin...")
 
         validateNotNull("ConnectionId", connectionId)
+        validateNotNull("HistoryTypes", historyTypes)
         validateAgent()
 
         try {
-            val connectionHistory = runBlocking {  ConnectionUtils.getHistory(agent!!, connectionId!!) }
+            val connectionHistory = runBlocking { ConnectionUtils.getHistoryFromTypes(agent!!, historyTypes!!, connectionId!!) }
 
-            val jsonResult = mapOf(
-                "credentials" to JsonConverter.toJson(connectionHistory.credentialsMap),
-                "proofs" to JsonConverter.toJson(connectionHistory.proofsMap),
-                "basicMessages" to JsonConverter.toJson(connectionHistory.basicMessagesList),
-            )
-
-            result.success(mapOf("error" to "", "result" to jsonResult))
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(connectionHistory)))
         } catch (e: Exception) {
-            Log.e("AriesIntegration", "Cannot get getConnectionHistory: ${e.message}")
-            result.error("1", "Cannot get getConnectionHistory: ${e.message}", null)
+            Log.e("AriesIntegration", "Cannot get connectionHistory: ${e.message}")
+            result.error("1", "Cannot get connectionHistory: ${e.message}", null)
         }
     }
 

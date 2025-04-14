@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:did_agent/agent/aries_result.dart';
 import 'package:did_agent/agent/enums/aries_method.dart';
+import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/credential/credential_exchange_record.dart';
 import 'package:did_agent/agent/models/credential/credential_record.dart';
 import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
@@ -15,8 +17,6 @@ import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import '../agent/models/connection/connection_history.dart';
 
 Future<AriesResult> init() async {
   var mediatorUrl = String.fromEnvironment('MEDIATOR_URL');
@@ -279,12 +279,15 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
   }
 }
 
-Future<AriesResult<ConnectionHistory?>> getConnectionHistory(String? connectionId) async {
+Future<AriesResult<List<HistoryRecord>?>> getConnectionHistory(String? connectionId,
+    {List<HistoryType> historyTypes = const []}) async {
   print('getConnectionHistory!!\n\n');
+
+  final historyTypesStr = historyTypes.map((historyType) => historyType.value).toList();
 
   final result = await AriesResult.invoke(
     AriesMethod.getConnectionHistory,
-    {'connectionId': connectionId},
+    {'connectionId': connectionId, 'historyTypes': historyTypesStr},
   );
 
   if (!result.success || result.value == null) {
@@ -292,12 +295,19 @@ Future<AriesResult<ConnectionHistory?>> getConnectionHistory(String? connectionI
   }
 
   try {
-    final resultMap = Map<String, dynamic>.from(result.value);
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    print('jsonList: $jsonList');
+
+    final mapList = List<Map<String, dynamic>>.from(jsonList);
+
+    print('mapList: $jsonList');
+
 
     final ariesResult = AriesResult(
       success: true,
       error: result.error,
-      value: ConnectionHistory.from(resultMap),
+      value: HistoryRecord.fromList(mapList),
     );
 
     print('getConnectionHistory ariesResult: $ariesResult\n\n');
