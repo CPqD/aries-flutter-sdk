@@ -3,9 +3,7 @@ import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/global.dart';
 import 'package:did_agent/page/credential_history_page.dart';
-import 'package:did_agent/page/credential_notification_page.dart';
 import 'package:did_agent/page/proof_history_page.dart';
-import 'package:did_agent/page/proof_notification_page.dart';
 import 'package:flutter/material.dart';
 
 final connectionHistoryKey = GlobalKey<_ConnectionHistoryPageState>();
@@ -60,22 +58,12 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
       case HistoryType.credentialRevoked:
         break;
       case HistoryType.credentialOfferReceived:
-        final notifications = await getNotifications();
-        final notification = notifications.firstWhere((x) => x.id == historyItem.id);
-
-        newPage = CredentialNotificationPage(notification: notification);
-        break;
       case HistoryType.credentialOfferAccepted:
       case HistoryType.credentialOfferDeclined:
         newPage = CredentialHistoryPage(historyRecord: historyItem);
         break;
 
       case HistoryType.proofRequestReceived:
-        final notifications = await getNotifications();
-        final notification = notifications.firstWhere((x) => x.id == historyItem.id);
-
-        newPage = ProofNotificationPage(notification: notification);
-        break;
       case HistoryType.proofRequestAccepted:
       case HistoryType.proofRequestDeclined:
         newPage = ProofHistoryPage(connectionHistory: historyItem);

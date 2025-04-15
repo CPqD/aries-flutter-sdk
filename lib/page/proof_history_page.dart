@@ -28,7 +28,7 @@ class _ProofHistoryPageState extends State<ProofHistoryPage> {
   Future<void> _loadData() async {
     try {
       final didCommMessagesResult =
-          await getDidCommMessagesByRecord(widget.connectionHistory.id);
+          await getDidCommMessagesByRecord(widget.connectionHistory.associatedRecordId);
       final didCommMessages =
           didCommMessagesResult.value ?? [] as List<DidCommMessageRecord>;
 
