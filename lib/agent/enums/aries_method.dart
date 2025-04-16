@@ -18,7 +18,8 @@ enum AriesMethod {
   removeCredential('removeCredential'),
   subscribe('subscribe'),
   shutdown('shutdown'),
-  getConnectionHistory('getConnectionHistory');
+  getConnectionHistory('getConnectionHistory'),
+  getCredentialHistory('getCredentialHistory');
 
   final String value;
 

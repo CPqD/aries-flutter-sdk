@@ -279,7 +279,7 @@ Future<AriesResult<ProofOfferDetails?>> getProofOfferDetails(String proofId) asy
   }
 }
 
-Future<AriesResult<List<HistoryRecord>?>> getConnectionHistory(String? connectionId,
+Future<AriesResult<List<HistoryRecord>?>> getConnectionHistory(String connectionId,
     {List<HistoryType> historyTypes = const []}) async {
   print('getConnectionHistory!!\n\n');
 
@@ -303,6 +303,45 @@ Future<AriesResult<List<HistoryRecord>?>> getConnectionHistory(String? connectio
 
     print('mapList: $jsonList');
 
+    final ariesResult = AriesResult(
+      success: true,
+      error: result.error,
+      value: HistoryRecord.fromList(mapList),
+    );
+
+    print('getConnectionHistory ariesResult: $ariesResult\n\n');
+
+    return ariesResult;
+  } catch (e) {
+    print('getConnectionHistory - failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString());
+  }
+}
+
+Future<AriesResult<List<HistoryRecord>?>> getCredentialHistory(String credentialId,
+    {List<HistoryType> historyTypes = const []}) async {
+  print('getCredentialHistory!!\n\n');
+
+  final historyTypesStr = historyTypes.map((historyType) => historyType.value).toList();
+
+  final result = await AriesResult.invoke(
+    AriesMethod.getCredentialHistory,
+    {'credentialId': credentialId, 'historyTypes': historyTypesStr},
+  );
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error);
+  }
+
+  try {
+    final List<dynamic> jsonList = jsonDecode(result.value);
+
+    print('jsonList: $jsonList');
+
+    final mapList = List<Map<String, dynamic>>.from(jsonList);
+
+    print('mapList: $jsonList');
 
     final ariesResult = AriesResult(
       success: true,

@@ -1,4 +1,5 @@
 import 'package:did_agent/agent/models/credential/credential_record.dart';
+import 'package:did_agent/page/credential_history_page.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -63,10 +64,33 @@ class CredentialDetailsPage extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(2.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CredentialHistoryPage(
+                            credentialId: credential.credentialId,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(2.0),
+                      ),
+                    ),
+                    child: Text('Histórico'),
+                  ),
+                ),
+                SizedBox(width: 2),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -91,15 +115,15 @@ class CredentialDetailsPage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.green,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(2.0),
                       ),
                     ),
-                    child: Text('Compartilhar Dados'),
+                    child: Text('Compartilhar'),
                   ),
                 ),
-                SizedBox(width: 16),
+                SizedBox(width: 2),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _confirmDelete(context),
@@ -107,7 +131,7 @@ class CredentialDetailsPage extends StatelessWidget {
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(2.0),
                       ),
                     ),
                     child: Text('Deletar'),

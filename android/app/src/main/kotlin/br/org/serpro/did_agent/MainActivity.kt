@@ -206,6 +206,15 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel getConnectionHistory: $e", null)
                     }
                 }
+                "getCredentialHistory" -> {
+                    try {
+                        val credentialRecordId = call.argument<String>("credentialId")
+
+                        ariesIntegration.getCredentialHistory(credentialRecordId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getConnectionHistory: $e", null)
+                    }
+                }
 
                 else -> result.notImplemented()
             }

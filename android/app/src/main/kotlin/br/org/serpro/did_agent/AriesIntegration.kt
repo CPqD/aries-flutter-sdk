@@ -509,6 +509,22 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         }
     }
 
+    fun getCredentialHistory(credentialRecordId: String?, result: MethodChannel.Result) {
+        Log.d("AriesIntegration", "getCredentialHistory called from Kotlin...")
+
+        validateNotNull("CredentialRecordId", credentialRecordId)
+        validateAgent()
+
+        try {
+            val credentialHistory = runBlocking { CredentialUtils.getHistory(agent!!, credentialRecordId!!) }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(credentialHistory)))
+        } catch (e: Exception) {
+            Log.e("AriesIntegration", "Cannot get credentialHistory: ${e.message}")
+            result.error("1", "Cannot get credentialHistory: ${e.message}", null)
+        }
+    }
+
     private fun copyResourceFile(applicationContext: Context, resource: String) {
         val inputStream = applicationContext.assets.open(resource)
         val file = File(applicationContext.filesDir.absolutePath, resource)

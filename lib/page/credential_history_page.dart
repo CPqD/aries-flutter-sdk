@@ -1,97 +1,162 @@
-import 'package:did_agent/agent/aries_result.dart';
-import 'package:did_agent/agent/models/credential/credential_preview.dart';
-import 'package:did_agent/agent/models/did_comm_message_record.dart';
+import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/history/history_record.dart';
+import 'package:did_agent/page/credential_history_details_page.dart';
+import 'package:did_agent/page/proof_history_page.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
-class CredentialHistoryPage extends StatelessWidget {
-  final HistoryRecord historyRecord;
+final credentialHistoryKey = GlobalKey<_CredentialHistoryPageState>();
 
-  const CredentialHistoryPage({super.key, required this.historyRecord});
+class CredentialHistoryPage extends StatefulWidget {
+  final String credentialId;
+  final String title;
+
+  CredentialHistoryPage({
+    required this.credentialId,
+    this.title = 'Histórico da Credencial',
+  }) : super(key: credentialHistoryKey);
+
+  @override
+  State<CredentialHistoryPage> createState() => _CredentialHistoryPageState();
+}
+
+class _CredentialHistoryPageState extends State<CredentialHistoryPage> {
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  List<HistoryRecord> _history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    refreshHistory();
+  }
+
+  Future<void> refreshHistory() async {
+    print('CredentialHistoryPage - refreshHistory - mounted: $mounted');
+    if (mounted) {
+      final getHistoryResult = await getCredentialHistory(
+        widget.credentialId,
+      );
+
+      print('CredentialHistoryPage - getHistoryResult: $getHistoryResult');
+
+      if (getHistoryResult.success && getHistoryResult.value != null) {
+        setState(() {
+          _history = getHistoryResult.value!;
+        });
+      }
+    }
+  }
+
+  void _onMessageTap(HistoryRecord historyItem) async {
+    Widget? newPage;
+
+    switch (historyItem.historyType) {
+      case HistoryType.basicMessageReceived:
+      case HistoryType.basicMessageSent:
+      case HistoryType.credentialRevoked:
+        break;
+      case HistoryType.credentialOfferReceived:
+      case HistoryType.credentialOfferAccepted:
+      case HistoryType.credentialOfferDeclined:
+        newPage = CredentialHistoryDetailsPage(historyRecord: historyItem);
+        break;
+
+      case HistoryType.proofRequestReceived:
+      case HistoryType.proofRequestAccepted:
+      case HistoryType.proofRequestDeclined:
+        newPage = ProofHistoryPage(connectionHistory: historyItem);
+        break;
+    }
+
+    if (newPage != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => newPage!),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(historyRecord.getTitle()),
+        title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: FutureBuilder<AriesResult>(
-          future: getDidCommMessagesByRecord(historyRecord.associatedRecordId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Erro: ${snapshot.error}'));
-            } else if (!snapshot.hasData || !snapshot.data!.success) {
-              return Center(child: Text('Nenhum dado disponível.'));
-            } else {
-              final List<DidCommMessageRecord> messages = snapshot.data!.value;
-
-              CredentialPreview? credentialPreview;
-
-              for (final currentMessage in messages) {
-                if (currentMessage.getCredentialPreview() != null) {
-                  credentialPreview = currentMessage.getCredentialPreview();
-                  break;
-                }
-              }
-
-              final attributes = credentialPreview?.attributes ?? [];
-
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: attributes.length,
-                      itemBuilder: (context, index) {
-                        final attribute = attributes[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: buildAttributeDetail(attribute.name, attribute.value),
-                        );
-                      },
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: _history.length,
+              reverse: true,
+              itemBuilder: (context, index) {
+                final historyItem = _history[index];
+                return GestureDetector(
+                  onTap: () => _onMessageTap(historyItem),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                    child: Align(
+                      alignment: historyItem.wasSent()
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.all(12.0),
+                        decoration: BoxDecoration(
+                          color:
+                              historyItem.wasSent() ? Colors.blue[200] : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              historyItem.getTitle(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              historyItem.createdAt.toLocal().toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            if (HistoryType.isFromCredentialOffer(
+                                    historyItem.historyType.value) ||
+                                HistoryType.isFromProof(historyItem.historyType.value))
+                              SizedBox(
+                                width: 200,
+                                child: ElevatedButton(
+                                  onPressed: () => _onMessageTap(historyItem),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    minimumSize: const Size(80, 36),
+                                  ),
+                                  child: const Text('Detalhes'),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              );
-            }
-          },
-        ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Divider(height: 1),
+        ],
       ),
     );
   }
 
-  Widget buildAttributeDetail(String fieldName, String fieldValue) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: '$fieldName:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontSize: 16,
-              ),
-            ),
-            TextSpan(
-              text: ' $fieldValue',
-              style: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: Colors.black87,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  @override
+  void dispose() {
+    _chatController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 }

@@ -4,9 +4,15 @@ import android.util.Log
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.anoncreds.storage.CredentialRecord
 import org.hyperledger.ariesframework.credentials.models.AcceptOfferOptions
+import org.hyperledger.ariesframework.credentials.models.CredentialPreviewAttribute
+import org.hyperledger.ariesframework.credentials.models.CredentialRole
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.credentials.repository.CredentialExchangeRecord
+import org.hyperledger.ariesframework.credentials.repository.CredentialRecordBinding
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
+import org.hyperledger.ariesframework.history.models.HistoryType
+import org.hyperledger.ariesframework.history.repository.HistoryRecord
+import org.hyperledger.ariesframework.revocationnotification.model.RevocationNotification
 
 class CredentialUtils {
     companion object {
@@ -67,6 +73,34 @@ class CredentialUtils {
             Log.d("CredentialUtils", "credential: $credential")
 
             return JsonConverter.toMap(credential)
+        }
+
+        suspend fun getHistory(agent: Agent, credentialId: String): List<Map<String, Any?>> {
+            val historyList = mutableListOf<HistoryRecord>()
+
+            historyList.addAll(
+                agent.historyRepository.findByQuery("{\"associatedRecordId\": \"$credentialId\"}")
+            )
+
+            historyList.addAll(
+                agent.historyRepository.findByQuery(
+                    "{\"historyType\": \"${HistoryType.ProofRequestAccepted}\", \"credIdAttr:${credentialId}\": \"true\"}"
+                )
+            )
+
+            historyList.addAll(
+                agent.historyRepository.findByQuery(
+                    "{\"historyType\": \"${HistoryType.ProofRequestAccepted}\", \"credIdPred:${credentialId}\": \"true\"}"
+                )
+            )
+
+            val result = mutableListOf<Map<String, Any?>>()
+
+            for (historyRecord in historyList.sortedBy { it.createdAt }) {
+                result.add(JsonConverter.toMap(historyRecord))
+            }
+
+            return result
         }
 
         suspend fun getExchangesByState(agent: Agent, state: CredentialState): List<Map<String, Any?>> {

@@ -2,7 +2,7 @@ import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/global.dart';
-import 'package:did_agent/page/credential_history_page.dart';
+import 'package:did_agent/page/credential_history_details_page.dart';
 import 'package:did_agent/page/proof_history_page.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +14,7 @@ class ConnectionHistoryPage extends StatefulWidget {
 
   ConnectionHistoryPage({
     this.connection,
-    this.title = 'Histórico',
+    this.title = 'Histórico da Conexão',
   }) : super(key: connectionHistoryKey);
 
   @override
@@ -60,7 +60,7 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
       case HistoryType.credentialOfferReceived:
       case HistoryType.credentialOfferAccepted:
       case HistoryType.credentialOfferDeclined:
-        newPage = CredentialHistoryPage(historyRecord: historyItem);
+        newPage = CredentialHistoryDetailsPage(historyRecord: historyItem);
         break;
 
       case HistoryType.proofRequestReceived:
