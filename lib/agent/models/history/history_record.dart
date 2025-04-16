@@ -61,10 +61,33 @@ class HistoryRecord {
   String getTitle() {
     switch (historyType) {
       case HistoryType.basicMessageReceived:
-      case HistoryType.basicMessageSent:
         return content ?? '';
-      default:
-        return HistoryType.portugueseTranslations[historyType] ?? '';
+      case HistoryType.connectionCreated:
+        return theirLabel == null ? 'Conexão criada' : 'Conexão criada com $theirLabel';
+      case HistoryType.credentialRevoked:
+        return theirLabel == null
+            ? 'Credencial revogada'
+            : 'Credencial revogada por $theirLabel';
+      case HistoryType.credentialOfferReceived:
+        return theirLabel == null
+            ? 'Oferta de credencial recebida'
+            : '$theirLabel enviou uma oferta de credencial';
+      case HistoryType.credentialOfferAccepted:
+        return 'Oferta de credencial aceita';
+      case HistoryType.credentialOfferDeclined:
+        return 'Oferta de credencial recusada';
+      case HistoryType.proofRequestReceived:
+        return theirLabel == null
+            ? 'Oferta de prova recebida'
+            : 'Oferta de prova solicitada por $theirLabel';
+      case HistoryType.proofRequestAccepted:
+        return theirLabel == null
+            ? 'Prova realizada'
+            : 'Prova realizada para $theirLabel';
+      case HistoryType.proofRequestDeclined:
+        return theirLabel == null
+            ? 'Prova recusada'
+            : 'Prova de $theirLabel foi recusada';
     }
   }
 

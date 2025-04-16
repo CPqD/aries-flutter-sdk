@@ -1,6 +1,6 @@
 enum HistoryType {
   basicMessageReceived('BasicMessageReceived'),
-  basicMessageSent('BasicMessageSent'),
+  connectionCreated('ConnectionCreated'),
   credentialOfferAccepted('CredentialOfferAccepted'),
   credentialOfferDeclined('CredentialOfferDeclined'),
   credentialOfferReceived('CredentialOfferReceived'),
@@ -17,7 +17,7 @@ enum HistoryType {
 
   static bool isSent(String value) {
     final sentStates = {
-      basicMessageSent,
+      connectionCreated,
       credentialOfferAccepted,
       credentialOfferDeclined,
       proofRequestAccepted,
@@ -43,18 +43,6 @@ enum HistoryType {
     };
     return proofStates.any((state) => state.value == value);
   }
-
-  static const Map<HistoryType, String> portugueseTranslations = {
-    basicMessageReceived: 'Mensagem recebida',
-    basicMessageSent: 'Mensagem enviada',
-    credentialOfferAccepted: 'Oferta de credencial aceita',
-    credentialOfferDeclined: 'Oferta de credencial recusada',
-    credentialOfferReceived: 'Oferta de credencial recebida',
-    credentialRevoked: 'Credencial revogada',
-    proofRequestAccepted: 'Prova realizada',
-    proofRequestDeclined: 'Prova cancelada',
-    proofRequestReceived: 'Oferta de prova recebida',
-  };
 
   factory HistoryType.from(String value) {
     return HistoryType.values.firstWhere(

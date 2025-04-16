@@ -1,4 +1,3 @@
-import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/page/home_page.dart';
@@ -61,7 +60,7 @@ List<HistoryRecord> _connectionHistory = [];
 
 Future<void> updateConnectionHistory(ConnectionRecord connection) async {
   try {
-    List<HistoryRecord> updatedConnectionHistory = [startConnectionHistory(connection)];
+    List<HistoryRecord> updatedConnectionHistory = [];
 
     final connectionHistoryResult = await getConnectionHistory(connection.id);
 
@@ -88,21 +87,4 @@ Future<List<HistoryRecord>> getConnectionHistoryList() async {
 
 void addToHistory(HistoryRecord connHistoryRecord) {
   _connectionHistory.add(connHistoryRecord);
-}
-
-HistoryRecord startConnectionHistory(ConnectionRecord connection) {
-  String message = 'Início da conexão';
-
-  if (connection.theirLabel != null && connection.theirLabel!.isNotEmpty) {
-    message = 'Você se conectou com ${connection.theirLabel}';
-  }
-
-  return HistoryRecord(
-    id: 'basic-message-0',
-    createdAt: connection.createdAt ?? DateTime.now(),
-    historyType: HistoryType.basicMessageSent,
-    associatedRecordId: 'basic-message-0',
-    connectionId: connection.id,
-    content: message,
-  );
 }

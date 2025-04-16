@@ -54,7 +54,7 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
 
     switch (historyItem.historyType) {
       case HistoryType.basicMessageReceived:
-      case HistoryType.basicMessageSent:
+      case HistoryType.connectionCreated:
       case HistoryType.credentialRevoked:
         break;
       case HistoryType.credentialOfferReceived:
