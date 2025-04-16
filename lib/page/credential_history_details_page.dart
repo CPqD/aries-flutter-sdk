@@ -21,6 +21,8 @@ class CredentialHistoryDetailsPage extends StatelessWidget {
         child: FutureBuilder<AriesResult>(
           future: getDidCommMessagesByRecord(historyRecord.associatedRecordId),
           builder: (context, snapshot) {
+            print('historyRecord: $historyRecord');
+
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {

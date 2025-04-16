@@ -1,7 +1,7 @@
 import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/page/credential_history_details_page.dart';
-import 'package:did_agent/page/proof_history_page.dart';
+import 'package:did_agent/page/proof_history_details_page.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -41,8 +41,12 @@ class _CredentialHistoryPageState extends State<CredentialHistoryPage> {
       print('CredentialHistoryPage - getHistoryResult: $getHistoryResult');
 
       if (getHistoryResult.success && getHistoryResult.value != null) {
+        final history = getHistoryResult.value!;
+
+        history.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
         setState(() {
-          _history = getHistoryResult.value!;
+          _history = history;
         });
       }
     }
@@ -65,7 +69,7 @@ class _CredentialHistoryPageState extends State<CredentialHistoryPage> {
       case HistoryType.proofRequestReceived:
       case HistoryType.proofRequestAccepted:
       case HistoryType.proofRequestDeclined:
-        newPage = ProofHistoryPage(connectionHistory: historyItem);
+        newPage = ProofHistoryDetailsPage(historyRecord: historyItem);
         break;
     }
 

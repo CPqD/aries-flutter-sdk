@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:did_agent/agent/enums/history_type.dart';
 import 'package:did_agent/agent/models/credential/credential_attribute.dart';
+import 'package:did_agent/agent/models/proof/proof_requested_credentials.dart';
 
 class HistoryRecord {
   final String id;
@@ -10,7 +13,7 @@ class HistoryRecord {
   final String? theirLabel;
   final String? content;
   final List<CredentialAttribute>? credentialPreviewAttr;
-  final String? proofRequestedCredentials;
+  final ProofRequestedCredentials? proofRequestedCredentials;
 
   HistoryRecord(
       {required this.id,
@@ -34,6 +37,16 @@ class HistoryRecord {
         credentialPreviewAttrs = CredentialAttribute.fromList(credPreviewAttrMap);
       }
 
+      ProofRequestedCredentials? proofRequestedCredentials;
+
+      if (map["proofRequestedCredentials"] != null) {
+        final proofRequestedCredentialsMap =
+            jsonDecode(map["proofRequestedCredentials"].toString());
+
+        proofRequestedCredentials =
+            ProofRequestedCredentials.fromMap(proofRequestedCredentialsMap);
+      }
+
       return HistoryRecord(
         id: map["id"].toString(),
         createdAt: DateTime.tryParse(map["createdAt"].toString()) ?? DateTime.now(),
@@ -43,7 +56,7 @@ class HistoryRecord {
         theirLabel: map["theirLabel"].toString(),
         content: map["content"].toString(),
         credentialPreviewAttr: credentialPreviewAttrs,
-        proofRequestedCredentials: map["proofRequestedCredentials"].toString(),
+        proofRequestedCredentials: proofRequestedCredentials,
       );
     } catch (e) {
       throw Exception('Failed to create HistoryRecord from map: $e');

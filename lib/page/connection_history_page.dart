@@ -3,7 +3,7 @@ import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/global.dart';
 import 'package:did_agent/page/credential_history_details_page.dart';
-import 'package:did_agent/page/proof_history_page.dart';
+import 'package:did_agent/page/proof_history_details_page.dart';
 import 'package:flutter/material.dart';
 
 final connectionHistoryKey = GlobalKey<_ConnectionHistoryPageState>();
@@ -66,7 +66,7 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
       case HistoryType.proofRequestReceived:
       case HistoryType.proofRequestAccepted:
       case HistoryType.proofRequestDeclined:
-        newPage = ProofHistoryPage(connectionHistory: historyItem);
+        newPage = ProofHistoryDetailsPage(historyRecord: historyItem);
         break;
     }
 
