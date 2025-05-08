@@ -26,7 +26,7 @@ allprojects {
         google()
         mavenCentral()
         maven {
-            setUrl("https://maven.pkg.github.com/hyperledger/aries-framework-kotlin")
+            setUrl("https://maven.pkg.github.com/LF-Decentralized-Trust-labs/aries-uniffi-wrappers")
             credentials {
                 // You should put these in the local.properties file
                 username = getExtraString("githubUsername")
