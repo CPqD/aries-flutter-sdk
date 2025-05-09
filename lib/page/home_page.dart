@@ -1,7 +1,7 @@
 import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/page/connection_history_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import '../agent/enums/credential_state.dart';
 import '../global.dart';
@@ -119,13 +119,13 @@ class HomePageState extends State<HomePage> {
   }
 
   void _onItemTapped() async {
-    String qrCode = await FlutterBarcodeScanner.scanBarcode(
-      '#ff6666',
-      'Cancelar',
-      false,
-      ScanMode.QR,
-    );
-    receivedInvitation(qrCode);
+    // String qrCode = await FlutterBarcodeScanner.scanBarcode(
+    //   '#ff6666',
+    //   'Cancelar',
+    //   false,
+    //   ScanMode.QR,
+    // );
+    // receivedInvitation(qrCode);
   }
 
   @override

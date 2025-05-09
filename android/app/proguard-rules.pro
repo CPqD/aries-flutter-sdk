@@ -3,6 +3,12 @@
 -keep class ar.com.nec.liveness.NecFlowData { *;}
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
+-keep class com.otaliastudios.cameraview.** { *; }
+-keep interface com.otaliastudios.cameraview.** { *; }
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-keep class kotlinx.serialization.** { *; }
+-keep @kotlinx.serialization.Serializable class * { *; }
 
 -dontwarn java.awt.Component
 -dontwarn java.awt.GraphicsEnvironment

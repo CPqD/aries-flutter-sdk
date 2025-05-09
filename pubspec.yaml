@@ -43,9 +43,9 @@ dependencies:
 
   path_provider: ^2.1.5
 
-  flutter_barcode_scanner:
-    git:
-      url: https://github.com/itsAyyazdev/flutter_barcode_scanner.git
+  # flutter_barcode_scanner:
+  #   git:
+  #     url: https://github.com/itsAyyazdev/flutter_barcode_scanner.git
 
   qr_flutter: ^4.1.0
   flutter_dotenv: ^5.2.1
