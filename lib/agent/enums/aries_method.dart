@@ -20,7 +20,8 @@ enum AriesMethod {
   shutdown('shutdown'),
   getConnectionHistory('getConnectionHistory'),
   getCredentialHistory('getCredentialHistory'),
-  generateInvitation('generateInvitation');
+  generateInvitation('generateInvitation'),
+  sendMessage('sendMessage');
 
   final String value;
 

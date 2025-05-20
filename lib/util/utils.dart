@@ -404,6 +404,32 @@ Future<AriesResult<String>> generateInvitation({String? deviceLabel}) async {
   }
 }
 
+Future<AriesResult<bool>> sendMessage({
+  required String connectionId,
+  required String message,
+}) async {
+  final result = await AriesResult.invoke(
+    AriesMethod.sendMessage,
+    {'connectionId': connectionId, 'message': message},
+  );
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error);
+  }
+
+  try {
+    return AriesResult<bool>(
+      success: result.success,
+      error: result.error,
+      value: result.value == true,
+    );
+  } catch (e) {
+    print('sendMessage - failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString());
+  }
+}
+
 Future<AriesResult> removeConnection(String connectionId) => AriesResult.invoke(
     AriesMethod.removeConnection, {'connectionRecordId': connectionId});
 

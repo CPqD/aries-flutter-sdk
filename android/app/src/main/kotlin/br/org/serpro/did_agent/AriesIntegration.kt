@@ -15,10 +15,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.AgentConfig
 import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
+import org.hyperledger.ariesframework.basicmessage.messages.BasicMessage
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
 import org.hyperledger.ariesframework.oob.models.CreateOutOfBandInvitationConfig
@@ -549,6 +551,27 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         } catch (e: Exception) {
             Log.e("AriesIntegration", "Cannot generate invitation: ${e.message}")
             result.error("1", "Cannot generate invitation: ${e.message}", null)
+        }
+    }
+
+    fun sendMessage(connectionId: String?, message: String?, result: MethodChannel.Result) {
+        Log.d("AriesIntegration", "sendMessage called from Kotlin...")
+
+        validateNotNull("ConnectionId", connectionId)
+        validateNotNull("Message", message)
+        validateAgent()
+
+        try {
+            val connectionRecord = runBlocking { agent!!.connectionRepository.getById(connectionId!!) }
+
+            val messageOut = OutboundMessage(BasicMessage(message!!),connectionRecord)
+
+            runBlocking{ agent!!.messageSender.send(messageOut) }
+
+            result.success(mapOf("error" to "", "result" to true))
+        } catch (e: Exception) {
+            Log.e("AriesIntegration", "Cannot send message: ${e.message}")
+            result.error("1", "Cannot send message: ${e.message}", null)
         }
     }
 

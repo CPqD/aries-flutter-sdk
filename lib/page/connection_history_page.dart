@@ -4,6 +4,7 @@ import 'package:did_agent/agent/models/history/history_record.dart';
 import 'package:did_agent/global.dart';
 import 'package:did_agent/page/credential_history_details_page.dart';
 import 'package:did_agent/page/proof_history_details_page.dart';
+import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
 final connectionHistoryKey = GlobalKey<_ConnectionHistoryPageState>();
@@ -149,6 +150,38 @@ class _ConnectionHistoryPageState extends State<ConnectionHistoryPage> {
             ),
           ),
           Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    decoration: InputDecoration(
+                      hintText: 'Digite sua mensagem...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    final text = _chatController.text.trim();
+                    if (text.isNotEmpty && widget.connection != null) {
+                      print('Send Message: $text');
+
+                      sendMessage(connectionId: widget.connection!.id, message: text);
+
+                      _chatController.clear();
+                    }
+                  },
+                  child: Text('Enviar'),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

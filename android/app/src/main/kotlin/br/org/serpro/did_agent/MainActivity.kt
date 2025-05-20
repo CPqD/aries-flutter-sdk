@@ -224,6 +224,16 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel generateInvitation: $e", null)
                     }
                 }
+                "sendMessage" -> {
+                    try {
+                        val connectionId = call.argument<String>("connectionId")
+                        val message = call.argument<String>("message")
+
+                        ariesIntegration.sendMessage(connectionId, message, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel sendMessage: $e", null)
+                    }
+                }
 
                 else -> result.notImplemented()
             }
