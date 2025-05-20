@@ -19,7 +19,8 @@ enum AriesMethod {
   subscribe('subscribe'),
   shutdown('shutdown'),
   getConnectionHistory('getConnectionHistory'),
-  getCredentialHistory('getCredentialHistory');
+  getCredentialHistory('getCredentialHistory'),
+  generateInvitation('generateInvitation');
 
   final String value;
 

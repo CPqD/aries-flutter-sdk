@@ -1,4 +1,5 @@
 import 'package:did_agent/page/connections_page.dart';
+import 'package:did_agent/page/invitation_page.dart';
 import 'package:did_agent/util/dialogs.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,15 @@ class SettingsPage extends StatelessWidget {
                 );
               },
               child: Text('Conexões'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => InvitationPage()),
+                );
+              },
+              child: Text('Gerar Convite'),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

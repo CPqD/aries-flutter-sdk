@@ -60,7 +60,7 @@ flutter {
 }
 
 dependencies {
-    implementation("org.hyperledger:aries-framework-kotlin:0.51.10-SNAPSHOT") {
+    implementation("org.hyperledger:aries-framework-kotlin:0.51.11-SNAPSHOT") {
         exclude group: "ch.qos.logback", module: "logback-classic"
     }
 

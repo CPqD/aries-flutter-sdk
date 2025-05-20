@@ -381,6 +381,29 @@ Future<AriesResult> declineProofOffer(String proofId) {
   return result;
 }
 
+Future<AriesResult<String>> generateInvitation({String? deviceLabel}) async {
+  deviceLabel ??= "App Agent";
+
+  final result = await AriesResult.invoke(
+      AriesMethod.generateInvitation, {'deviceLabel': deviceLabel});
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error);
+  }
+
+  try {
+    return AriesResult<String>(
+      success: result.success,
+      error: result.error,
+      value: result.value as String,
+    );
+  } catch (e) {
+    print('generateInvitation - failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString());
+  }
+}
+
 Future<AriesResult> removeConnection(String connectionId) => AriesResult.invoke(
     AriesMethod.removeConnection, {'connectionRecordId': connectionId});
 

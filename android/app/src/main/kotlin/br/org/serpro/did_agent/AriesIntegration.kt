@@ -1,12 +1,13 @@
 package br.org.serpro.did_agent
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
+import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.LifecycleCoroutineScope
 import br.org.serpro.did_agent.utils.ConnectionUtils
 import br.org.serpro.did_agent.utils.CredentialUtils
-import br.org.serpro.did_agent.utils.HistoryUtils
 import br.org.serpro.did_agent.utils.JsonConverter
 import br.org.serpro.did_agent.utils.ProofUtils
 import io.flutter.plugin.common.MethodChannel
@@ -20,6 +21,7 @@ import org.hyperledger.ariesframework.agent.AgentEvents
 import org.hyperledger.ariesframework.agent.MediatorPickupStrategy
 import org.hyperledger.ariesframework.credentials.models.CredentialState
 import org.hyperledger.ariesframework.credentials.v1.models.AutoAcceptCredential
+import org.hyperledger.ariesframework.oob.models.CreateOutOfBandInvitationConfig
 import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
@@ -522,6 +524,31 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         } catch (e: Exception) {
             Log.e("AriesIntegration", "Cannot get credentialHistory: ${e.message}")
             result.error("1", "Cannot get credentialHistory: ${e.message}", null)
+        }
+    }
+
+    fun generateInvitation(deviceLabel: String?, result: MethodChannel.Result) {
+        Log.d("AriesIntegration", "generateInvitation called from Kotlin...")
+
+        validateNotNull("DeviceLabel", deviceLabel)
+        validateAgent()
+
+        try {
+            val config = CreateOutOfBandInvitationConfig(
+                label = deviceLabel!!,
+                handshake = true,
+            )
+
+            val outOfBandRecord = runBlocking { agent!!.oob.createInvitation(config) }
+
+            val mediatorBaseUrl = mediatorUrl!!.substringBefore("?")
+
+            val invitation: String = outOfBandRecord.outOfBandInvitation.toUrl(mediatorBaseUrl)
+
+            result.success(mapOf("error" to "", "result" to invitation))
+        } catch (e: Exception) {
+            Log.e("AriesIntegration", "Cannot generate invitation: ${e.message}")
+            result.error("1", "Cannot generate invitation: ${e.message}", null)
         }
     }
 

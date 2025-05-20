@@ -215,6 +215,15 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel getConnectionHistory: $e", null)
                     }
                 }
+                "generateInvitation" -> {
+                    try {
+                        val deviceLabel = call.argument<String>("deviceLabel")
+
+                        ariesIntegration.generateInvitation(deviceLabel, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel generateInvitation: $e", null)
+                    }
+                }
 
                 else -> result.notImplemented()
             }
