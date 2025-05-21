@@ -234,6 +234,16 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel sendMessage: $e", null)
                     }
                 }
+                "requestProof" -> {
+                    try {
+                        val connectionId = call.argument<String>("connectionId")
+                        val proofRequest = call.argument<Map<String, Any>?>("proofRequest")
+
+                        ariesIntegration.requestProof(connectionId, proofRequest, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel requestProof: $e", null)
+                    }
+                }
 
                 else -> result.notImplemented()
             }

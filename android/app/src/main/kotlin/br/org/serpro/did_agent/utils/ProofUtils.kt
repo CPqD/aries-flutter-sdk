@@ -5,13 +5,18 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.MessageSerializer
+import org.hyperledger.ariesframework.proofs.ProofService
 import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
 import org.hyperledger.ariesframework.proofs.messages.v2.RequestPresentationMessageV2
+import org.hyperledger.ariesframework.proofs.models.PredicateType
+import org.hyperledger.ariesframework.proofs.models.ProofAttributeInfo
+import org.hyperledger.ariesframework.proofs.models.ProofPredicateInfo
 import org.hyperledger.ariesframework.proofs.models.ProofRequest
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
 import org.hyperledger.ariesframework.proofs.models.RetrievedCredentials
+import org.hyperledger.ariesframework.proofs.models.RevocationInterval
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import org.hyperledger.ariesframework.storage.DidCommMessageRecord
 
@@ -165,6 +170,72 @@ class ProofUtils {
             return Triple(attributesList, predicatesList, proofRequestJson)
         }
 
+        suspend fun requestProof(
+            agent: Agent,
+            connectionId: String,
+            proofRequest: Map<String, Any>,
+        ): Map<String, Any?> {
+            val requestedAttributes = mutableMapOf<String, ProofAttributeInfo>()
+            val requestedPredicates = mutableMapOf<String, ProofPredicateInfo>()
+
+            val attributesList = proofRequest["attributes"] as List<*>
+
+            for (element in attributesList) {
+                val proofAttribute = element as Map<*, *>
+                val attrName = proofAttribute["name"].toString()
+
+                if (attrName.isNotEmpty()) {
+                    requestedAttributes[attrName] = ProofAttributeInfo(
+                        name = attrName,
+                        nonRevoked = null,
+                        /*restrictions = listOf(
+                            AttributeFilter(credentialDefinitionId = "YOUR_CRED_DEF_ID")
+                        )*/
+                    )
+                }
+            }
+
+            val predicatesList = proofRequest["predicates"] as List<*>
+
+            for (element in predicatesList) {
+                val proofPredicate = element as Map<*, *>
+
+                val attrName = proofPredicate["name"].toString()
+                val predType = proofPredicate["type"].toString()
+                val predValue = proofPredicate["value"].toString()
+
+                if (attrName.isNotEmpty() && predType.isNotEmpty() && predValue.isNotEmpty()) {
+                    val predicateType = mapPredicateType(predType)
+
+                    requestedPredicates[attrName] = ProofPredicateInfo(
+                        name = attrName,
+                        nonRevoked = null,
+                        predicateType = predicateType,
+                        predicateValue = predValue.toInt(),
+                    )
+
+                }
+            }
+
+            val nonce = ProofService.generateProofRequestNonce()
+
+            val now = (System.currentTimeMillis() / 1000).toInt()
+
+            val revocationInterval = RevocationInterval(from = now, to = now)
+
+            val proofRequest = ProofRequest(
+                nonce = nonce,
+                requestedAttributes = requestedAttributes,
+                requestedPredicates = requestedPredicates,
+                nonRevoked = revocationInterval,
+                name = proofRequest["name"].toString()
+            )
+
+            val proofExchangeRecord = agent.proofs.requestProof(connectionId, proofRequest)
+
+            return JsonConverter.toMap(proofExchangeRecord).toMutableMap()
+        }
+
         private suspend fun credentialPredicateValidation(
             agent: Agent,
             predicateName: String,
@@ -223,6 +294,16 @@ class ProofUtils {
                     MessageSerializer.decodeFromString(proofRequestMessageJson) as RequestPresentationMessage
 
                 return proofRequestMessage.indyProofRequest()
+            }
+        }
+
+        private fun mapPredicateType(op: String): PredicateType {
+            return when (op.trim()) {
+                ">=", "≥" -> PredicateType.GreaterThanOrEqualTo
+                "<=", "≤" -> PredicateType.LessThanOrEqualTo
+                ">" -> PredicateType.GreaterThan
+                "<" -> PredicateType.LessThan
+                else -> throw IllegalArgumentException("Operador inválido: $op")
             }
         }
     }

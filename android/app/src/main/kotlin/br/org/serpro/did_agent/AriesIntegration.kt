@@ -28,7 +28,10 @@ import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemR
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
+import org.hyperledger.ariesframework.proofs.models.ProofAttributeInfo
+import org.hyperledger.ariesframework.proofs.models.ProofPredicateInfo
 import org.hyperledger.ariesframework.proofs.models.ProofState
+import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import java.io.File
 
 const val genesisPath = "bcovrin-genesis.txn"
@@ -572,6 +575,25 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         } catch (e: Exception) {
             Log.e("AriesIntegration", "Cannot send message: ${e.message}")
             result.error("1", "Cannot send message: ${e.message}", null)
+        }
+    }
+
+    fun requestProof(connectionId: String?, proofRequest: Map<String, Any>?, result: MethodChannel.Result) {
+        Log.d("AriesIntegration", "requestProof called from Kotlin...")
+
+        validateNotNull("ConnectionId", connectionId)
+        validateNotNull("ProofRequest", proofRequest)
+        validateAgent()
+
+        try {
+            val proofExchangeRecordMap = runBlocking {
+                ProofUtils.requestProof(agent!!, connectionId!!, proofRequest!!)
+            }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(proofExchangeRecordMap)))
+        } catch (e: Exception) {
+            Log.e("AriesIntegration", "Cannot request proof: ${e.message}")
+            result.error("1", "Cannot request proof: ${e.message}", null)
         }
     }
 

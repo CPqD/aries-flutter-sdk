@@ -21,7 +21,8 @@ enum AriesMethod {
   getConnectionHistory('getConnectionHistory'),
   getCredentialHistory('getCredentialHistory'),
   generateInvitation('generateInvitation'),
-  sendMessage('sendMessage');
+  sendMessage('sendMessage'),
+  requestProof('requestProof');
 
   final String value;
 

@@ -13,6 +13,7 @@ import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
+import 'package:did_agent/agent/models/proof/proof_request.dart';
 import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
@@ -425,6 +426,34 @@ Future<AriesResult<bool>> sendMessage({
     );
   } catch (e) {
     print('sendMessage - failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString());
+  }
+}
+
+Future<AriesResult<ProofExchangeRecord>> requestProof({
+  required String connectionId,
+  required ProofRequest proofRequest,
+}) async {
+  final result = await AriesResult.invoke(
+    AriesMethod.requestProof,
+    {'connectionId': connectionId, 'proofRequest': proofRequest.toMap()},
+  );
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error);
+  }
+
+  try {
+    final resultMap = Map<String, dynamic>.from(jsonDecode(result.value));
+
+    return AriesResult<ProofExchangeRecord>(
+      success: result.success,
+      error: result.error,
+      value: ProofExchangeRecord.fromMap(resultMap),
+    );
+  } catch (e) {
+    print('requestProof - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }

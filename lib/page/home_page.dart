@@ -177,7 +177,7 @@ class HomePageState extends State<HomePage> {
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: Container(
-          margin: const EdgeInsets.only(top: 10),
+          margin: const EdgeInsets.only(top: 50),
           height: 64,
           width: 64,
           child: FloatingActionButton(

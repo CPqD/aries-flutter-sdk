@@ -1,5 +1,6 @@
 import 'package:did_agent/agent/models/connection/connection_record.dart';
 import 'package:did_agent/page/connection_history_page.dart';
+import 'package:did_agent/page/proof_request_page.dart';
 import 'package:did_agent/util/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -66,13 +67,27 @@ class ConnectionDetailsPage extends StatelessWidget {
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(2.0),
                       ),
                     ),
                     child: Text('Histórico'),
                   ),
                 ),
-                SizedBox(width: 16),
+                SizedBox(width: 2),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _requestProof(context),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(2.0),
+                      ),
+                    ),
+                    child: Text('Solicitar Prova'),
+                  ),
+                ),
+                SizedBox(width: 2),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _confirmDelete(context),
@@ -80,7 +95,7 @@ class ConnectionDetailsPage extends StatelessWidget {
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(2.0),
                       ),
                     ),
                     child: Text('Deletar'),
@@ -90,6 +105,17 @@ class ConnectionDetailsPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _requestProof(BuildContext context) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProofRequestPage(
+          connectionId: connection.id,
+        ),
       ),
     );
   }

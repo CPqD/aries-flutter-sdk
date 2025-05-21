@@ -26,6 +26,10 @@ class Predicate {
     return '$name $type $value';
   }
 
+  Map<String, String> toMap() {
+    return {"name": name, "type": type, "value": value.toString()};
+  }
+
   @override
   String toString() {
     return 'Predicate{name: $name, type: $type, value: $value}';
