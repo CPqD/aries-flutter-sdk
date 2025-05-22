@@ -44,8 +44,8 @@ class ProofDetailsPredicate {
   @override
   String toString() {
     return 'ProofDetailsPredicate{'
-        'error: $error, '
-        'name: $name, '
+        'error: "$error", '
+        'name: "$name", '
         'availableCredentials: $availableCredentials'
         '}';
   }

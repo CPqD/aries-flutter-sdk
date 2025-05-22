@@ -12,7 +12,7 @@ class Predicate {
   });
 
   factory Predicate.fromMap(Map<String, dynamic> map) {
-    final restrictions = (map["restrictions"] == null) ? null : map["restrictions"];
+    final restrictions = (map["restrictions"] == null) ? [] : map["restrictions"];
 
     return Predicate(
       name: map["name"].toString(),
