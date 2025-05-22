@@ -181,7 +181,9 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     textH2(
-                      'Atributos de "${attribute.name}" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
+                      _proofDetails!.getAttributeNamesForSchema(attribute.name).isEmpty
+                          ? 'Atributo solicitado: "${attribute.name}"'
+                          : 'Atributos de "${attribute.name}" solicitados: ${_proofDetails!.getAttributeNamesForSchema(attribute.name).toString()}',
                     ),
                     if (attribute.error.isNotEmpty)
                       resultMessage(
@@ -211,11 +213,17 @@ class _ProofNotificationPageState extends State<ProofNotificationPage> {
                         ),
                       ),
                     Text(
-                      (_selectedAttributeCredentials[attribute.name]
-                              ?.getAttributesFromNames(_proofDetails!
-                                  .getAttributeNamesForSchema(attribute.name))
-                              .toString() ??
-                          ''),
+                      (_proofDetails!.getAttributeNamesForSchema(attribute.name).isEmpty
+                          ? _selectedAttributeCredentials[attribute.name]
+                                  ?.getAttributesFromNames(_proofDetails!
+                                      .getExistingAttributeNames(attribute.name))
+                                  .toString() ??
+                              ''
+                          : _selectedAttributeCredentials[attribute.name]
+                                  ?.getAttributesFromNames(_proofDetails!
+                                      .getAttributeNamesForSchema(attribute.name))
+                                  .toString() ??
+                              ''),
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 32),

@@ -45,12 +45,32 @@ class ProofOfferDetails {
     final requestedAttributes = getRequestedAttributesMap();
 
     for (final entry in requestedAttributes.entries) {
-      if (entry.key == schemaName) {
+      if (entry.key == schemaName && entry.value["names"] != null) {
         return List<String>.from(entry.value["names"]);
       }
     }
 
     return [];
+  }
+
+  List<String> getExistingAttributeNames(String attrName) {
+    final requestedAttributes = getRequestedAttributesMap();
+
+    List<String> names = [];
+
+    for (final entry in requestedAttributes.entries) {
+      final entryName = entry.value["name"];
+
+      if (entryName == null) {
+        continue;
+      }
+
+      if (entry.key == attrName || entryName == attrName) {
+        names.add(entryName);
+      }
+    }
+
+    return names;
   }
 
   Predicate? getPredicateForName(String attributeName) {

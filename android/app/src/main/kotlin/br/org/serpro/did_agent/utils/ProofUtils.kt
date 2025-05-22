@@ -8,6 +8,7 @@ import org.hyperledger.ariesframework.agent.MessageSerializer
 import org.hyperledger.ariesframework.proofs.ProofService
 import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
 import org.hyperledger.ariesframework.proofs.messages.v2.RequestPresentationMessageV2
+import org.hyperledger.ariesframework.proofs.models.AttributeFilter
 import org.hyperledger.ariesframework.proofs.models.PredicateType
 import org.hyperledger.ariesframework.proofs.models.ProofAttributeInfo
 import org.hyperledger.ariesframework.proofs.models.ProofPredicateInfo
@@ -114,7 +115,7 @@ class ProofUtils {
                 val attributeArray = retrievedCredentials.requestedAttributes[schemaName]!!
 
                 if (attributeArray.isEmpty()) {
-                    errorMsg = "Não há nenhuma credencial do tipo '$schemaName'."
+                    errorMsg = "Não há nenhuma credencial relacionada a '$schemaName'."
                 }
 
                 for (attr in attributeArray) {
@@ -123,7 +124,7 @@ class ProofUtils {
 
                 val nonRevoked = attributeArray.filter { attr -> attr.revoked != true }
                 if (errorMsg.isEmpty() && nonRevoked.isEmpty()) {
-                    errorMsg = "Não há nenhuma credencial não revogada do tipo '$schemaName'."
+                    errorMsg = "Não há nenhuma credencial não revogada relacionada a '$schemaName'."
                 }
 
                 attributesList.add(
@@ -182,16 +183,39 @@ class ProofUtils {
 
             for (element in attributesList) {
                 val proofAttribute = element as Map<*, *>
+
+                var restrictions: List<AttributeFilter>? = null
+
+                val credDefId = proofAttribute["credDefId"].toString()
+
+                if (credDefId.isNotEmpty()) {
+                    restrictions = listOf(AttributeFilter(credentialDefinitionId = credDefId))
+                }
+
                 val attrName = proofAttribute["name"].toString()
+                var schemaName = proofAttribute["schemaName"].toString()
+
 
                 if (attrName.isNotEmpty()) {
-                    requestedAttributes[attrName] = ProofAttributeInfo(
+                    if (schemaName.isEmpty()) {
+                        schemaName = attrName
+                    }
+
+                    requestedAttributes[schemaName] = ProofAttributeInfo(
                         name = attrName,
                         nonRevoked = null,
-                        /*restrictions = listOf(
-                            AttributeFilter(credentialDefinitionId = "YOUR_CRED_DEF_ID")
-                        )*/
+                        restrictions = restrictions
                     )
+                } else {
+                    val attrNames = proofAttribute["names"] as List<String>
+
+                    if (schemaName.isNotEmpty() && attrNames.isNotEmpty()) {
+                        requestedAttributes[schemaName] = ProofAttributeInfo(
+                            names = attrNames,
+                            nonRevoked = null,
+                            restrictions = restrictions
+                        )
+                    }
                 }
             }
 
