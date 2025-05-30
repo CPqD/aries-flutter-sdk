@@ -13,6 +13,7 @@ import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
+import 'package:did_agent/agent/models/proof/proof_presented/proof_presented.dart';
 import 'package:did_agent/agent/models/proof/proof_request.dart';
 import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/page/home_page.dart';
@@ -355,6 +356,42 @@ Future<AriesResult<List<HistoryRecord>?>> getCredentialHistory(String credential
     return ariesResult;
   } catch (e) {
     print('getConnectionHistory - failed to decode = ${e.toString()}\n\n');
+
+    return AriesResult(success: false, error: e.toString());
+  }
+}
+
+Future<AriesResult<ProofPresented>> getProofPresented(String proofRecordId) async {
+  print('getCredentialHistory!!\n\n');
+
+    print('getProofPresented - proofRecordId: $proofRecordId');
+
+
+  final result = await AriesResult.invoke(
+    AriesMethod.getProofPresented,
+    {'proofRecordId': proofRecordId},
+  );
+
+  if (!result.success || result.value == null) {
+    return AriesResult(success: false, error: result.error);
+  }
+
+  try {
+    final resultMap = Map<String, dynamic>.from(jsonDecode(result.value));
+
+    print('resultMap: $resultMap');
+
+    final ariesResult = AriesResult(
+      success: true,
+      error: result.error,
+      value: ProofPresented.fromMap(resultMap),
+    );
+
+    print('getProofPresented ariesResult: $ariesResult\n\n');
+
+    return ariesResult;
+  } catch (e) {
+    print('getProofPresented - failed to decode = ${e.toString()}\n\n');
 
     return AriesResult(success: false, error: e.toString());
   }

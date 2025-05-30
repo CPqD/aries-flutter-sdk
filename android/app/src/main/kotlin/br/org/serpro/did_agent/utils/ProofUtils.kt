@@ -1,12 +1,17 @@
 package br.org.serpro.did_agent.utils
 
 import android.util.Log
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.ariesframework.OutboundMessage
 import org.hyperledger.ariesframework.agent.Agent
 import org.hyperledger.ariesframework.agent.MessageSerializer
 import org.hyperledger.ariesframework.proofs.ProofService
+import org.hyperledger.ariesframework.proofs.messages.v1.PresentationMessage
 import org.hyperledger.ariesframework.proofs.messages.v1.RequestPresentationMessage
+import org.hyperledger.ariesframework.proofs.messages.v2.PresentationMessageV2
 import org.hyperledger.ariesframework.proofs.messages.v2.RequestPresentationMessageV2
 import org.hyperledger.ariesframework.proofs.models.AttributeFilter
 import org.hyperledger.ariesframework.proofs.models.PredicateType
@@ -16,10 +21,10 @@ import org.hyperledger.ariesframework.proofs.models.ProofRequest
 import org.hyperledger.ariesframework.proofs.models.ProofState
 import org.hyperledger.ariesframework.proofs.models.RequestedCredentials
 import org.hyperledger.ariesframework.proofs.models.RequestedPredicate
-import org.hyperledger.ariesframework.proofs.models.RetrievedCredentials
 import org.hyperledger.ariesframework.proofs.models.RevocationInterval
 import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import org.hyperledger.ariesframework.storage.DidCommMessageRecord
+import org.json.JSONObject
 
 class ProofUtils {
     companion object {
@@ -171,6 +176,60 @@ class ProofUtils {
             return Triple(attributesList, predicatesList, proofRequestJson)
         }
 
+        suspend fun getProofPresented(agent: Agent, proofRecordId: String): Map<String, Any?> {
+            val aaaapresentationMessageJson = agent.didCommMessageRepository.getAgentMessage(proofRecordId, PresentationMessageV2.type)
+
+            Log.d("ProofUtils", "aaaapresentationMessageJson: $aaaapresentationMessageJson")
+
+            val proof = agent.proofRepository.findById(proofRecordId)
+
+            Log.d("ProofUtils", "proof: $proof")
+
+//            val proofRequestMessageJson = agent.didCommMessageRepository.getAgentMessage(
+//                proofRecordId,
+//                RequestPresentationMessage.type,
+//            )
+//
+//            Log.d("ProofUtils", "proofRequestMessageJson: $proofRequestMessageJson")
+
+            val (message, proofRecord) = agent.proofService.createAck(proof!!)
+
+            Log.d("ProofUtils", "proofRecord: $proofRecord")
+
+            val connection = agent.connectionRepository.getById(proof.connectionId)
+
+            Log.d("ProofUtils", "connection: $connection")
+
+            agent.messageSender.send(OutboundMessage(message, connection))
+
+            val presentationMessageJson = agent.didCommMessageRepository.getAgentMessage(proofRecord.id, PresentationMessageV2.type)
+
+            Log.d("ProofUtils", "presentationMessageJson: $presentationMessageJson")
+
+            val json = Json { ignoreUnknownKeys = true } // Permite ignorar campos extras
+
+            val element = json.decodeFromString<JsonElement>(presentationMessageJson)
+            val type = element.jsonObject["type"]?.jsonPrimitive?.content
+
+            var presentationMessageStr: String?
+
+            if (type == "https://didcomm.org/present-proof/1.0/presentation") {
+                val presentationMessageV1 = MessageSerializer.decodeFromString(presentationMessageJson) as PresentationMessage
+                presentationMessageStr = presentationMessageV1.indyProof()
+            } else {
+                val presentationMessageV2 = MessageSerializer.decodeFromString(presentationMessageJson) as PresentationMessageV2
+                presentationMessageStr = presentationMessageV2.indyProof()
+            }
+
+            val presentationJson = JSONObject(presentationMessageStr)
+
+            return mapOf(
+                "revealed_attrs" to extractRevealedAttributes(presentationJson),
+                "predicates" to extractPredicates(presentationJson),
+                "credentials" to extractCredentialIdentifiers(presentationJson)
+            );
+        }
+
         suspend fun requestProof(
             agent: Agent,
             connectionId: String,
@@ -258,6 +317,62 @@ class ProofUtils {
             val proofExchangeRecord = agent.proofs.requestProof(connectionId, proofRequest)
 
             return JsonConverter.toMap(proofExchangeRecord).toMutableMap()
+        }
+
+        private fun extractRevealedAttributes(json: JSONObject): List<Map<String, Any?>> {
+            val attrList = mutableListOf<Map<String, Any?>>()
+            val requestedProof = json.optJSONObject("requested_proof") ?: return attrList
+
+            val revealedAttrs = requestedProof.optJSONObject("revealed_attrs") ?: return attrList
+
+            val keys = revealedAttrs.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val attrObj = revealedAttrs.optJSONObject(key) ?: continue
+
+                attrList.add(
+                    mapOf(
+                        key to attrObj.optString("raw", ""),
+                    )
+                )
+            }
+            return attrList
+        }
+
+        private fun extractPredicates(json: JSONObject): List<String> {
+            val predList = mutableListOf<String>()
+            val requestedProof = json.optJSONObject("requested_proof") ?: return predList
+
+            Log.d("ProofUtils", "requestedProof: $requestedProof")
+
+            val predicates = requestedProof.optJSONObject("predicates") ?: return predList
+
+            val keys = predicates.keys()
+
+            while (keys.hasNext()) {
+                predList.add(keys.next())
+            }
+
+            return predList
+        }
+
+        private fun extractCredentialIdentifiers(json: JSONObject): List<Map<String, Any?>> {
+            val credentials = mutableListOf<Map<String, Any?>>()
+            val identifiers = json.optJSONArray("identifiers") ?: return credentials
+
+            for (i in 0 until identifiers.length()) {
+                val identifierObj = identifiers.optJSONObject(i) ?: continue
+
+                credentials.add(
+                    mapOf(
+                        "schema_id" to identifierObj.optString("schema_id", ""),
+                        "schema_name" to identifierObj.optString("schema_name", ""),
+                        "cred_def_id" to identifierObj.optString("cred_def_id", ""),
+                        "rev_reg_id" to identifierObj.optString("rev_reg_id", "")
+                    )
+                )
+            }
+            return credentials
         }
 
         private suspend fun credentialPredicateValidation(

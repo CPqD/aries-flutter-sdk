@@ -1,3 +1,4 @@
+import 'package:did_agent/agent/enums/proof_state.dart';
 import 'package:did_agent/agent/models/proof/basic_message_record.dart';
 import 'package:did_agent/page/connection_history_page.dart';
 import 'package:flutter/material.dart';
@@ -40,21 +41,50 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  void receivedCredential(String credentialId, String credentialState) {
+  Future<void> receivedCredential(String credentialId, String credentialState) async {
     print('receivedCredential - state: $credentialState');
 
     if (CredentialState.offerReceived.equals(credentialState)) {
-      updateNotifications();
+      await updateNotifications();
       connectionHistoryKey.currentState?.refreshHistory();
     }
   }
 
-  void receivedProof(String proofId, String proofState) {
+  Future<void> receivedProof(String proofId, String proofState) async {
     print('receivedProof  - state: $proofState');
 
-    if (CredentialState.requestReceived.equals(proofState)) {
-      updateNotifications();
+    if (ProofState.requestReceived.equals(proofState)) {
+      await updateNotifications();
       connectionHistoryKey.currentState?.refreshHistory();
+      return;
+    }
+
+    if (ProofState.presentationReceived.equals(proofState)) {
+      final result = await getProofPresented(proofId);
+
+      print('getProofPresented result: $result');
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Resultado de Prova Recebido'),
+              content: Text(result.value?.content() ?? ''),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+
+        return;
+      }
     }
   }
 

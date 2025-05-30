@@ -74,6 +74,7 @@ class HistoryRecord {
   String getTitle() {
     switch (historyType) {
       case HistoryType.basicMessageReceived:
+      case HistoryType.basicMessageSent:
         return content ?? '';
       case HistoryType.connectionCreated:
         return theirLabel == null ? 'Conexão criada' : 'Conexão criada com $theirLabel';

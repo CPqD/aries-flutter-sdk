@@ -215,6 +215,15 @@ class MainActivity: FlutterFragmentActivity() {
                         result.error("1", "Erro ao processar o methodchannel getConnectionHistory: $e", null)
                     }
                 }
+                "getProofPresented" -> {
+                    try {
+                        val proofRecordId = call.argument<String>("proofRecordId")
+
+                        ariesIntegration.getProofPresented(proofRecordId, result)
+                    } catch (e: Exception) {
+                        result.error("1", "Erro ao processar o methodchannel getProofPresented: $e", null)
+                    }
+                }
                 "generateInvitation" -> {
                     try {
                         val deviceLabel = call.argument<String>("deviceLabel")

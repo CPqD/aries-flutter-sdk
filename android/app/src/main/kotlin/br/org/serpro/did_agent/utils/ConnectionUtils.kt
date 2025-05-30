@@ -1,10 +1,7 @@
 package br.org.serpro.did_agent.utils
 
 import android.util.Log
-import kotlinx.coroutines.runBlocking
 import org.hyperledger.ariesframework.agent.Agent
-import org.hyperledger.ariesframework.credentials.models.CredentialState
-import org.hyperledger.ariesframework.proofs.models.ProofState
 
 class ConnectionUtils {
     companion object {

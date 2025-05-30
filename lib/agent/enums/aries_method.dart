@@ -20,6 +20,7 @@ enum AriesMethod {
   shutdown('shutdown'),
   getConnectionHistory('getConnectionHistory'),
   getCredentialHistory('getCredentialHistory'),
+  getProofPresented('getProofPresented'),
   generateInvitation('generateInvitation'),
   sendMessage('sendMessage'),
   requestProof('requestProof');

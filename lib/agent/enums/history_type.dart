@@ -1,5 +1,6 @@
 enum HistoryType {
   basicMessageReceived('BasicMessageReceived'),
+  basicMessageSent('BasicMessageSent'),
   connectionCreated('ConnectionCreated'),
   credentialOfferAccepted('CredentialOfferAccepted'),
   credentialOfferDeclined('CredentialOfferDeclined'),

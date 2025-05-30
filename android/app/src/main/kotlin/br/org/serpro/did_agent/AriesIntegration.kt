@@ -1,9 +1,7 @@
 package br.org.serpro.did_agent
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
-import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.LifecycleCoroutineScope
 import br.org.serpro.did_agent.utils.ConnectionUtils
@@ -28,10 +26,7 @@ import org.hyperledger.ariesframework.problemreports.messages.CredentialProblemR
 import org.hyperledger.ariesframework.problemreports.messages.MediationProblemReportMessage
 import org.hyperledger.ariesframework.problemreports.messages.PresentationProblemReportMessage
 import org.hyperledger.ariesframework.proofs.models.AutoAcceptProof
-import org.hyperledger.ariesframework.proofs.models.ProofAttributeInfo
-import org.hyperledger.ariesframework.proofs.models.ProofPredicateInfo
 import org.hyperledger.ariesframework.proofs.models.ProofState
-import org.hyperledger.ariesframework.proofs.repository.ProofExchangeRecord
 import java.io.File
 
 const val genesisPath = "bcovrin-genesis.txn"
@@ -271,6 +266,22 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         } catch (e: Exception) {
             Log.e("AriesIntegration", "Cannot get proofOffer: ${e.message}")
             result.error("1", "Cannot get getProofOfferDetails: ${e.message}", null)
+        }
+    }
+
+    fun getProofPresented(proofRecordId: String?, result: MethodChannel.Result) {
+        Log.d("AriesIntegration", "getProofPresented called from Kotlin...")
+
+        validateAgent()
+        validateNotNull("ProofRecordId", proofRecordId)
+
+        try {
+            val proofPresented = runBlocking { ProofUtils.getProofPresented(agent!!, proofRecordId!!) }
+
+            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(proofPresented)))
+        } catch (e: Exception) {
+            Log.e("AriesIntegration", "Cannot get proof presented: ${e.message}")
+            result.error("1", "Cannot get proof presented ${e.message}", null)
         }
     }
 

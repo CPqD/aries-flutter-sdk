@@ -57,6 +57,7 @@ class _CredentialHistoryPageState extends State<CredentialHistoryPage> {
 
     switch (historyItem.historyType) {
       case HistoryType.basicMessageReceived:
+      case HistoryType.basicMessageSent:
       case HistoryType.connectionCreated:
       case HistoryType.credentialRevoked:
         break;
