@@ -1,3 +1,4 @@
+import 'package:did_agent/agent/enums/predicate_type.dart';
 import 'package:did_agent/agent/models/proof/details/predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_attribute.dart';
 import 'package:did_agent/agent/models/proof/proof_request.dart';
@@ -79,11 +80,15 @@ class ProofRequestPageState extends State<ProofRequestPage> {
 
     for (PredicateController predController in _predControllers) {
       final predName = predController.name.text.trim();
-      final predOperator = predController.operator.trim();
+      final predType = predController.operator.trim();
       final predValue = predController.value.text.trim();
 
-      if (predName.isNotEmpty && predOperator.isNotEmpty && predValue.isNotEmpty) {
-        predicates.add(Predicate(name: predName, type: predOperator, value: predValue));
+      if (predName.isNotEmpty && predType.isNotEmpty && predValue.isNotEmpty) {
+        predicates.add(Predicate(
+          name: predName,
+          type: PredicateType.from(predType),
+          value: predValue,
+        ));
       }
     }
 

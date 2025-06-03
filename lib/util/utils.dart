@@ -13,8 +13,8 @@ import 'package:did_agent/agent/models/proof/details/proof_details.dart';
 import 'package:did_agent/agent/models/proof/details/requested_attribute.dart';
 import 'package:did_agent/agent/models/proof/details/requested_predicate.dart';
 import 'package:did_agent/agent/models/proof/proof_exchange_record.dart';
-import 'package:did_agent/agent/models/proof/proof_presented/proof_presented.dart';
 import 'package:did_agent/agent/models/proof/proof_request.dart';
+import 'package:did_agent/agent/models/proof/requested_proof.dart';
 import 'package:did_agent/page/connection_history_page.dart';
 import 'package:did_agent/page/home_page.dart';
 import 'package:flutter/services.dart';
@@ -361,11 +361,10 @@ Future<AriesResult<List<HistoryRecord>?>> getCredentialHistory(String credential
   }
 }
 
-Future<AriesResult<ProofPresented>> getProofPresented(String proofRecordId) async {
+Future<AriesResult<RequestedProof>> getProofPresented(String proofRecordId) async {
   print('getCredentialHistory!!\n\n');
 
-    print('getProofPresented - proofRecordId: $proofRecordId');
-
+  print('getProofPresented - proofRecordId: $proofRecordId');
 
   final result = await AriesResult.invoke(
     AriesMethod.getProofPresented,
@@ -379,12 +378,12 @@ Future<AriesResult<ProofPresented>> getProofPresented(String proofRecordId) asyn
   try {
     final resultMap = Map<String, dynamic>.from(jsonDecode(result.value));
 
-    print('resultMap: $resultMap');
+    logPrint('resultMap: $resultMap');
 
     final ariesResult = AriesResult(
       success: true,
       error: result.error,
-      value: ProofPresented.fromMap(resultMap),
+      value: RequestedProof.fromMap(resultMap),
     );
 
     print('getProofPresented ariesResult: $ariesResult\n\n');

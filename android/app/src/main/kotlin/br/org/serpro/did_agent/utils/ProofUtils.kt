@@ -176,7 +176,7 @@ class ProofUtils {
             return Triple(attributesList, predicatesList, proofRequestJson)
         }
 
-        suspend fun getProofPresented(agent: Agent, proofRecordId: String): Map<String, Any?> {
+        suspend fun getProofPresented(agent: Agent, proofRecordId: String): String {
             val aaaapresentationMessageJson = agent.didCommMessageRepository.getAgentMessage(proofRecordId, PresentationMessageV2.type)
 
             Log.d("ProofUtils", "aaaapresentationMessageJson: $aaaapresentationMessageJson")
@@ -211,7 +211,7 @@ class ProofUtils {
             val element = json.decodeFromString<JsonElement>(presentationMessageJson)
             val type = element.jsonObject["type"]?.jsonPrimitive?.content
 
-            var presentationMessageStr: String?
+            val presentationMessageStr: String?
 
             if (type == "https://didcomm.org/present-proof/1.0/presentation") {
                 val presentationMessageV1 = MessageSerializer.decodeFromString(presentationMessageJson) as PresentationMessage
@@ -221,13 +221,7 @@ class ProofUtils {
                 presentationMessageStr = presentationMessageV2.indyProof()
             }
 
-            val presentationJson = JSONObject(presentationMessageStr)
-
-            return mapOf(
-                "revealed_attrs" to extractRevealedAttributes(presentationJson),
-                "predicates" to extractPredicates(presentationJson),
-                "credentials" to extractCredentialIdentifiers(presentationJson)
-            );
+            return presentationMessageStr;
         }
 
         suspend fun requestProof(
@@ -317,62 +311,6 @@ class ProofUtils {
             val proofExchangeRecord = agent.proofs.requestProof(connectionId, proofRequest)
 
             return JsonConverter.toMap(proofExchangeRecord).toMutableMap()
-        }
-
-        private fun extractRevealedAttributes(json: JSONObject): List<Map<String, Any?>> {
-            val attrList = mutableListOf<Map<String, Any?>>()
-            val requestedProof = json.optJSONObject("requested_proof") ?: return attrList
-
-            val revealedAttrs = requestedProof.optJSONObject("revealed_attrs") ?: return attrList
-
-            val keys = revealedAttrs.keys()
-            while (keys.hasNext()) {
-                val key = keys.next()
-                val attrObj = revealedAttrs.optJSONObject(key) ?: continue
-
-                attrList.add(
-                    mapOf(
-                        key to attrObj.optString("raw", ""),
-                    )
-                )
-            }
-            return attrList
-        }
-
-        private fun extractPredicates(json: JSONObject): List<String> {
-            val predList = mutableListOf<String>()
-            val requestedProof = json.optJSONObject("requested_proof") ?: return predList
-
-            Log.d("ProofUtils", "requestedProof: $requestedProof")
-
-            val predicates = requestedProof.optJSONObject("predicates") ?: return predList
-
-            val keys = predicates.keys()
-
-            while (keys.hasNext()) {
-                predList.add(keys.next())
-            }
-
-            return predList
-        }
-
-        private fun extractCredentialIdentifiers(json: JSONObject): List<Map<String, Any?>> {
-            val credentials = mutableListOf<Map<String, Any?>>()
-            val identifiers = json.optJSONArray("identifiers") ?: return credentials
-
-            for (i in 0 until identifiers.length()) {
-                val identifierObj = identifiers.optJSONObject(i) ?: continue
-
-                credentials.add(
-                    mapOf(
-                        "schema_id" to identifierObj.optString("schema_id", ""),
-                        "schema_name" to identifierObj.optString("schema_name", ""),
-                        "cred_def_id" to identifierObj.optString("cred_def_id", ""),
-                        "rev_reg_id" to identifierObj.optString("rev_reg_id", "")
-                    )
-                )
-            }
-            return credentials
         }
 
         private suspend fun credentialPredicateValidation(

@@ -70,7 +70,7 @@ class HomePageState extends State<HomePage> {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('Resultado de Prova Recebido'),
-              content: Text(result.value?.content() ?? ''),
+              content: Text(result.value?.asFormatedText() ?? ''),
               actions: <Widget>[
                 TextButton(
                   child: Text('OK'),

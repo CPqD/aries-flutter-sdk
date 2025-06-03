@@ -276,9 +276,9 @@ class AriesIntegration(private val mainActivity: MainActivity) {
         validateNotNull("ProofRecordId", proofRecordId)
 
         try {
-            val proofPresented = runBlocking { ProofUtils.getProofPresented(agent!!, proofRecordId!!) }
+            val proofPresentedJson = runBlocking { ProofUtils.getProofPresented(agent!!, proofRecordId!!) }
 
-            result.success(mapOf("error" to "", "result" to JsonConverter.toJson(proofPresented)))
+            result.success(mapOf("error" to "", "result" to proofPresentedJson))
         } catch (e: Exception) {
             Log.e("AriesIntegration", "Cannot get proof presented: ${e.message}")
             result.error("1", "Cannot get proof presented ${e.message}", null)
